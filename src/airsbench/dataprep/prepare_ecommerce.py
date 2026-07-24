@@ -129,7 +129,11 @@ def main(argv: list[str] | None = None) -> int:
     # --- queries (exact-match relevance only) ----------------------------
     exact = df[df["esci_label"] == "Exact"]
     exact = exact[exact["product_id"].isin({p["product_id"] for p in products})]
-    grouped = exact.groupby(["query_id", "query"])["product_id"].apply(list).reset_index()
+    grouped = (
+        exact.groupby(["query_id", "query"])["product_id"]
+        .apply(lambda ids: list(dict.fromkeys(ids)))  # dedupe, keep first-seen order
+        .reset_index()
+    )
     queries = grouped.sample(n=min(args.n_queries, len(grouped)), random_state=args.seed)
     queries = queries.rename(columns={"product_id": "relevant_product_ids"})
 
