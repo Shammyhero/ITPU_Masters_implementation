@@ -99,6 +99,10 @@ def execute_configs(configs: list[RunConfig], args) -> int:
             f"n={result.metrics['n']} failures={result.metrics['parse_failures']} "
             f"${result.usage['cost_usd']:.4f}"
         )
+        print(
+            f"      abstained={result.metrics['abstention_rate']:.0%} "
+            f"silent_failure={result.metrics['silent_failure_rate']:.0%}"
+        )
         if spent > args.max_cost:
             print(f"\nSTOPPED: spend ${spent:.3f} exceeded guard ${args.max_cost:.2f}")
             return 1

@@ -16,10 +16,19 @@ from typing import Any
 
 from agentic_faults import Record
 
+# Abstention is offered deliberately and symmetrically in both tasks. The
+# distinctive claim available to this study (see docs/literature_review.md
+# §8.3) is not that degraded data lowers accuracy — that is established —
+# but that agents fail SILENTLY rather than declining. An agent that cannot
+# abstain cannot demonstrate that, so the option must exist and must be
+# phrased neutrally, without hinting that the data may be faulty.
+
 RETRIEVAL_SYSTEM = """You are a shopping assistant for an online marketplace.
 You answer customer questions using only the catalog records provided.
 Choose the single best product and report its price.
-Respond with JSON only: {"product_id": "<id>", "price": <number>, "confidence": <0-1>}"""
+If the records are insufficient to answer reliably, abstain instead of guessing.
+Respond with JSON only:
+{"product_id": "<id>", "price": <number>, "confidence": <0-1>, "abstain": <true|false>}"""
 
 RETRIEVAL_USER = """Customer query: "{query}"
 
@@ -27,17 +36,21 @@ Catalog records:
 {records}
 
 Task: among these records, identify the CHEAPEST product that is currently
-in stock, and report its price. Respond with JSON only."""
+in stock, and report its price. If you cannot determine this reliably from the
+records, set "abstain" to true. Respond with JSON only."""
 
 CLASSIFICATION_SYSTEM = """You are a flight operations analyst.
 You predict whether a flight will arrive late, using only the record provided.
 A flight counts as delayed when it arrives 15 or more minutes behind schedule.
-Respond with JSON only: {"delayed": <true|false>, "confidence": <0-1>}"""
+If the record is insufficient to judge reliably, abstain instead of guessing.
+Respond with JSON only:
+{"delayed": <true|false>, "confidence": <0-1>, "abstain": <true|false>}"""
 
 CLASSIFICATION_USER = """Flight record:
 {record}
 
-Task: will this flight arrive 15 or more minutes late? Respond with JSON only."""
+Task: will this flight arrive 15 or more minutes late? If you cannot judge this
+reliably from the record, set "abstain" to true. Respond with JSON only."""
 
 
 def render_record(record: Record) -> dict[str, Any]:

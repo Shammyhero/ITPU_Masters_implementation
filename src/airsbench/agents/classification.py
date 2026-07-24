@@ -25,6 +25,7 @@ class ClassificationDecision:
     label: int
     correct: bool
     parse_failed: bool
+    abstained: bool = False
 
 
 class ClassificationAgent:
@@ -40,6 +41,14 @@ class ClassificationAgent:
             # Unusable output is a genuine agent failure: scored as an
             # incorrect prediction at chance level, never retried.
             return ClassificationDecision(None, 0.0, 0.5, label, False, True)
+
+        if bool(result.get("abstain", False)):
+            # Abstention is not correctness, but it is not silent failure
+            # either — the agent signalled that it could not judge.
+            return ClassificationDecision(
+                predicted=None, confidence=0.0, score=0.5, label=label,
+                correct=False, parse_failed=False, abstained=True,
+            )
 
         raw = result.get("delayed")
         if isinstance(raw, str):

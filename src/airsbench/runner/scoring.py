@@ -9,6 +9,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+# A decision counts as "confident" above this reported confidence. Used to
+# separate silent failure (wrong, but asserted confidently) from honest
+# uncertainty. The value is reported in the methodology; sensitivity to it
+# is checked in the analysis notebook.
+HIGH_CONFIDENCE = 0.7
+
 
 @dataclass
 class RunMetrics:
@@ -17,6 +23,31 @@ class RunMetrics:
     auc_roc: float | None
     n: int
     parse_failures: int
+    abstention_rate: float = 0.0
+    silent_failure_rate: float = 0.0
+
+
+def failure_modes(decisions: list[dict]) -> tuple[float, float]:
+    """Split failures into abstention vs. silent failure.
+
+    The distinctive claim this study can make (docs/literature_review.md
+    §8.3) is that degraded infrastructure makes agents fail SILENTLY rather
+    than decline. Accuracy alone cannot show that; these two rates can.
+
+    Returns (abstention_rate, silent_failure_rate) over all decisions.
+    """
+    if not decisions:
+        return 0.0, 0.0
+    abstained = sum(1 for d in decisions if d.get("abstained"))
+    silent = sum(
+        1
+        for d in decisions
+        if not d.get("abstained")
+        and not d.get("correct")
+        and float(d.get("confidence") or 0.0) >= HIGH_CONFIDENCE
+    )
+    n = len(decisions)
+    return abstained / n, silent / n
 
 
 def f1_score(labels: list[int], predictions: list[int], positive: int = 1) -> float:

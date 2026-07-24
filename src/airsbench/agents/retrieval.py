@@ -32,6 +32,7 @@ class RetrievalDecision:
     correct: bool
     ground_truth_id: str
     parse_failed: bool
+    abstained: bool = False
 
 
 class RetrievalAgent:
@@ -55,6 +56,12 @@ class RetrievalAgent:
         result = self.client.call_json(retrieval_messages(query, delivered))
         if result is None:
             return RetrievalDecision(None, None, 0.0, False, truth["product_id"], True)
+
+        if bool(result.get("abstain", False)):
+            return RetrievalDecision(
+                product_id=None, price=None, confidence=0.0, correct=False,
+                ground_truth_id=truth["product_id"], parse_failed=False, abstained=True,
+            )
 
         product_id = result.get("product_id")
         price = result.get("price")

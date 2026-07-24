@@ -46,7 +46,7 @@ from ..pipelines.loader import (
     stale_dep_delay,
 )
 from .config import RunConfig
-from .scoring import RunMetrics, score_binary, score_retrieval
+from .scoring import RunMetrics, failure_modes, score_binary, score_retrieval
 
 # Batch pipelines serve data assembled at the last scheduled load, so the
 # archetype carries inherent staleness even with no fault injected. A real
@@ -194,10 +194,12 @@ def run_retrieval(config: RunConfig, data_dir: Path, client: LLMClient) -> tuple
                 "correct": decision.correct,
                 "confidence": decision.confidence,
                 "parse_failed": decision.parse_failed,
+                "abstained": decision.abstained,
             }
         )
 
     metrics = score_retrieval(correct_flags, confidences, client.usage.parse_failures)
+    metrics.abstention_rate, metrics.silent_failure_rate = failure_modes(decisions)
     airs = _airs_components(baseline_all, delivered_all, statistics.fmean(ages or [0.0]))
     return metrics, airs, decisions
 
@@ -254,10 +256,12 @@ def run_classification(config: RunConfig, data_dir: Path, client: LLMClient) -> 
                 "correct": decision.correct,
                 "confidence": decision.confidence,
                 "parse_failed": decision.parse_failed,
+                "abstained": decision.abstained,
             }
         )
 
     metrics = score_binary(labels, predictions, scores, client.usage.parse_failures)
+    metrics.abstention_rate, metrics.silent_failure_rate = failure_modes(decisions)
     airs = _airs_components(baseline_all, delivered_all, statistics.fmean(ages or [0.0]))
     return metrics, airs, decisions
 
@@ -293,6 +297,8 @@ def execute_run(
             "auc_roc": metrics.auc_roc,
             "n": metrics.n,
             "parse_failures": metrics.parse_failures,
+            "abstention_rate": metrics.abstention_rate,
+            "silent_failure_rate": metrics.silent_failure_rate,
             "llm_latency_ms_p50": (
                 statistics.median(client.usage.latencies_ms)
                 if client.usage.latencies_ms
