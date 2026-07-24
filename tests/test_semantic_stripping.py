@@ -20,10 +20,12 @@ def test_full_strip_removes_all_context():
     faulted = injector.apply(make_record())
     assert faulted.context == {}
     assert faulted.meta["faults"][0]["stripped"] == [
-        "entity_type", "units", "descriptions", "relationships",
+        "entity_type", "units", "descriptions", "relationships", "field_names",
     ]
-    # payload must be untouched — stripping removes meaning, not data
-    assert faulted.payload == {"val": 23, "src": "A"}
+    # Stripping removes meaning, not data: every value survives, but the
+    # keys that named them are now opaque (see test_semantic_opacity.py).
+    assert sorted(faulted.payload.values(), key=str) == sorted([23, "A"], key=str)
+    assert set(faulted.payload) == {"f1", "f2"}
 
 
 def test_zero_strip_rate_keeps_context_intact():

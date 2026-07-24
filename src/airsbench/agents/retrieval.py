@@ -1,33 +1,74 @@
-"""Retrieval agent (e-commerce product QA) — Week 3 deliverable.
+"""Retrieval agent — e-commerce product QA (industry scenario 1).
 
-LangGraph workflow with three nodes (research plan §6.3):
-  1. question reception   — receives a product question, e.g.
-                            "What is the current price of <product>?"
-  2. catalog retrieval    — queries the configured pipeline (Kafka or
-                            batch/Postgres) through the fault injector
-  3. answer composition   — GPT-4o-mini composes the answer from the
-                            retrieved (possibly faulted) records
+Task: given a customer query and the catalog records retrieved for it,
+identify the cheapest product currently in stock and report its price.
 
-Scored against catalog ground truth *at query time* — prices and stock
-change via the update stream, so staleness produces objectively wrong
-answers. This is what makes the freshness dimension behaviorally
-observable in this task (industry-scenario design decision, Week 0).
+Why this task: the answer depends on values that CHANGE (price, stock),
+so a stale record produces an objectively wrong answer; and it depends on
+knowing which field means what, so a stripped semantic layer produces a
+wrong or refused answer. Both faults are therefore behaviorally visible,
+which is what RQ1 needs.
+
+Ground truth is always computed from the true catalog state at query
+time, regardless of what the agent was served.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
-from agentic_faults import FaultChain
+from agentic_faults import FaultChain, Record
+
+from .llm import LLMClient
+from .prompts import retrieval_messages
+
+
+@dataclass
+class RetrievalDecision:
+    product_id: str | None
+    price: float | None
+    confidence: float
+    correct: bool
+    ground_truth_id: str
+    parse_failed: bool
 
 
 class RetrievalAgent:
-    """Skeleton — implemented in Week 3 (agent harness)."""
-
-    def __init__(self, model: str, temperature: float, fault_chain: FaultChain) -> None:
-        self.model = model
-        self.temperature = temperature
+    def __init__(self, client: LLMClient, fault_chain: FaultChain | None = None) -> None:
+        self.client = client
         self.fault_chain = fault_chain
 
-    def answer(self, question: str) -> dict[str, Any]:
-        raise NotImplementedError("Week 3: LangGraph retrieval workflow")
+    @staticmethod
+    def ground_truth(products: list[dict[str, Any]]) -> dict[str, Any] | None:
+        """Cheapest in-stock product in the TRUE catalog state."""
+        in_stock = [p for p in products if p["stock"] > 0]
+        return min(in_stock, key=lambda p: p["price"]) if in_stock else None
+
+    def decide(
+        self, query: str, records: list[Record], truth: dict[str, Any]
+    ) -> RetrievalDecision:
+        delivered = records
+        if self.fault_chain is not None:
+            delivered = [self.fault_chain.apply(r) for r in records]
+
+        result = self.client.call_json(retrieval_messages(query, delivered))
+        if result is None:
+            return RetrievalDecision(None, None, 0.0, False, truth["product_id"], True)
+
+        product_id = result.get("product_id")
+        price = result.get("price")
+        confidence = result.get("confidence", 0.5)
+        try:
+            confidence = min(1.0, max(0.0, float(confidence)))
+        except (TypeError, ValueError):
+            confidence = 0.5
+
+        return RetrievalDecision(
+            product_id=str(product_id) if product_id is not None else None,
+            price=float(price) if isinstance(price, (int, float)) else None,
+            confidence=confidence,
+            correct=str(product_id) == truth["product_id"],
+            ground_truth_id=truth["product_id"],
+            parse_failed=False,
+        )

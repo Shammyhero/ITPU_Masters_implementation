@@ -71,16 +71,27 @@ def payload_consistency(source: Record, sink: Record) -> float:
 
     Operationalizes the consistency dimension: schema drift shows up as
     renamed keys (missing on one side) or altered values (unequal).
+
+    Dimension independence: field-name opacity from semantic stripping is
+    reversed first, using the mapping the injector recorded. Opacity is
+    attributed to the semantic dimension alone; without this reversal the
+    two dimensions move together and the AIRS calibration regression
+    cannot separate their effects (which RQ2 and RQ4 require).
     """
-    keys = set(source.payload) | set(sink.payload)
+    sink_payload = sink.payload
+    opaque_map = sink.meta.get("opaque_map")
+    if opaque_map:
+        sink_payload = {opaque_map.get(k, k): v for k, v in sink_payload.items()}
+
+    keys = set(source.payload) | set(sink_payload)
     if not keys:
         return 1.0
     matched = sum(
         1
         for key in keys
         if key in source.payload
-        and key in sink.payload
-        and source.payload[key] == sink.payload[key]
+        and key in sink_payload
+        and source.payload[key] == sink_payload[key]
     )
     return matched / len(keys)
 

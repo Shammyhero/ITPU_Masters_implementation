@@ -1,0 +1,71 @@
+"""Prompt templates — held constant across every experimental condition.
+
+Methodological commitment: the prompt is a control variable. It never
+mentions faults, never hints that data may be stale or incomplete, and is
+byte-identical across conditions. Only the rendered records differ.
+
+Records are rendered with whatever semantic context survived injection —
+that is the mechanism by which semantic stripping reaches the agent: the
+values remain, the meaning does not.
+"""
+
+from __future__ import annotations
+
+import json
+from typing import Any
+
+from agentic_faults import Record
+
+RETRIEVAL_SYSTEM = """You are a shopping assistant for an online marketplace.
+You answer customer questions using only the catalog records provided.
+Choose the single best product and report its price.
+Respond with JSON only: {"product_id": "<id>", "price": <number>, "confidence": <0-1>}"""
+
+RETRIEVAL_USER = """Customer query: "{query}"
+
+Catalog records:
+{records}
+
+Task: among these records, identify the CHEAPEST product that is currently
+in stock, and report its price. Respond with JSON only."""
+
+CLASSIFICATION_SYSTEM = """You are a flight operations analyst.
+You predict whether a flight will arrive late, using only the record provided.
+A flight counts as delayed when it arrives 15 or more minutes behind schedule.
+Respond with JSON only: {"delayed": <true|false>, "confidence": <0-1>}"""
+
+CLASSIFICATION_USER = """Flight record:
+{record}
+
+Task: will this flight arrive 15 or more minutes late? Respond with JSON only."""
+
+
+def render_record(record: Record) -> dict[str, Any]:
+    """Render a record as the agent sees it: values plus surviving context."""
+    rendered: dict[str, Any] = {"data": record.payload}
+    if record.context:
+        rendered["context"] = record.context
+    return rendered
+
+
+def render_records(records: list[Record]) -> str:
+    return json.dumps([render_record(r) for r in records], indent=2, default=str)
+
+
+def retrieval_messages(query: str, records: list[Record]) -> list[tuple[str, str]]:
+    return [
+        ("system", RETRIEVAL_SYSTEM),
+        ("user", RETRIEVAL_USER.format(query=query, records=render_records(records))),
+    ]
+
+
+def classification_messages(record: Record) -> list[tuple[str, str]]:
+    return [
+        ("system", CLASSIFICATION_SYSTEM),
+        (
+            "user",
+            CLASSIFICATION_USER.format(
+                record=json.dumps(render_record(record), indent=2, default=str)
+            ),
+        ),
+    ]
