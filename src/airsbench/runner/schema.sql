@@ -12,7 +12,12 @@ CREATE TABLE IF NOT EXISTS benchmark_runs (
     pipeline          TEXT NOT NULL CHECK (pipeline IN ('batch', 'streaming')),
     fault_type        TEXT NOT NULL CHECK (fault_type IN
                         ('none', 'freshness', 'latency', 'schema_drift', 'semantic_stripping')),
-    severity          TEXT NOT NULL CHECK (severity IN ('none', 'mild', 'severe')),
+    -- 'sweep_<n>s' labels come from the freshness monotonicity sweep, which
+    -- needs more than two levels to distinguish monotonic from non-monotonic
+    -- response (Shisher & Sun, MobiHoc 2022).
+    severity          TEXT NOT NULL CHECK (
+                        severity IN ('none', 'mild', 'severe')
+                        OR severity LIKE 'sweep\_%'),
     task              TEXT NOT NULL CHECK (task IN ('retrieval', 'classification')),
     replication       INT  NOT NULL,
 

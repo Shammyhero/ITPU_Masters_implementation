@@ -40,6 +40,14 @@ SEVERITY_PARAMS: dict[str, dict[str, dict[str, Any]]] = {
     },
 }
 
+# Freshness sweep for the monotonicity test (docs/related_work_positioning.md
+# §4). Shisher & Sun (MobiHoc 2022) prove that prediction error need not be
+# monotonic in data age; the main factorial's two severities cannot
+# distinguish monotonic from non-monotonic response, because two points
+# always look monotonic. These levels span sub-threshold to well past the
+# batch arm's inherent staleness.
+FRESHNESS_SWEEP_SECONDS = (0.5, 1.5, 3.0, 5.0, 8.0, 12.0)
+
 DEFAULT_MODEL = "gpt-4o-mini"
 # Methodological commitment (research plan §6.3): temperature fixed per
 # task family, seeds documented, model constant across all conditions.
@@ -107,6 +115,81 @@ def build_grid(replications: int = 4, include_baseline: bool = True) -> list[Run
                     replication=rep,
                     injector_params=dict(params),
                     seed=1000 * cond_idx + rep,
+                )
+            )
+    return grid
+
+
+def build_freshness_sweep(
+    replications: int = 3,
+    pipeline: str = "streaming",
+    tasks: tuple[str, ...] = TASKS,
+    model: str = DEFAULT_MODEL,
+) -> list[RunConfig]:
+    """Freshness at many severities, for testing monotonicity (RQ1).
+
+    Streaming only by default: the batch arm carries ~10 s of inherent
+    staleness, which would confound the low end of the sweep.
+    """
+    grid: list[RunConfig] = []
+    for task_idx, task in enumerate(tasks):
+        for level_idx, delay in enumerate(FRESHNESS_SWEEP_SECONDS):
+            for rep in range(1, replications + 1):
+                grid.append(
+                    RunConfig(
+                        pipeline=pipeline,
+                        task=task,
+                        fault_type="freshness",
+                        severity=f"sweep_{delay:g}s",
+                        replication=rep,
+                        injector_params={"delay_seconds": delay},
+                        model=model,
+                        seed=50000 + 1000 * task_idx + 100 * level_idx + rep,
+                    )
+                )
+    return grid
+
+
+def build_cross_model_subset(
+    model: str, replications: int = 2, severity: str = "severe"
+) -> list[RunConfig]:
+    """A reduced factorial on a second model, for generalization.
+
+    Answers the reviewer question the comparison papers invite (they use
+    2-8 models; this study's primary arm uses one): does the RANKING of
+    infrastructure properties hold across model classes? Only the ranking
+    is claimed to generalize, not the absolute thresholds.
+    """
+    grid: list[RunConfig] = []
+
+    # One baseline per task on this model, so degradation is measured
+    # against this model's own ceiling, not the primary model's.
+    for task_idx, task in enumerate(TASKS):
+        grid.append(
+            RunConfig(
+                pipeline="streaming",
+                task=task,
+                fault_type="none",
+                severity="none",
+                replication=1,
+                model=model,
+                seed=79000 + task_idx,
+            )
+        )
+
+    conditions = [(t, f) for t in TASKS for f in FAULT_TYPES]
+    for cond_idx, (task, fault) in enumerate(conditions):
+        for rep in range(1, replications + 1):
+            grid.append(
+                RunConfig(
+                    pipeline="streaming",
+                    task=task,
+                    fault_type=fault,
+                    severity=severity,
+                    replication=rep,
+                    injector_params=dict(SEVERITY_PARAMS[fault][severity]),
+                    model=model,
+                    seed=70000 + 100 * cond_idx + rep,
                 )
             )
     return grid

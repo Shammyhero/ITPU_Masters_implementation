@@ -15,7 +15,12 @@ from collections import Counter
 from pathlib import Path
 
 from ..agents.llm import estimate_cost_usd
-from .config import RunConfig, build_grid
+from .config import (
+    RunConfig,
+    build_cross_model_subset,
+    build_freshness_sweep,
+    build_grid,
+)
 
 # Measured from the prompt templates: retrieval sends ~6 catalog records
 # with context, classification sends one flight record.
@@ -117,6 +122,10 @@ def main(argv: list[str] | None = None) -> int:
     mode.add_argument("--grid", action="store_true", help="inspect the full factorial grid")
     mode.add_argument("--smoke", action="store_true", help="tiny paid end-to-end test")
     mode.add_argument("--pilot", action="store_true", help="30-run go/no-go pilot")
+    mode.add_argument("--freshness-sweep", action="store_true",
+                      help="multi-severity freshness sweep (RQ1 monotonicity test)")
+    mode.add_argument("--cross-model", metavar="MODEL",
+                      help="reduced factorial on a second model (generalization arm)")
     parser.add_argument("--replications", type=int, default=4)
     parser.add_argument("--n-queries", type=int, default=12, help="queries per smoke run")
     parser.add_argument("--max-cost", type=float, default=0.50, help="USD spend guard")
@@ -138,6 +147,18 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.smoke:
         return execute_configs(build_smoke_grid(args.n_queries), args)
+
+    if args.freshness_sweep:
+        sweep = build_freshness_sweep(replications=args.replications)
+        for cfg in sweep:
+            cfg.n_queries = args.n_queries
+        return execute_configs(sweep, args)
+
+    if args.cross_model:
+        subset = build_cross_model_subset(args.cross_model)
+        for cfg in subset:
+            cfg.n_queries = args.n_queries
+        return execute_configs(subset, args)
 
     pilot = [cfg for cfg in build_grid(replications=1)][:30]
     for cfg in pilot:

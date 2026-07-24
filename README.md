@@ -75,3 +75,19 @@ notebooks/               statistical analysis (Week 6)
 - [ ] W4: AIST full demo; open-source release (HuggingFace + Zenodo); thesis chapters
 
 License: MIT
+
+## Experimental arms
+
+Beyond the main factorial, two arms exist because the related-work review
+required them (see `docs/related_work_positioning.md`):
+
+```bash
+python -m airsbench.runner.run --freshness-sweep --n-queries 150   # RQ1 monotonicity, ~$1
+python -m airsbench.runner.run --cross-model <model> --n-queries 150  # generalization, ~$0.50
+```
+
+The freshness sweep exists because Shisher & Sun (MobiHoc 2022) show error
+need not be monotonic in data age, and two severity levels cannot tell the
+difference. The cross-model arm exists because comparable 2026 studies use
+2–8 models; the claim that generalizes is the *ranking* of infrastructure
+properties, not the absolute thresholds.
