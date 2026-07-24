@@ -1,0 +1,72 @@
+# AIRS-Bench experimental environment (research plan §6.8).
+# One command brings up both pipeline archetypes + storage + observability:
+#   docker compose up -d
+name: airs-bench
+
+services:
+  kafka:
+    image: apache/kafka:3.8.0            # single-broker KRaft: no ZooKeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: INTERNAL://kafka:29092,CONTROLLER://kafka:9093,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+
+  postgres:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: airs
+      POSTGRES_PASSWORD: airs
+      POSTGRES_DB: airs
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./src/airsbench/runner/schema.sql:/docker-entrypoint-initdb.d/00_schema.sql:ro
+      - ./docker/postgres/01_airflow_db.sql:/docker-entrypoint-initdb.d/01_airflow_db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airs -d airs"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  airflow:
+    image: apache/airflow:2.10.4         # slim standalone: batch archetype only
+    command: standalone
+    ports:
+      - "8080:8080"
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airs:airs@postgres:5432/airflow
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+    volumes:
+      - ./src/airsbench/pipelines/airflow_dags:/opt/airflow/dags:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v2.53.0       # live demo observability, NOT results storage
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+volumes:
+  pgdata:

@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  # Agent runtime + fault injector metrics (prometheus_client), exposed by
+  # the run harness on the host from Week 3 onward.
+  - job_name: airsbench
+    static_configs:
+      - targets: ["host.docker.internal:8008"]
