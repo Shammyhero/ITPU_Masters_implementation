@@ -100,10 +100,26 @@ def execute_configs(configs: list[RunConfig], args) -> int:
         return 0
 
     spent = 0.0
+    failed: list[tuple[RunConfig, str]] = []
     print()
     for i, cfg in enumerate(configs, 1):
         print(f"[{i}/{len(configs)}] {cfg.label()} ... ", end="", flush=True)
-        result = execute_run(cfg, data_root=Path(args.data_root), out_dir=Path(args.out))
+        try:
+            result = execute_run(
+                cfg, data_root=Path(args.data_root), out_dir=Path(args.out)
+            )
+        except KeyboardInterrupt:
+            print("interrupted")
+            break
+        except Exception as exc:  # noqa: BLE001 — one bad run must not end the campaign
+            # A long campaign will meet transient failures (network drops, the
+            # machine sleeping, rate limits that outlast the client's retries).
+            # Crashing would forfeit every remaining run; completed runs are
+            # already durable on disk, so record and continue. Failures are
+            # listed at the end for targeted re-running.
+            print(f"FAILED: {type(exc).__name__}: {exc}")
+            failed.append((cfg, f"{type(exc).__name__}: {exc}"))
+            continue
         spent += result.usage["cost_usd"]
         auc = result.metrics["auc_roc"]
         auc_text = f"{auc:.3f}" if auc is not None else "n/a"
@@ -128,6 +144,14 @@ def execute_configs(configs: list[RunConfig], args) -> int:
             return 1
 
     print(f"\nTotal spend: ${spent:.4f} | results in {args.out}")
+    if failed:
+        print(f"\n{len(failed)} run(s) FAILED and produced no artifact:")
+        for cfg, reason in failed:
+            print(f"  {cfg.label()} — {reason}")
+        print("\nRe-run them once the cause is resolved. Completed runs are "
+              "already on disk; recount and resume with --offset:")
+        print(f"  ls {args.out}/*.json | wc -l")
+        return 1
     return 0
 
 
