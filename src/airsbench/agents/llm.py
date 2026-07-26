@@ -19,9 +19,12 @@ from pathlib import Path
 from typing import Any
 
 # Pricing (USD per token), for run-level cost accounting and the budget guard.
+# Local models via Ollama are free and priced at zero.
 PRICING = {
     "gpt-4o-mini": {"input": 0.15 / 1e6, "output": 0.60 / 1e6},
     "gpt-4.1-mini": {"input": 0.40 / 1e6, "output": 1.60 / 1e6},
+    "claude-haiku-4-5": {"input": 1.00 / 1e6, "output": 5.00 / 1e6},
+    "claude-sonnet-5": {"input": 2.00 / 1e6, "output": 10.00 / 1e6},
 }
 JSON_BLOCK = re.compile(r"\{.*\}", re.DOTALL)
 

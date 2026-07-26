@@ -22,10 +22,13 @@ from .config import (
     build_grid,
 )
 
-# Measured from the prompt templates: retrieval sends ~6 catalog records
-# with context, classification sends one flight record.
-AVG_INPUT_TOKENS = {"retrieval": 1600, "classification": 550}
-AVG_OUTPUT_TOKENS = 40
+# Calibrated against observed token usage from smoke runs rather than
+# estimated from the templates: the original estimates (1600/550/40) ran
+# ~35% high, which made the spend guard refuse runs that would have fit.
+# Re-derive these from `results/runs/*.json` usage fields if the prompts
+# change materially.
+AVG_INPUT_TOKENS = {"retrieval": 1150, "classification": 420}
+AVG_OUTPUT_TOKENS = 30
 
 SMOKE_CONDITIONS = [
     # (task, fault_type, severity) — baseline vs. the two faults the
@@ -71,6 +74,18 @@ def estimate_grid_cost(configs: list[RunConfig]) -> float:
 
 def execute_configs(configs: list[RunConfig], args) -> int:
     from .execute import execute_run
+
+    total_in_grid = len(configs)
+    offset = getattr(args, "offset", 0) or 0
+    limit = getattr(args, "limit", None)
+    configs = configs[offset:]
+    if limit is not None:
+        configs = configs[:limit]
+    if not configs:
+        print(f"No runs selected (grid has {total_in_grid}, offset={offset}).")
+        return 1
+    if offset or limit is not None:
+        print(f"Staged: runs {offset + 1}-{offset + len(configs)} of {total_in_grid}")
 
     estimated = estimate_grid_cost(configs)
     print(f"{len(configs)} runs x {configs[0].n_queries} queries "
@@ -121,6 +136,8 @@ def main(argv: list[str] | None = None) -> int:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--grid", action="store_true", help="inspect the full factorial grid")
     mode.add_argument("--smoke", action="store_true", help="tiny paid end-to-end test")
+    mode.add_argument("--main", action="store_true",
+                      help="execute the main factorial (use --offset/--limit to stage it)")
     mode.add_argument("--pilot", action="store_true", help="30-run go/no-go pilot")
     mode.add_argument("--freshness-sweep", action="store_true",
                       help="multi-severity freshness sweep (RQ1 monotonicity test)")
@@ -132,6 +149,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--data-root", default="data")
     parser.add_argument("--out", default="results/runs")
     parser.add_argument("--dry-run", action="store_true")
+    # Staged execution: phase 1 of the campaign is its own go/no-go checkpoint
+    # (methodology §3.7.1), so it must be a prefix of the same seeded grid
+    # rather than a separate pilot with different conditions.
+    parser.add_argument("--offset", type=int, default=0,
+                        help="skip the first N runs of the selected grid")
+    parser.add_argument("--limit", type=int, default=None,
+                        help="execute at most N runs (staged campaign phases)")
     args = parser.parse_args(argv)
 
     if args.grid:
@@ -147,6 +171,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.smoke:
         return execute_configs(build_smoke_grid(args.n_queries), args)
+
+    if args.main:
+        grid = build_grid(replications=args.replications)
+        for cfg in grid:
+            cfg.n_queries = args.n_queries
+        return execute_configs(grid, args)
 
     if args.freshness_sweep:
         sweep = build_freshness_sweep(replications=args.replications)
