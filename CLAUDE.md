@@ -122,6 +122,12 @@ docs/                    literature review, related-work positioning, RQs v2,
 results/discarded/       runs from superseded designs — evidence, not data
 ```
 
+## Start here
+
+`docs/campaign_status.md` — current campaign state, the exact resume
+command, the remaining roadmap with costs, and findings so far. It is the
+operational entry point for any new session.
+
 ## Docs to read before changing the design
 
 - `docs/research_questions_v2.md` — current RQs, hypotheses, stats plan,
