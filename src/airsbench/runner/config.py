@@ -70,6 +70,7 @@ class RunConfig:
     temperature: float | None = None
     n_queries: int = DEFAULT_N_QUERIES
     seed: int = 0
+    sample_seed: int = 0
     run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
     def __post_init__(self) -> None:
@@ -77,6 +78,21 @@ class RunConfig:
             self.dataset = TASK_DATASETS[self.task]
         if self.temperature is None:
             self.temperature = TASK_TEMPERATURE[self.task]
+        # PAIRED DESIGN. The sampling seed depends only on (task, replication),
+        # never on the experimental condition, so every condition within a
+        # replication is evaluated on the IDENTICAL queries at identical
+        # simulated timestamps. The fault is then the only difference between
+        # conditions, which is what makes the comparison paired.
+        #
+        # `seed` (condition-specific) continues to drive the fault injectors —
+        # the fault realization is the treatment and should vary by condition.
+        #
+        # Phase-1 evidence for why this matters: with per-condition sampling,
+        # query-sample variance alone produced a severe-latency run scoring 22
+        # points ABOVE its baseline, which is impossible since analytic latency
+        # cannot change what the agent reads.
+        if not self.sample_seed:
+            self.sample_seed = 10_000 * (TASKS.index(self.task) + 1) + self.replication
 
     def label(self) -> str:
         return (

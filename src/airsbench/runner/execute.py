@@ -49,14 +49,22 @@ from .config import RunConfig
 from .scoring import RunMetrics, failure_modes, score_binary, score_retrieval
 
 # Batch pipelines serve data assembled at the last scheduled load, so the
-# archetype carries inherent staleness even with no fault injected. A real
-# 10-minute DAG interval implies ~300 s mean age, which on a high-velocity
-# catalog floors batch accuracy in every condition — a floor effect that
-# would mask how the other three faults affect the batch arm. Runs
-# therefore model a compressed cycle of one catalog update interval
-# (~10 s). Stated as a limitation: real batch deployments fare worse on
-# freshness than this study's batch arm.
-BATCH_INHERENT_STALENESS_S = 10.0
+# archetype carries inherent staleness even with no fault injected.
+#
+# This constant was 10.0 s and had to be lowered. At 10 s it exactly equalled
+# DEP_DELAY_KNOWLEDGE_HORIZON_S, so every flight in every batch classification
+# run was presented as departing precisely on time: the dominant predictive
+# feature was zeroed, the arm scored BELOW chance (0.438 on a balanced task),
+# and fault severity made no difference because the floor had been reached.
+# Batch retrieval was likewise depressed to a ~0.79 ceiling by a 21% answer-flip
+# rate before any fault was injected.
+#
+# At 3 s the batch arm remains meaningfully stale (~8% answer-flip on
+# retrieval; ~70% of the delay signal retained on classification) and still
+# degrades further when a freshness fault stacks on top, without flooring
+# either task. Stated as a limitation: a real 10-minute DAG implies ~300 s and
+# would fare far worse than this study's batch arm.
+BATCH_INHERENT_STALENESS_S = 3.0
 STREAMING_INHERENT_STALENESS_S = 0.05
 N_CANDIDATES = 6
 
@@ -142,7 +150,9 @@ def run_retrieval(config: RunConfig, data_dir: Path, client: LLMClient) -> tuple
 ]:
     import pandas as pd
 
-    rng = random.Random(config.seed)
+    # Paired design: query sample and query times come from sample_seed,
+    # which is identical across conditions within a replication.
+    rng = random.Random(config.sample_seed)
     machine = CatalogTimeMachine.load(data_dir)
     context = load_semantic_context(data_dir)
     queries = pd.read_parquet(data_dir / "queries.parquet").to_dict("records")
@@ -221,8 +231,10 @@ def run_classification(config: RunConfig, data_dir: Path, client: LLMClient) -> 
 
     context = load_semantic_context(data_dir)
     flights = pd.read_parquet(data_dir / "flights.parquet")
+    # Paired design: identical flight sample across conditions within a
+    # replication (see RunConfig.sample_seed).
     sampled = flights.sample(
-        n=min(config.n_queries, len(flights)), random_state=config.seed
+        n=min(config.n_queries, len(flights)), random_state=config.sample_seed
     ).to_dict("records")
 
     chain = build_fault_chain(config)
