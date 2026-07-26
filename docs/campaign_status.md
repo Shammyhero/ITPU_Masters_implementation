@@ -1,6 +1,7 @@
 # Campaign status & session handoff
 
-**Updated:** 2026-07-27 · phase 1 in progress
+**Updated:** 2026-07-27 · phase 2 PAUSED at 66/144 by decision — see
+`docs/detectability_arm.md` before resuming
 
 This is the operational entry point. Read `CLAUDE.md` for the invariants that
 must not be broken, then this file for what to do next.
@@ -12,8 +13,9 @@ must not be broken, then this file for what to do next.
 | | |
 |---|---|
 | Design | Paired, replication-major, 144 runs @ 80 queries |
-| **Phase 1** | **~25 / 36 runs** (one full balanced replication of all 36 conditions) |
-| Spent | ~$0.29 of ~$7 OpenAI · $0 of ~$4 Anthropic |
+| **Phase 1** | ✅ complete — **GO** (36/36, all checks passed) |
+| **Phase 2** | ⏸ paused at **30 / 108** — resume with `--offset 66 --limit 78` |
+| Spent | ~$0.70 of ~$7 OpenAI · $0 of ~$4 Anthropic |
 | Results | `results/runs/*.json` — one file per run, written on completion |
 | Tests | 70 passing |
 
@@ -29,7 +31,21 @@ JSON on completion. Interrupting mid-run loses only that run's partial spend.
 
 ---
 
-## Immediate next step
+## Why phase 2 is paused
+
+A question during phase 2 — *why should the agent doubt the price?* — exposed
+that the rendered record carries **no timestamp**. The agent was never given
+anything by which staleness could be detected, so "it failed to notice" was the
+wrong reading; "the pipeline delivered nothing to notice" is the right one.
+
+That reframes H3 from an observation into a testable causal claim, and it is
+cheaper to get the framing right before the remaining 78 runs than after.
+**Read `docs/detectability_arm.md` before resuming.**
+
+Order of work: (1) flip-partition analysis — free, retroactive; (2) detectability
+arm — ~$0.15, 14 runs; (3) finish phase 2 — ~$0.85.
+
+## Superseded: immediate next step
 
 When phase 1 reaches 36 runs:
 
