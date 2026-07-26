@@ -18,7 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from agentic_faults import FaultChain, Record
+from agentic_faults import Record
 
 from .llm import LLMClient
 from .prompts import retrieval_messages
@@ -36,9 +36,16 @@ class RetrievalDecision:
 
 
 class RetrievalAgent:
-    def __init__(self, client: LLMClient, fault_chain: FaultChain | None = None) -> None:
+    """Consumes records that have ALREADY passed through the fault chain.
+
+    Fault application belongs to the runner, not the agent: the runner must
+    score AIRS on the exact records the agent saw. Applying the chain in both
+    places would draw two different random realizations of the same fault, so
+    the measured infrastructure condition would not be the delivered one.
+    """
+
+    def __init__(self, client: LLMClient) -> None:
         self.client = client
-        self.fault_chain = fault_chain
 
     @staticmethod
     def ground_truth(products: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -49,11 +56,7 @@ class RetrievalAgent:
     def decide(
         self, query: str, records: list[Record], truth: dict[str, Any]
     ) -> RetrievalDecision:
-        delivered = records
-        if self.fault_chain is not None:
-            delivered = [self.fault_chain.apply(r) for r in records]
-
-        result = self.client.call_json(retrieval_messages(query, delivered))
+        result = self.client.call_json(retrieval_messages(query, records))
         if result is None:
             return RetrievalDecision(None, None, 0.0, False, truth["product_id"], True)
 

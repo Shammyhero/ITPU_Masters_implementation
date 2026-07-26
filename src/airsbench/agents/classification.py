@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from agentic_faults import FaultChain, Record
+from agentic_faults import Record
 
 from .llm import LLMClient
 from .prompts import classification_messages
@@ -29,13 +29,16 @@ class ClassificationDecision:
 
 
 class ClassificationAgent:
-    def __init__(self, client: LLMClient, fault_chain: FaultChain | None = None) -> None:
+    """Consumes a record that has ALREADY passed through the fault chain.
+
+    See RetrievalAgent for why fault application lives in the runner.
+    """
+
+    def __init__(self, client: LLMClient) -> None:
         self.client = client
-        self.fault_chain = fault_chain
 
     def decide(self, record: Record, label: int) -> ClassificationDecision:
-        delivered = self.fault_chain.apply(record) if self.fault_chain else record
-        result = self.client.call_json(classification_messages(delivered))
+        result = self.client.call_json(classification_messages(record))
 
         if result is None:
             # Unusable output is a genuine agent failure: scored as an

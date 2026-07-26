@@ -81,15 +81,23 @@ class RunResult:
 
 
 def build_fault_chain(config: RunConfig) -> FaultChain:
-    """Injectors for this run's condition. Freshness is handled by the
-    loader (values must genuinely be old), so the injector here only
-    stamps the timestamps AIRS reads."""
+    """Injectors for this run's condition.
+
+    Freshness is handled by the loader (values must genuinely be old), so the
+    injector here only stamps the timestamps AIRS reads.
+
+    Latency runs in analytic mode: the injected delay is recorded for the AIRS
+    latency dimension but not slept. Sleeping cannot change what the agent
+    reads, so it cannot change accuracy — it would only add wall-clock time
+    (hours, at severe severity across the retrieval arm). Reported in the
+    methodology as a measurement choice, not a modelling one.
+    """
     injectors = []
     params = config.injector_params
     if config.fault_type == "freshness":
         injectors.append(FreshnessInjector(seed=config.seed, **params))
     elif config.fault_type == "latency":
-        injectors.append(LatencyInjector(seed=config.seed, sleep=True, **params))
+        injectors.append(LatencyInjector(seed=config.seed, sleep=False, **params))
     elif config.fault_type == "schema_drift":
         injectors.append(SchemaDriftInjector(seed=config.seed, **params))
     elif config.fault_type == "semantic_stripping":
@@ -140,7 +148,7 @@ def run_retrieval(config: RunConfig, data_dir: Path, client: LLMClient) -> tuple
     queries = pd.read_parquet(data_dir / "queries.parquet").to_dict("records")
 
     chain = build_fault_chain(config)
-    agent = RetrievalAgent(client, fault_chain=chain)
+    agent = RetrievalAgent(client)
     staleness = value_staleness_s(config)
 
     correct_flags: list[bool] = []
@@ -178,8 +186,10 @@ def run_retrieval(config: RunConfig, data_dir: Path, client: LLMClient) -> tuple
             record.read_timestamp = now
         baseline_records = [r.clone() for r in served]
 
-        decision = agent.decide(query["query"], served, truth)
-        faulted = [chain.apply(r) for r in baseline_records]
+        # Apply the fault chain exactly once; the agent and the AIRS
+        # measurement must see the identical realization.
+        faulted = [chain.apply(r) for r in served]
+        decision = agent.decide(query["query"], faulted, truth)
 
         correct_flags.append(decision.correct)
         confidences.append(decision.confidence)
@@ -216,7 +226,7 @@ def run_classification(config: RunConfig, data_dir: Path, client: LLMClient) -> 
     ).to_dict("records")
 
     chain = build_fault_chain(config)
-    agent = ClassificationAgent(client, fault_chain=chain)
+    agent = ClassificationAgent(client)
     staleness = value_staleness_s(config)
 
     labels: list[int] = []
@@ -238,8 +248,9 @@ def run_classification(config: RunConfig, data_dir: Path, client: LLMClient) -> 
         record.read_timestamp = now
         baseline_record = record.clone()
 
-        decision = agent.decide(record, label)
-        faulted = chain.apply(baseline_record)
+        # Apply the fault chain exactly once (see run_retrieval).
+        faulted = chain.apply(record)
+        decision = agent.decide(faulted, label)
 
         labels.append(label)
         predictions.append(decision.predicted if decision.predicted is not None else 0)

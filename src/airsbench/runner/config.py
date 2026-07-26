@@ -104,8 +104,15 @@ def build_grid(replications: int = 4, include_baseline: bool = True) -> list[Run
                         (pipeline, task, fault, severity, SEVERITY_PARAMS[fault][severity])
                     )
 
-    for cond_idx, (pipeline, task, fault, severity, params) in enumerate(conditions):
-        for rep in range(1, replications + 1):
+    # Replication-major order: replication is the OUTER loop, so the first
+    # len(conditions) runs are one complete balanced replication of the whole
+    # design. A campaign stopped or staged partway therefore yields a balanced
+    # design at lower replication rather than a subset of conditions at full
+    # replication — which is what makes phase 1 a usable go/no-go checkpoint
+    # (methodology §3.7.1). Seeds are derived from (condition, replication),
+    # so they are unaffected by execution order.
+    for rep in range(1, replications + 1):
+        for cond_idx, (pipeline, task, fault, severity, params) in enumerate(conditions):
             grid.append(
                 RunConfig(
                     pipeline=pipeline,
