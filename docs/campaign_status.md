@@ -24,8 +24,15 @@ Resumption is exact: `build_grid()` is deterministic and every run writes its
 JSON on completion. Interrupting mid-run loses only that run (~$0.01).
 
 ```bash
-ls results/runs/*.json | wc -l    # → N, the offset to resume from
+python -m airsbench.analysis.campaign_state
 ```
+
+Prints per-arm progress and the exact resume command. **Do not count files for
+the offset** — `--offset` indexes into `build_grid()`, but the results directory
+now also holds the detectability arm (and later the sweep and cross-model
+subset), so counting over-reports it and silently skips runs. `campaign_state`
+matches artifacts to grid entries by seed instead, and refuses to emit a resume
+command if completed runs are not a contiguous prefix.
 
 ---
 
