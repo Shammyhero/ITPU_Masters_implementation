@@ -16,7 +16,8 @@ the invariants that must not be broken, then this file for what to do next.
 | Phase 2 | ⏸ **paused at 30/108** by decision, not by failure |
 | Runs on disk | **66 / 144** in `results/runs/*.json` |
 | Spent | **$0.70** of ~$7 OpenAI · $0 of ~$4 Anthropic |
-| Tests | 77 passing · lint clean |
+| Tests | 97 passing · lint clean |
+| Open decision | AIRS freshness was double-counted on 12 runs — `detectability_arm.md` §8 |
 | Analysis | flip partition ✅ — see `docs/flip_partition_findings.md` |
 
 Resumption is exact: `build_grid()` is deterministic and every run writes its
@@ -52,7 +53,7 @@ cheaper to fix before the remaining 78 runs than after.
 | # | Step | Cost | Why this order |
 |---|---|---|---|
 | ~~1~~ | ~~**Flip-partition analysis**~~ | $0 | ✅ **done** — `docs/flip_partition_findings.md`. Changed how freshness *and* RQ2 must be reported. |
-| 2 | **Detectability arm** — 14 runs, freshness severe ± `_record_age_seconds` | ~$0.15 | Best scientific value per dollar in the study. Design in `docs/detectability_arm.md`. Now has a pre-registered baseline to move: 5% abstention, 89% silent failure. |
+| 2 | **Detectability arm** — 14 runs, freshness severe ± `_record_age_seconds` | **$0.152** | ✅ implemented + tested + dry-run; **awaiting the decision to spend.** Pre-registered baseline to move: 5% abstention, 89% silent failure. `--detectability --n-queries 80 --max-cost 0.30` |
 | 3 | **Finish phase 2** — `--main --n-queries 80 --offset 66 --limit 78 --max-cost 2.00` | ~$0.85 | Gives the ranking and thresholds regardless of how (1) and (2) land. |
 | 4 | Freshness sweep — `--freshness-sweep --n-queries 60 --replications 3` | ~$0.29 | RQ1 monotonicity (Shisher & Sun) |
 | 5 | Cross-model: local open weights via Ollama | $0 | |

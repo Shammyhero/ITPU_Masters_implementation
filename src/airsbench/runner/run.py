@@ -18,6 +18,7 @@ from ..agents.llm import estimate_cost_usd
 from .config import (
     RunConfig,
     build_cross_model_subset,
+    build_detectability_arm,
     build_freshness_sweep,
     build_grid,
 )
@@ -167,7 +168,12 @@ def main(argv: list[str] | None = None) -> int:
                       help="multi-severity freshness sweep (RQ1 monotonicity test)")
     mode.add_argument("--cross-model", metavar="MODEL",
                       help="reduced factorial on a second model (generalization arm)")
-    parser.add_argument("--replications", type=int, default=4)
+    mode.add_argument("--detectability", action="store_true",
+                      help="14-run arm: freshness severe, with and without record age")
+    # No global default: each mode's own replication count is part of its
+    # design (main 4, sweep 3, detectability 3), so an unset flag must mean
+    # "use this arm's design", not "use 4".
+    parser.add_argument("--replications", type=int, default=None)
     parser.add_argument("--n-queries", type=int, default=12, help="queries per smoke run")
     parser.add_argument("--max-cost", type=float, default=0.50, help="USD spend guard")
     parser.add_argument("--data-root", default="data")
@@ -182,11 +188,13 @@ def main(argv: list[str] | None = None) -> int:
                         help="execute at most N runs (staged campaign phases)")
     args = parser.parse_args(argv)
 
+    reps = args.replications
+
     if args.grid:
-        grid = build_grid(replications=args.replications)
+        grid = build_grid(replications=reps or 4)
         by_fault = Counter(cfg.fault_type for cfg in grid)
         print(f"Experiment grid: {len(grid)} runs "
-              f"({args.replications} replications per condition)")
+              f"({reps or 4} replications per condition)")
         for fault, count in sorted(by_fault.items()):
             print(f"  {fault:>20}: {count} runs")
         print(f"\nEstimated full-campaign cost at {grid[0].n_queries} queries/run: "
@@ -197,19 +205,25 @@ def main(argv: list[str] | None = None) -> int:
         return execute_configs(build_smoke_grid(args.n_queries), args)
 
     if args.main:
-        grid = build_grid(replications=args.replications)
+        grid = build_grid(replications=reps or 4)
         for cfg in grid:
             cfg.n_queries = args.n_queries
         return execute_configs(grid, args)
 
     if args.freshness_sweep:
-        sweep = build_freshness_sweep(replications=args.replications)
+        sweep = build_freshness_sweep(replications=reps or 3)
         for cfg in sweep:
             cfg.n_queries = args.n_queries
         return execute_configs(sweep, args)
 
+    if args.detectability:
+        arm = build_detectability_arm(replications=reps or 3)
+        for cfg in arm:
+            cfg.n_queries = args.n_queries
+        return execute_configs(arm, args)
+
     if args.cross_model:
-        subset = build_cross_model_subset(args.cross_model)
+        subset = build_cross_model_subset(args.cross_model, replications=reps or 2)
         for cfg in subset:
             cfg.n_queries = args.n_queries
         return execute_configs(subset, args)

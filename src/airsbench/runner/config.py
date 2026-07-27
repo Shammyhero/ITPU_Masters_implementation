@@ -71,6 +71,9 @@ class RunConfig:
     n_queries: int = DEFAULT_N_QUERIES
     seed: int = 0
     sample_seed: int = 0
+    # Detectability arm only: deliver each record's own age alongside it.
+    # False everywhere in the main factorial, so that grid is unaffected.
+    emit_record_age: bool = False
     run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
     def __post_init__(self) -> None:
@@ -95,9 +98,10 @@ class RunConfig:
             self.sample_seed = 10_000 * (TASKS.index(self.task) + 1) + self.replication
 
     def label(self) -> str:
+        age = "+age" if self.emit_record_age else ""
         return (
             f"{self.pipeline}/{self.task}/{self.fault_type}"
-            f"/{self.severity}/rep{self.replication}"
+            f"/{self.severity}{age}/rep{self.replication}"
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -170,6 +174,78 @@ def build_freshness_sweep(
                         seed=50000 + 1000 * task_idx + 100 * level_idx + rep,
                     )
                 )
+    return grid
+
+
+def build_detectability_arm(
+    replications: int = 3,
+    severity: str = "severe",
+    model: str = DEFAULT_MODEL,
+) -> list[RunConfig]:
+    """Hold the fault constant; vary only whether it is detectable.
+
+    Design and rationale: docs/detectability_arm.md. The main factorial compares
+    detectability *across* fault types, which confounds the kind of corruption
+    with whether it is legible. This arm holds staleness fixed and varies one
+    thing — whether the record carries its own age — which makes detectability a
+    manipulated variable rather than an observed correlate.
+
+    14 runs:
+      12  freshness/{severity} x {age absent, age present} x 2 tasks x 3 reps
+       2  baseline WITH age, one per task
+
+    The baselines carry the metadata deliberately. Baselines *without* it are
+    already established by the main factorial's 36 retrieval + 30 classification
+    runs, so the open question is the over-caution branch: shown an age of
+    ~0.05 s on fresh data, does the agent start abstaining anyway? Without that
+    cell a rise in abstention under B could not be attributed to staleness
+    rather than to the mere presence of a metadata field.
+
+    Streaming only: batch's inherent 3 s staleness would blur the contrast, and
+    the flip-partition analysis shows the batch baseline is already flipping
+    7.1% of answers before any fault is injected.
+
+    Paired throughout. Within a replication the A and B members of a pair share
+    `sample_seed` (identical queries at identical simulated times, via
+    RunConfig.__post_init__) and `seed` (identical fault realization), so the
+    delivered records are byte-identical apart from the age field.
+    """
+    grid: list[RunConfig] = []
+
+    for task_idx, task in enumerate(TASKS):
+        for rep in range(1, replications + 1):
+            # One seed per (task, rep) pair, shared by both metadata arms:
+            # the fault realization is held constant so it cannot be confounded
+            # with the treatment.
+            seed = 60_000 + 1_000 * task_idx + rep
+            for emit_age in (False, True):
+                grid.append(
+                    RunConfig(
+                        pipeline="streaming",
+                        task=task,
+                        fault_type="freshness",
+                        severity=severity,
+                        replication=rep,
+                        injector_params=dict(SEVERITY_PARAMS["freshness"][severity]),
+                        model=model,
+                        seed=seed,
+                        emit_record_age=emit_age,
+                    )
+                )
+
+    for task_idx, task in enumerate(TASKS):
+        grid.append(
+            RunConfig(
+                pipeline="streaming",
+                task=task,
+                fault_type="none",
+                severity="none",
+                replication=1,
+                model=model,
+                seed=69_000 + task_idx,
+                emit_record_age=True,
+            )
+        )
     return grid
 
 

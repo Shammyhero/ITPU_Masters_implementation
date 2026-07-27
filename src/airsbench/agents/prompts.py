@@ -53,11 +53,27 @@ Task: will this flight arrive 15 or more minutes late? If you cannot judge this
 reliably from the record, set "abstain" to true. Respond with JSON only."""
 
 
+# Freshness metadata field, rendered only when the runner attached it
+# (detectability arm — docs/detectability_arm.md). Named for what it is and
+# nothing more: no unit prose, no "stale", no hint that old is bad. The
+# templates above are unchanged and identical in both conditions, so the only
+# difference between A and B is that the record carries its own age.
+RECORD_AGE_FIELD = "_record_age_seconds"
+
+
 def render_record(record: Record) -> dict[str, Any]:
-    """Render a record as the agent sees it: values plus surviving context."""
+    """Render a record as the agent sees it: values plus surviving context.
+
+    ``meta`` is injector bookkeeping and is never shown — with the single
+    deliberate exception of the record's age, which is the treatment in the
+    detectability arm and is absent from every other condition.
+    """
     rendered: dict[str, Any] = {"data": record.payload}
     if record.context:
         rendered["context"] = record.context
+    age = record.meta.get("record_age_seconds")
+    if age is not None:
+        rendered[RECORD_AGE_FIELD] = age
     return rendered
 
 

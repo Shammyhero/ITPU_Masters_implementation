@@ -68,6 +68,10 @@ BATCH_INHERENT_STALENESS_S = 3.0
 STREAMING_INHERENT_STALENESS_S = 0.05
 N_CANDIDATES = 6
 
+# Where attach_record_age parks the age, and the field name the agent sees.
+# Kept in meta rather than payload so the AIRS payload dimensions cannot see it.
+RECORD_AGE_META_KEY = "record_age_seconds"
+
 
 @dataclass
 class RunResult:
@@ -86,6 +90,33 @@ class RunResult:
         path = out_dir / f"{self.run_id}.json"
         path.write_text(json.dumps(asdict(self), indent=2, default=str))
         return path
+
+
+def attach_record_age(record: Record, now: float) -> None:
+    """Deliver the record's own age alongside it — the detectability treatment.
+
+    The manipulated variable of the detectability arm (docs/detectability_arm.md).
+    Under a freshness fault the served values are well-formed and the world has
+    simply moved on, so nothing in the record marks it as wrong; the agent is
+    asked to notice something it was never told. This attaches what a pipeline
+    that shipped freshness metadata would have shipped.
+
+    Three properties this must hold to:
+
+    - **Truthful.** The age is measured from the post-chain record, so it is the
+      real age of the values the loader served (see ``build_event_ts``). An
+      overstated age would confound detectability with being lied to.
+    - **Applied after the fault chain**, never inside it. The metadata is not a
+      fault; it is what the pipeline chose to deliver about one.
+    - **Not part of the payload.** It goes in ``meta``, so AIRS consistency and
+      semantic completeness — which read ``payload`` and ``context`` — are
+      untouched, and the metadata cannot masquerade as a data field
+      (invariant 5).
+
+    The prompt is not changed and never mentions age or staleness. The metadata
+    is offered; whether the agent uses it is the measurement.
+    """
+    record.meta[RECORD_AGE_META_KEY] = round(record.age_seconds(at=now), 2)
 
 
 def build_fault_chain(config: RunConfig) -> FaultChain:
@@ -113,19 +144,42 @@ def build_fault_chain(config: RunConfig) -> FaultChain:
     return FaultChain(injectors)
 
 
-def value_staleness_s(config: RunConfig) -> float:
-    """Total staleness of the VALUES the agent is served."""
-    inherent = (
+def inherent_staleness_s(config: RunConfig) -> float:
+    """Staleness contributed by the pipeline archetype alone, before any fault."""
+    return (
         BATCH_INHERENT_STALENESS_S
         if config.pipeline == "batch"
         else STREAMING_INHERENT_STALENESS_S
     )
+
+
+def value_staleness_s(config: RunConfig) -> float:
+    """Total staleness of the VALUES the agent is served."""
     injected = (
         float(config.injector_params.get("delay_seconds", 0.0))
         if config.fault_type == "freshness"
         else 0.0
     )
-    return inherent + injected
+    return inherent_staleness_s(config) + injected
+
+
+def build_event_ts(config: RunConfig, now: float) -> float:
+    """Event timestamp to stamp on a record before the fault chain runs.
+
+    Only the INHERENT staleness is stamped here. FreshnessInjector shifts
+    event_timestamp back by the injected delay when it runs, so the record's
+    age after the chain is inherent + injected = value_staleness_s — the true
+    age of the values the loader served.
+
+    This split is load-bearing. Stamping the full staleness here *and* letting
+    the injector shift again double-counts the fault: a severe (5 s) freshness
+    run recorded a mean age of 10.05 s against 5.05 s-stale values, so the AIRS
+    freshness dimension read roughly half its true score. Nothing the agent saw
+    was affected (records carry no timestamp by default), so behavioural results
+    from before the fix stand; AIRS freshness from before it does not.
+    → tests/test_freshness_accounting.py
+    """
+    return now - inherent_staleness_s(config)
 
 
 def _airs_components(
@@ -188,8 +242,9 @@ def run_retrieval(config: RunConfig, data_dir: Path, client: LLMClient) -> tuple
             continue  # nothing in stock: no well-defined answer
 
         now = time.time()
+        event_ts = build_event_ts(config, now)
         served = [
-            build_product_record(served_state[pid], context, event_ts=now - staleness)
+            build_product_record(served_state[pid], context, event_ts=event_ts)
             for pid in ids
         ]
         for record in served:
@@ -199,6 +254,9 @@ def run_retrieval(config: RunConfig, data_dir: Path, client: LLMClient) -> tuple
         # Apply the fault chain exactly once; the agent and the AIRS
         # measurement must see the identical realization.
         faulted = [chain.apply(r) for r in served]
+        if config.emit_record_age:
+            for record in faulted:
+                attach_record_age(record, now)
         decision = agent.decide(query["query"], faulted, truth)
 
         correct_flags.append(decision.correct)
@@ -256,12 +314,14 @@ def run_classification(config: RunConfig, data_dir: Path, client: LLMClient) -> 
         served["DepDelay"] = stale_dep_delay(float(flight["DepDelay"]), staleness)
 
         now = time.time()
-        record = build_flight_record(served, context, event_ts=now - staleness)
+        record = build_flight_record(served, context, event_ts=build_event_ts(config, now))
         record.read_timestamp = now
         baseline_record = record.clone()
 
         # Apply the fault chain exactly once (see run_retrieval).
         faulted = chain.apply(record)
+        if config.emit_record_age:
+            attach_record_age(faulted, now)
         decision = agent.decide(faulted, label)
 
         labels.append(label)
