@@ -18,7 +18,9 @@ from airsbench.analysis.detectability import (
     Behaviour,
     in_arm,
     mcnemar_exact,
+    min_discordant_for_significance,
     pair_runs,
+    rule_of_three,
 )
 from airsbench.runner.config import (
     build_cross_model_subset,
@@ -173,3 +175,28 @@ def test_empty_decision_set_is_not_a_zero():
     behaviour = Behaviour.of([])
     assert behaviour.n == 0
     assert behaviour.abstained != behaviour.abstained  # NaN
+
+
+# ---- separating "no effect" from "no power" --------------------------------
+
+def test_six_one_directional_pairs_are_needed_for_significance():
+    """A null with fewer discordant pairs than this is uninformative."""
+    needed = min_discordant_for_significance()
+    assert needed == 6
+    assert mcnemar_exact(needed, 0) < 0.05
+    assert mcnemar_exact(needed - 1, 0) >= 0.05
+
+
+def test_the_threshold_tracks_alpha():
+    assert min_discordant_for_significance(alpha=0.01) > min_discordant_for_significance()
+
+
+def test_rule_of_three_bounds_a_zero_rate():
+    """Zero events in n trials is not a rate of zero."""
+    assert rule_of_three(240) == pytest.approx(0.0125, abs=1e-6)
+    assert rule_of_three(80) == pytest.approx(0.0375, abs=1e-6)
+    assert rule_of_three(0) == 1.0
+
+
+def test_rule_of_three_tightens_with_more_observations():
+    assert rule_of_three(1000) < rule_of_three(100) < rule_of_three(10)

@@ -14,9 +14,9 @@ the invariants that must not be broken, then this file for what to do next.
 | Design | Paired, replication-major, 144 runs @ 80 queries |
 | Phase 1 | ✅ **complete — GO** (36/36, all four checks passed) |
 | Phase 2 | ⏸ **paused at 30/108** by decision, not by failure |
-| Runs on disk | **66 / 144** in `results/runs/*.json` |
-| Spent | **$0.70** of ~$7 OpenAI · $0 of ~$4 Anthropic |
-| Tests | 97 passing · lint clean |
+| Runs on disk | **66 / 144** main factorial + **14** detectability arm |
+| Spent | **$0.85** of ~$7 OpenAI · $0 of ~$4 Anthropic |
+| Tests | 164 passing · lint clean |
 | AIRS fix | freshness double-count corrected in code; 16 old runs recomputed in the analysis layer |
 | Analysis | flip partition ✅ — see `docs/flip_partition_findings.md` |
 
@@ -29,22 +29,28 @@ ls results/runs/*.json | wc -l    # → N, the offset to resume from
 
 ---
 
-## ⚠️ Read before resuming: why phase 2 is paused
+## Why phase 2 was paused — resolved, resume when ready
 
 A question mid-campaign — *"why should the agent doubt the price?"* — exposed
-that the rendered record carries **no timestamp, no age, nothing about when the
+that the rendered record carried **no timestamp, no age, nothing about when the
 value was true**. The agent was never given anything by which staleness could be
-detected.
+detected, so the phase-1 reading blamed the agent for missing what the pipeline
+never delivered.
 
-So the phase-1 reading was wrong in an important way:
+Both follow-ups are now done, and **the framing question the pause existed to
+settle is settled**, so phase 2 can resume as-is:
 
-- ❌ "The agent failed to notice the data was stale" — blames the agent
-- ✅ **"The pipeline delivered nothing to notice"** — blames the infrastructure
+- The **flip partition** showed freshness does not impair the agent at all — it
+  only moves the answer key. The finding is the 89% silent-failure rate on the
+  queries it makes unanswerable.
+- The **detectability arm** delivered the record's age and **nothing changed**.
+  So the reframing holds, but its remedy does not: the pipeline delivering
+  nothing to notice is the problem, and delivering the number alone is not the
+  fix.
 
-The second is an infrastructure finding with an actionable remedy, and it turns
-H3 from an interpretation into a testable causal claim. **Read
-`docs/detectability_arm.md` before spending anything further.** Framing is far
-cheaper to fix before the remaining 78 runs than after.
+Net effect on the remaining 78 runs: **none required.** The main factorial's
+conditions are unchanged and its results are interpreted through the flip
+partition rather than re-run.
 
 ---
 
@@ -53,8 +59,8 @@ cheaper to fix before the remaining 78 runs than after.
 | # | Step | Cost | Why this order |
 |---|---|---|---|
 | ~~1~~ | ~~**Flip-partition analysis**~~ | $0 | ✅ **done** — `docs/flip_partition_findings.md`. Changed how freshness *and* RQ2 must be reported. |
-| 2 | **Detectability arm** — 14 runs, freshness severe ± `_record_age_seconds` | **$0.152** | ✅ implemented + tested + dry-run; **awaiting the decision to spend.** Pre-registered baseline to move: 5% abstention, 89% silent failure. `--detectability --n-queries 80 --max-cost 0.30` |
-| 3 | **Finish phase 2** — `--main --n-queries 80 --offset 66 --limit 78 --max-cost 2.00` | ~$0.85 | Gives the ranking and thresholds regardless of how (1) and (2) land. |
+| ~~2~~ | ~~**Detectability arm**~~ | $0.153 | ✅ **done — null branch.** Metadata alone changes nothing. `docs/detectability_findings.md`. |
+| **3** | **Finish phase 2** — `--main --n-queries 80 --offset 66 --limit 78 --max-cost 2.00` | ~$0.85 | **← resume here.** Gives the ranking and thresholds regardless of how (1) and (2) landed. Note `--offset 66` still selects correctly: the arm's runs are in their own seed block and are not part of `build_grid()`. |
 | 4 | Freshness sweep — `--freshness-sweep --n-queries 60 --replications 3` | ~$0.29 | RQ1 monotonicity (Shisher & Sun) |
 | 5 | Cross-model: local open weights via Ollama | $0 | |
 | 6 | Cross-model: `--cross-model claude-haiku-4-5 --n-queries 100` | ~$1.68 | Haiku, not Sonnet 5 — it still accepts `temperature` |
@@ -142,6 +148,7 @@ Everything needed is in the repo — this file plus:
 | `CLAUDE.md` | The seven invariants, budget discipline, known traps, layout |
 | `docs/detectability_arm.md` | **The pending design decision** — read before spending |
 | `docs/flip_partition_findings.md` | Why freshness accuracy is not a result, and what is |
+| `docs/detectability_findings.md` | The detectability arm's null, and why it is the useful answer |
 | `docs/research_questions_v2.md` | Current RQs, hypotheses, stats plan, declared parameters. Supersedes the proposal. |
 | `docs/chapter3_methodology.md` | Methodology as implemented (Chapter 3 draft) |
 | `docs/literature_review.md` | 25+ verified sources; the gap claim as it can actually be defended |

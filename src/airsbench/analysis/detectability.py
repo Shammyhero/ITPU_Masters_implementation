@@ -104,6 +104,30 @@ def mcnemar_exact(b: int, c: int) -> float:
     return min(1.0, 2 * tail)
 
 
+def min_discordant_for_significance(alpha: float = 0.05) -> int:
+    """Fewest one-directional discordant pairs that could reach significance.
+
+    Under McNemar's exact test the p-value depends on the discordant pairs
+    alone, not on how many concordant pairs surround them. So a null result
+    with few discordant pairs is uninformative *by construction*, and this
+    number is what separates "no effect" from "no power" — it must be reported
+    alongside any null this arm produces.
+    """
+    k = 1
+    while mcnemar_exact(k, 0) >= alpha:
+        k += 1
+    return k
+
+
+def rule_of_three(n: int) -> float:
+    """95% upper bound on a rate after observing zero events in n trials.
+
+    The only honest way to report "it never happened": with n=240 and no
+    abstentions, the rate is not 0 — it is below roughly 1.25%.
+    """
+    return 3.0 / n if n else 1.0
+
+
 def pair_runs(runs: list[dict[str, Any]]) -> list[tuple[dict, dict]]:
     """Match each A run to its B partner by (task, replication, fault)."""
     keyed: dict[tuple, dict[bool, dict]] = {}
@@ -240,24 +264,56 @@ def report(runs: list[dict[str, Any]], data_dir: Path) -> int:
     print(f"On flipped queries: abstention {a_beh.abstained:.0%} -> "
           f"{b_beh.abstained:.0%} ({d_abstain:+.0%}), silent failure "
           f"{a_beh.silent:.0%} -> {b_beh.silent:.0%} ({d_silent:+.0%})")
-    print()
 
     over_caution = max(
         (Behaviour.of(r["decisions"]).abstained for r in baselines), default=0.0
     )
+    needed = min_discordant_for_significance()
+    observed = sum(discordant_flip)
+    print()
+
     if p < 0.05 and d_abstain > 0 and over_caution < 0.15:
         print("=> SILENT FAILURE FROM STALENESS IS A PIPELINE DESIGN DEFECT.")
         print("   Shipping record age with the record measurably converts silent")
         print("   failure into abstention. Direct, actionable recommendation.")
-    elif p < 0.05 and d_abstain > 0:
+        return 0
+    if p < 0.05 and d_abstain > 0:
         print("=> Metadata raises abstention, BUT it also raises it on fresh data")
         print(f"   ({over_caution:.0%} at baseline). Calibration problem in how age")
         print("   is presented — the agent distrusts the field, not the staleness.")
-    else:
-        print("=> AGENTS IGNORE FRESHNESS METADATA EVEN WHEN GIVEN IT.")
-        print("   Metadata alone is insufficient; the freshness guard must be")
-        print("   enforced outside the model. Arguably the more important result,")
-        print("   and a warning to anyone about to 'just add a timestamp'.")
+        return 0
+
+    print("=> NO DETECTABLE EFFECT. Delivering the record's age did not change")
+    print("   what the agent did with it.")
+    print()
+    print("   What this rules out, and what it does not:")
+    print(f"     - the flip-conditioned cell has {observed} discordant pair(s); "
+          f"at least {needed}\n       in one direction are needed for significance, so it "
+          "cannot resolve a\n       small effect. The point estimate moves as predicted "
+          "but is not evidence.")
+
+    for task in ("retrieval", "classification"):
+        decisions = [
+            d for pair in pairs for run in pair
+            if run["config"]["task"] == task for d in run["decisions"]
+        ]
+        if decisions and not any(d["abstained"] for d in decisions):
+            bound = rule_of_three(len(decisions))
+            print(f"     - {task}: ZERO abstentions in {len(decisions)} decisions "
+                  f"across both arms.\n       A real abstention rate above "
+                  f"{bound:.1%} is ruled out. This is a strong null:\n       the agent "
+                  "is offered the option, shown the age, and never takes it.")
+
+    if over_caution < 0.05:
+        print(f"     - the metadata is not merely being over-applied: abstention on "
+              f"fresh\n       data stays at {over_caution:.0%}. The agent is not "
+              "reacting to the field at all.")
+    print()
+    print("   Reading: metadata alone is insufficient. An age is not actionable")
+    print("   without a freshness policy — the agent is told the record is 5.05 s")
+    print("   old but never what age is acceptable, and every record in a run")
+    print("   carries the same age, so there is nothing to discriminate against.")
+    print("   The freshness guard has to be enforced outside the model.")
     return 0
 
 

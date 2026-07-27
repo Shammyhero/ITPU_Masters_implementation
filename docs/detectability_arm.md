@@ -1,6 +1,7 @@
 # The detectability arm — manipulating detectability directly
 
-**Status:** ✅ **implemented, tested, dry-run at $0.152. Not yet executed.**
+**Status:** ✅ **executed 2026-07-27. 14 runs, $0.153. Result: the null branch —
+metadata alone changes nothing. Full results in `docs/detectability_findings.md`.**
 
 ```bash
 python -m airsbench.runner.run --detectability --n-queries 80 --dry-run --max-cost 0.50
