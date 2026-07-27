@@ -171,7 +171,7 @@ status can be joined to the logged decisions. No re-running, no API calls.
 
 ## 8. Open decision: AIRS freshness on the 66 completed runs
 
-The double-count described in §4 means the 12 completed freshness runs recorded
+The double-count described in §4 means the 16 completed freshness runs recorded
 an AIRS freshness dimension computed from twice the injected delay:
 
 | condition | recorded age | true age | recorded AIRS | correct AIRS |
@@ -192,7 +192,7 @@ drift and semantic stripping runs are unaffected outright — with no
 `FreshnessInjector` in the chain there was nothing to double-count, and their
 recorded freshness of 100.0 is correct.
 
-**What is affected:** the AIRS freshness dimension on 12 runs, and anything
+**What is affected:** the AIRS freshness dimension on 16 runs, and anything
 downstream of it — RQ4's regression and the AIRS calibration in step 8.
 
 The corrected value is a deterministic function of the config
@@ -202,7 +202,7 @@ options, to decide before step 7:
 1. **Recompute in the analysis layer** — free, keeps run artifacts as immutable
    records of what the instrument actually emitted, and the correction is
    auditable in code. Preferred.
-2. **Re-run the 12 freshness runs** — ~$0.13, gives artifacts that are correct
+2. **Re-run the 16 freshness runs** — ~$0.17, gives artifacts that are correct
    on their face, but replaces data that is behaviourally valid, and the new
    runs would carry different fault realizations from their pairs.
 

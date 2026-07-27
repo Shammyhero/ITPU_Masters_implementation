@@ -17,7 +17,7 @@ the invariants that must not be broken, then this file for what to do next.
 | Runs on disk | **66 / 144** in `results/runs/*.json` |
 | Spent | **$0.70** of ~$7 OpenAI · $0 of ~$4 Anthropic |
 | Tests | 97 passing · lint clean |
-| Open decision | AIRS freshness was double-counted on 12 runs — `detectability_arm.md` §8 |
+| AIRS fix | freshness double-count corrected in code; 16 old runs recomputed in the analysis layer |
 | Analysis | flip partition ✅ — see `docs/flip_partition_findings.md` |
 
 Resumption is exact: `build_grid()` is deterministic and every run writes its

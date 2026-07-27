@@ -338,6 +338,16 @@ severe freshness fault changes the correct answer for 14.7% of queries. No
 agent, however poor, can lose more than that to staleness alone — which bounds
 the effect and guards against over-attributing degradation to freshness.
 
+**Freshness is accounted once.** The loader serves values as of
+`query_time − staleness`, and the record's stamped age must equal that same
+staleness or the AIRS freshness dimension would describe a condition the agent
+was never in. The pipeline archetype's inherent staleness is stamped when the
+record is built; the injector supplies the injected component when it runs.
+Stamping the total in both places double-counts the fault — a defect that
+reached the completed phase-1 runs, where severe freshness recorded an age of
+10.05 s against values that were 5.05 s stale (§3.11). The two components are
+now separated in `build_event_ts` and the identity is pinned by test.
+
 ---
 
 ## 3.7 Experimental design
@@ -401,11 +411,19 @@ of infrastructure properties generalises rather than the absolute thresholds.
 
 ### 3.7.4 Architecture as a secondary contrast
 
-The batch arm carries approximately ten seconds of inherent staleness by
-construction — one catalog update interval — because a batch pipeline serves
-data assembled at its last scheduled load. This is realistic, but it means every
-batch condition combines the injected fault with baseline staleness, confounding
-the other three faults.
+The batch arm carries **three seconds** of inherent staleness by construction,
+because a batch pipeline serves data assembled at its last scheduled load. This
+is realistic, but it means every batch condition combines the injected fault
+with baseline staleness, confounding the other three faults.
+
+The value was calibrated, not assumed. At ten seconds it exactly equalled the
+aviation task's delay-knowledge horizon, so every flight in every batch
+classification run was presented as departing precisely on time: the dominant
+predictive feature was zeroed, the arm scored *below* chance, and severity could
+not move it because the floor had already been reached. At three seconds the
+batch arm remains meaningfully stale — it flips the correct answer on 7.1% of
+retrieval queries before any fault is injected — and still degrades further when
+a freshness fault stacks on top, without flooring either task.
 
 Primary fault effects are therefore reported on the streaming arm. Batch is
 presented as an architecture contrast rather than a co-equal half of the design.
@@ -414,6 +432,50 @@ staleness, which would floor batch accuracy in every condition and mask all
 other effects; the compressed cycle keeps both architectures within measurable
 range, and the limitation is stated: real batch deployments fare *worse* on
 freshness than this study's batch arm.
+
+That 7.1% is itself a finding rather than a nuisance parameter. A pipeline
+nobody would describe as faulty already produces confident wrong answers on a
+few percent of traffic, and the agent abstains on none of them.
+
+### 3.7.5 The detectability arm
+
+The main factorial compares detectability *across* fault types, which confounds
+two things: the kind of corruption, and whether it is legible as corruption.
+Semantic stripping differs from freshness in both respects at once, so a
+difference in abstention between them cannot be attributed to legibility alone.
+
+This arm holds the fault constant and varies only legibility. Every condition is
+streaming, freshness, severe; the sole manipulation is whether the delivered
+record carries a `_record_age_seconds` field:
+
+| Condition | Record delivered | Fault | Detectable |
+|---|---|---|---|
+| A | `{"data": {…}, "context": {…}}` | 5 s stale | no |
+| B | `{"data": {…}, "context": {…}, "_record_age_seconds": 5.05}` | 5 s stale | yes |
+
+14 runs: 12 = 2 metadata levels × 2 tasks × 3 replications, plus one baseline
+per task *with* the metadata. The baselines carry it deliberately — baselines
+without it are already established by the main factorial, so the open question
+is over-caution: shown an age of 0.05 s on fresh data, does the agent begin
+abstaining anyway? Without that cell, a rise in abstention under B could not be
+attributed to staleness rather than to the mere presence of a metadata field.
+
+Three constraints make the manipulation clean. The age is **truthful** — it is
+measured from the delivered record, so it equals the true staleness of the
+values served, and condition B is not confounded with being lied to. It is
+attached **after** the fault chain and stored outside the payload, so it cannot
+move the AIRS consistency or semantic dimensions. And the **prompt is
+unchanged**: it never mentions age, staleness or freshness in either condition.
+Instructing the agent to distrust old records would measure instruction-following
+rather than whether an agent can use infrastructure metadata unprompted. The
+metadata is offered; its use is the agent's decision, and that decision is the
+measurement.
+
+Because A and B share `sample_seed` *and* injector seed, the two arms see
+identical queries at identical simulated times under an identical fault
+realisation. The comparison is therefore paired at the level of the individual
+decision, and is tested with McNemar's exact test on the discordant pairs
+(§3.9).
 
 ---
 
@@ -443,6 +505,48 @@ of truth for results — a scrape gap must not be able to lose experimental data
 
 ---
 
+### 3.8.1 The flip partition
+
+Raw accuracy under a freshness fault is near-arithmetic and must not be reported
+as a result about the agent. Staleness mechanically changes the correct answer
+on a measurable share of queries (§3.6), and an agent reasoning perfectly over
+what it was served must be wrong on exactly those. Reporting "freshness lowers
+accuracy" would therefore be measuring the answer-flip rate with an expensive
+language model.
+
+Every retrieval decision is accordingly partitioned by whether staleness moved
+the correct answer for that query:
+
+- **Answer did not flip.** Accuracy should equal baseline. Any shortfall is the
+  *residual* — degradation not explained by the answer key having moved, and the
+  only part attributable to the agent being impaired.
+- **Answer did flip.** The agent cannot be right. The measurement is whether it
+  abstains or commits confidently. This is where silent failure lives, and it is
+  the reportable finding.
+
+The partition is reconstructed exactly rather than estimated. Query sampling and
+query timestamps derive from `sample_seed` alone (§3.7.1), so replaying that
+seed regenerates the identical queries at the identical simulated times; flip
+status is then joined to the decisions already recorded. The reconstruction is
+validated against every logged ground truth before use and raises on any
+disagreement, so drift between the analysis and the runner surfaces as a failure
+rather than as quietly wrong numbers. It requires no re-execution and no model
+calls.
+
+The partition applies to retrieval only. The aviation label is a property of the
+flight rather than of the catalog, so staleness there attenuates a feature
+rather than moving the correct answer, and there is no flip to condition on.
+
+**Consequence for the fault ranking.** Faults must be ranked on residual
+impairment, not on raw accuracy drop, because the raw drop mixes two
+non-comparable quantities. The two rankings disagree: measured on the raw drop,
+semantic stripping is the most damaging fault, but most of its drop is
+*abstention*, which is the desired behaviour under unusable data. Counting a
+refusal as equal in cost to a confident wrong answer is precisely the conflation
+this thesis argues against.
+
+---
+
 ## 3.9 Statistical analysis
 
 The analysis plan is specified in full in `research_questions_v2.md` §5. In
@@ -452,6 +556,13 @@ thresholds (RQ1); two-way ANOVA with effect sizes for the ranking (RQ2);
 (RQ3); logistic regression for AIRS weight calibration with held-out validation
 and a comparison against an agent-confidence baseline detector (RQ4); and rank
 correlation across tasks and models for generalisation (RQ5).
+
+The detectability arm (§3.7.5) is analysed separately and as a **paired**
+design, since A and B differ by one field over identical inputs. Abstention is
+compared with **McNemar's exact test** on the discordant decision pairs — the
+exact form rather than the chi-square approximation, because the discordant
+counts are small. Treating the arms as independent samples would discard the
+pairing the design was built to obtain.
 
 Binary outcomes are modelled at the decision level rather than as run-level
 proportions, with a run-level random effect absorbing within-run correlation.
@@ -527,6 +638,31 @@ reported on the streaming arm.
 
 **Single hardware environment.** All runs execute in equivalent containerised
 environments; generalisation to other hardware classes is not investigated.
+
+**A corrected instrument defect, disclosed.** The freshness accounting
+double-counted the injected delay during phase 1 and the first 30 runs of phase
+2 (§3.6): the record's age was stamped with the total staleness before the
+injector then subtracted the injected component a second time. Sixteen runs —
+the freshness conditions among the first 66 — recorded an AIRS freshness
+dimension computed from twice the injected delay.
+
+The scope of the error is bounded and verifiable. Records carry no timestamp
+unless the detectability arm attaches one, so no agent in any affected run was
+shown an age, and the served values were stale by the intended amount
+throughout. Every behavioural measure — accuracy, abstention, silent failure,
+confidence, and each logged decision — is therefore unaffected, as is the flip
+partition, which derives from the loader's staleness rather than the stamp. The
+50 runs without a freshness injector are unaffected outright, which the
+artifacts corroborate: they recorded exactly the values the corrected code
+produces.
+
+What is affected is the AIRS freshness dimension on those sixteen runs, and
+anything downstream of it. The corrected value is a deterministic function of
+the run configuration, so it is recomputed in the analysis layer rather than by
+re-executing the runs; the run artifacts are retained unmodified as records of
+what the instrument actually emitted, and the correction is applied in code
+where it is auditable. The identity `stamped age = served staleness` is now
+pinned by test in every condition, end to end.
 
 **Public benchmark datasets.** Both datasets reflect their original collection
 contexts. Generalisation to proprietary enterprise data is a matter for
