@@ -68,11 +68,18 @@ notebooks/               statistical analysis (Week 6)
 
 ## Roadmap (4-week compressed schedule)
 
-- [x] W1: scaffold — injectors + tests, compose env, grid, schema, AIST v0
-- [ ] W1: datasets prepared; environment verified end-to-end
-- [ ] W2: agent harness + scoring; baselines; **pilot (30 runs) → go/no-go**
-- [ ] W3: main campaign (~144 runs); statistical analysis; AIRS calibration
-- [ ] W4: AIST full demo; open-source release (HuggingFace + Zenodo); thesis chapters
+- [x] Scaffold — injectors + tests, compose env, grid, schema, AIST v0
+- [x] Datasets prepared (ESCI e-commerce, BTS airline); environment verified
+- [x] Agent harness + scoring; abstention instrumentation
+- [x] Literature review (25+ verified sources); gap restated defensibly
+- [x] Framing surgery — RQs v2, detectability reframe; Chapter 3 drafted
+- [x] **Phase 1 = GO** (36/36 runs, all conditions, $0.371)
+- [ ] Detectability arm (`docs/detectability_arm.md`) — pending design decision
+- [ ] Phase 2 — paused at 66/144 pending the above
+- [ ] Freshness sweep · cross-model arms · AIRS calibration
+- [ ] `airs probe` · AIST demo rebuild · release · remaining chapters
+
+**Current state and next steps: [`docs/campaign_status.md`](docs/campaign_status.md)**
 
 License: MIT
 

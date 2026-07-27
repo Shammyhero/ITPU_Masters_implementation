@@ -1,133 +1,148 @@
 # Campaign status & session handoff
 
-**Updated:** 2026-07-27 · phase 2 PAUSED at 66/144 by decision — see
-`docs/detectability_arm.md` before resuming
+**Updated:** 2026-07-27 · **phase 2 deliberately paused at 66/144**
 
-This is the operational entry point. Read `CLAUDE.md` for the invariants that
-must not be broken, then this file for what to do next.
+This is the operational entry point for any session. Read `CLAUDE.md` first for
+the invariants that must not be broken, then this file for what to do next.
 
 ---
 
-## Where things stand
+## State
 
 | | |
 |---|---|
 | Design | Paired, replication-major, 144 runs @ 80 queries |
-| **Phase 1** | ✅ complete — **GO** (36/36, all checks passed) |
-| **Phase 2** | ⏸ paused at **30 / 108** — resume with `--offset 66 --limit 78` |
-| Spent | ~$0.70 of ~$7 OpenAI · $0 of ~$4 Anthropic |
-| Results | `results/runs/*.json` — one file per run, written on completion |
-| Tests | 70 passing |
+| Phase 1 | ✅ **complete — GO** (36/36, all four checks passed) |
+| Phase 2 | ⏸ **paused at 30/108** by decision, not by failure |
+| Runs on disk | **66 / 144** in `results/runs/*.json` |
+| Spent | **$0.70** of ~$7 OpenAI · $0 of ~$4 Anthropic |
+| Tests | 70 passing · lint clean |
+| Last commit | `d99c223` |
 
-**Resume / continue phase 1** (offset = number of completed runs):
+Resumption is exact: `build_grid()` is deterministic and every run writes its
+JSON on completion. Interrupting mid-run loses only that run (~$0.01).
 
 ```bash
-ls results/runs/*.json | wc -l          # → N
-python -m airsbench.runner.run --main --n-queries 80 --offset N --limit $((36-N)) --max-cost 1.00
+ls results/runs/*.json | wc -l    # → N, the offset to resume from
 ```
-
-Resumption is exact: `build_grid()` is deterministic and each run writes its
-JSON on completion. Interrupting mid-run loses only that run's partial spend.
 
 ---
 
-## Why phase 2 is paused
+## ⚠️ Read before resuming: why phase 2 is paused
 
-A question during phase 2 — *why should the agent doubt the price?* — exposed
-that the rendered record carries **no timestamp**. The agent was never given
-anything by which staleness could be detected, so "it failed to notice" was the
-wrong reading; "the pipeline delivered nothing to notice" is the right one.
+A question mid-campaign — *"why should the agent doubt the price?"* — exposed
+that the rendered record carries **no timestamp, no age, nothing about when the
+value was true**. The agent was never given anything by which staleness could be
+detected.
 
-That reframes H3 from an observation into a testable causal claim, and it is
-cheaper to get the framing right before the remaining 78 runs than after.
-**Read `docs/detectability_arm.md` before resuming.**
+So the phase-1 reading was wrong in an important way:
 
-Order of work: (1) flip-partition analysis — free, retroactive; (2) detectability
-arm — ~$0.15, 14 runs; (3) finish phase 2 — ~$0.85.
+- ❌ "The agent failed to notice the data was stale" — blames the agent
+- ✅ **"The pipeline delivered nothing to notice"** — blames the infrastructure
 
-## Superseded: immediate next step
-
-When phase 1 reaches 36 runs:
-
-```bash
-python -m airsbench.analysis.phase1_check
-```
-
-Four automated checks — coverage, floors, coherence, effects — ending in an
-explicit **GO** or **NO-GO**. This checkpoint has already returned NO-GO twice
-and caught two design defects that would have made the campaign
-uninterpretable (see `results/discarded/README.md`). Do not skip it.
+The second is an infrastructure finding with an actionable remedy, and it turns
+H3 from an interpretation into a testable causal claim. **Read
+`docs/detectability_arm.md` before spending anything further.** Framing is far
+cheaper to fix before the remaining 78 runs than after.
 
 ---
 
-## Roadmap after GO
+## Next steps, in order
 
-| # | Step | Command / note | Cost |
+| # | Step | Cost | Why this order |
 |---|---|---|---|
-| 1 | Phase 2 — remaining 108 runs | `--main --n-queries 80 --offset 36 --max-cost 2.00` | ~$1.17 |
-| 2 | Freshness sweep (RQ1 monotonicity) | `--freshness-sweep --n-queries 60 --replications 3` | ~$0.29 |
-| 3 | Cross-model: open weights | local via Ollama | $0 |
-| 4 | Cross-model: different provider | `--cross-model claude-haiku-4-5 --n-queries 100` | ~$1.68 |
-| 5 | Statistical analysis | notebook: RQ1–RQ5 per `research_questions_v2.md` §5 | $0 |
-| 6 | AIRS calibration | logistic regression → weights; validate on held-out 20%; **compare against agent-confidence baseline** (data already logged) | $0 |
-| 7 | `airs probe` | standalone: score an arbitrary pipeline. The artifact that makes "pre-deployment" concrete — a stated success criterion | $0 |
-| 8 | AIST demo rebuild | around **detectability**: fresh vs stale side-by-side, same agent, same question, higher confidence on the wrong answer; AIRS red before accuracy moves | $0 |
-| 9 | `airs lint` *(stretch)* | static semantic-completeness scoring for schemas/data contracts — reuses `semantic_completeness()`; first thing to cut if time is short | $0 |
-| 10 | Release + chapters | HuggingFace + Zenodo DOI; Results, Discussion, Conclusion | $0 |
+| 1 | **Flip-partition analysis** — split freshness queries by whether the correct answer actually changed | **$0** | Retroactive over the 66 completed runs. Determines whether freshness can be reported as accuracy at all (see §"Known weakness"). |
+| 2 | **Detectability arm** — 14 runs, freshness severe ± `_record_age_seconds` | ~$0.15 | Best scientific value per dollar in the study. Design in `docs/detectability_arm.md`. |
+| 3 | **Finish phase 2** — `--main --n-queries 80 --offset 66 --limit 78 --max-cost 2.00` | ~$0.85 | Gives the ranking and thresholds regardless of how (1) and (2) land. |
+| 4 | Freshness sweep — `--freshness-sweep --n-queries 60 --replications 3` | ~$0.29 | RQ1 monotonicity (Shisher & Sun) |
+| 5 | Cross-model: local open weights via Ollama | $0 | |
+| 6 | Cross-model: `--cross-model claude-haiku-4-5 --n-queries 100` | ~$1.68 | Haiku, not Sonnet 5 — it still accepts `temperature` |
+| 7 | Statistical analysis | $0 | Per `research_questions_v2.md` §5 — decision-level mixed-effects logistic, not ANOVA on run means |
+| 8 | AIRS calibration | $0 | Target **silent failure**; benchmark against agent self-confidence (already logged) |
+| 9 | `airs probe` | $0 | Standalone pipeline scorer — makes "pre-deployment" concrete |
+| 10 | AIST demo rebuild | $0 | Around detectability: same stale record with/without its age, side by side |
+| 11 | `airs lint` *(stretch)* | $0 | Static semantic-completeness for schemas; first to cut if time is short |
+| 12 | Release + chapters | $0 | HuggingFace, Zenodo DOI, Results/Discussion/Conclusion |
 
-**Writing runs in parallel throughout.** Chapter 3 is drafted
-(`docs/chapter3_methodology.md`). Chapters 1 and 2 follow from
+**Writing runs throughout.** Chapter 3 is drafted. Chapters 1–2 follow from
 `literature_review.md` §7 and `research_questions_v2.md` §8. The project's own
 risk register rates late writing High/High — it is the likeliest failure mode.
 
 ---
 
-## Findings so far (phase 1, partial, n=80/run, one replication)
+## Phase 1 results (final — 36 runs, all conditions, $0.371)
 
-Indicative only — Wilson 95% half-width at n=80 is ±0.10, so single-run
-differences under ~10 points mean nothing on their own. The primary analysis
-pools to the decision level (~11,500 observations).
+Verdict: **GO.** No floored arm, no incoherent comparison, 3 of 4 faults degrade
+accuracy at severe. Re-runnable any time with
+`python -m airsbench.analysis.phase1_check`.
 
-| streaming / retrieval | accuracy | silent failure | abstention |
-|---|---|---|---|
-| baseline | 0.861 | 13% | 0% |
-| freshness mild | 0.810 | 18% | ~1% |
-| freshness severe | 0.785 | 20% | ~1% |
-| latency mild | 0.861 | 13% | 0% |
-| latency severe | 0.873 | 11% | 0% |
+| fault (severe) | accuracy | Δ vs baseline | abstained | silent failure |
+|---|---|---|---|---|
+| baseline | 0.877 | — | 0% | 12% |
+| latency | 0.877 | **0.000** | 0% | 12% |
+| freshness | 0.748 | −0.129 | 1% | **25%** |
+| schema drift | 0.748 | −0.129 | 1% | **24%** |
+| semantic stripping | **0.648** | **−0.230** | **23%** | 17% |
 
-| batch / retrieval | accuracy | silent failure |
-|---|---|---|
-| baseline | 0.810 | 19% |
-| schema drift severe | 0.684 | 32% |
+Baselines by arm: streaming/classification 0.938 · batch/classification 0.900 ·
+streaming/retrieval 0.861 · batch/retrieval 0.810.
 
-Three things worth carrying forward:
+**Four things to carry forward:**
 
-1. **Freshness degrades monotonically; latency does not move.** Both are
-   "infrastructure problems," but only one corrupts what the agent knows.
-2. **Freshness drives silent failure with zero abstention** — the agent never
-   signals that anything is wrong, which is H3's prediction for an invisible
-   fault.
-3. **Streaming baseline (0.861) > batch baseline (0.810)** — the architecture
-   contrast, in the expected direction, now that batch is no longer floored.
-
-Semantic stripping under streaming — the sharpest test of H3 — is in the runs
-not yet complete.
+1. **Latency measured exactly 0.000 effect at both severities.** Correct for a
+   synchronous agent with no deadline — it waits and reads identical data. A
+   finding to frame, not a bug.
+2. **Semantic stripping does the most damage *and* is the only fault the agent
+   detects** — abstention 0% → 23%. It refuses rather than guessing.
+3. **Freshness does less damage but produces more silent failure** (25% vs 17%)
+   at ~1% abstention. The agent never signals a problem.
+4. **Schema drift was predicted "visible" but behaves invisible** (1% abstention,
+   24% silent). A renamed field still looks like a legitimate field. So the
+   operative property is not visible/invisible but **whether the corruption is
+   legible *as* corruption** — a sharper claim than H3 as originally written.
 
 ---
 
-## Context for a fresh session
+## Known weakness: freshness accuracy is near-arithmetic
 
-Everything needed to continue is in the repo:
+At severe staleness ~16% of queries have a *different* correct answer — measured
+offline with no model calls (`airsbench.dataprep.check_sensitivity`). The
+observed 12.9-point drop is slightly **below** that mechanical ceiling, meaning
+the agent reasoned correctly given what it was shown.
 
-- `CLAUDE.md` — invariants, budget discipline, known traps, layout
-- `docs/research_questions_v2.md` — RQs, hypotheses, stats plan, declared parameters
-- `docs/chapter3_methodology.md` — methodology as implemented
-- `docs/literature_review.md` — verified sources, defensible gap statement
-- `docs/related_work_positioning.md` — differentiation vs the four nearest papers, plus rehearsed defence Q&A
-- `results/discarded/README.md` — the defects the checkpoint caught, and why those runs are invalid
-- `git log` — commit messages record the reasoning behind each design change
+Reporting "freshness lowers accuracy" as a headline is therefore measuring the
+answer-flip rate with an expensive language model. The analysis must partition:
 
-The two things a new session is most likely to get wrong: **spending money
-without a dry-run first**, and **breaking the paired design** by deriving query
-sampling from the condition seed. Both are covered in `CLAUDE.md`.
+- **Answer did not flip (~84%)** — accuracy should match baseline. If not,
+  staleness is doing something beyond changing the right answer.
+- **Answer did flip (~16%)** — the agent cannot be right. **Does it abstain or
+  commit confidently?** *This cell is the actual finding.*
+
+Free and retroactive: sampling is deterministic, so replaying each run's
+`sample_seed` regenerates the exact queries and timestamps. This is step 1 above.
+
+---
+
+## For a fresh session
+
+Everything needed is in the repo — this file plus:
+
+| File | What it carries |
+|---|---|
+| `CLAUDE.md` | The seven invariants, budget discipline, known traps, layout |
+| `docs/detectability_arm.md` | **The pending design decision** — read before spending |
+| `docs/research_questions_v2.md` | Current RQs, hypotheses, stats plan, declared parameters. Supersedes the proposal. |
+| `docs/chapter3_methodology.md` | Methodology as implemented (Chapter 3 draft) |
+| `docs/literature_review.md` | 25+ verified sources; the gap claim as it can actually be defended |
+| `docs/related_work_positioning.md` | Differentiation vs the four nearest papers + rehearsed defence Q&A |
+| `results/discarded/README.md` | The two defects the checkpoint caught, and why those runs are invalid |
+| `git log` | Reasoning behind every design change |
+
+**The three things a new session is most likely to get wrong:**
+
+1. Spending money without a `--dry-run` first.
+2. Breaking the paired design by deriving query sampling from the condition seed.
+3. Treating the go/no-go checkpoint as a formality — it has already returned
+   NO-GO twice and caught two campaign-invalidating defects.
+
+**To resume, say:** *"continue the AIRS thesis — read docs/campaign_status.md"*
