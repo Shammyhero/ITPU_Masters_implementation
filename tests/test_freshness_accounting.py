@@ -19,15 +19,21 @@ AIRS freshness values from before it do not.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from agentic_faults import Record
+from airsbench.agents.llm import LLMUsage
+from airsbench.agents.prompts import RECORD_AGE_FIELD
 from airsbench.airs import freshness_score
 from airsbench.runner.config import SEVERITY_PARAMS, RunConfig
 from airsbench.runner.execute import (
     build_event_ts,
     build_fault_chain,
     inherent_staleness_s,
+    run_classification,
+    run_retrieval,
     value_staleness_s,
 )
 
@@ -95,3 +101,99 @@ def test_baseline_staleness_is_purely_inherent():
         assert _delivered_age(config) == pytest.approx(
             inherent_staleness_s(config), abs=1e-6
         )
+
+
+# ---- end to end, through the real runner -----------------------------------
+#
+# The unit tests above exercise build_event_ts and the chain in isolation. The
+# quantity that actually lands in the run artifact is computed further down, in
+# _airs_components, from ages collected per query inside the run loops. Driving
+# the real loops with a stub client checks the whole path for free.
+
+DATA_ROOTS = {"retrieval": Path("data/ecommerce"), "classification": Path("data/airline")}
+
+needs_data = pytest.mark.skipif(
+    not all((root / f).exists()
+            for task, root in DATA_ROOTS.items()
+            for f in (["updates.jsonl"] if task == "retrieval" else ["flights.parquet"])),
+    reason="prepared datasets not present",
+)
+
+
+class _StubClient:
+    """Answers without an API call, and remembers what it was shown."""
+
+    def __init__(self) -> None:
+        self.usage = LLMUsage()
+        self.seen: list[str] = []
+
+    def call_json(self, messages):
+        self.seen.append(dict(messages)["user"])
+        self.usage.add(10, 5, 1.0)
+        return {"product_id": "X", "price": 1.0, "confidence": 0.5,
+                "abstain": False, "delayed": False}
+
+
+def _run_offline(config: RunConfig):
+    runner = run_retrieval if config.task == "retrieval" else run_classification
+    client = _StubClient()
+    _, airs, _ = runner(config, DATA_ROOTS[config.task], client)
+    return airs, client
+
+
+@needs_data
+@pytest.mark.parametrize("task", ["retrieval", "classification"])
+@pytest.mark.parametrize("pipeline", ["streaming", "batch"])
+@pytest.mark.parametrize(
+    "fault,severity",
+    [("none", "none"), ("freshness", "mild"), ("freshness", "severe"),
+     ("schema_drift", "severe"), ("semantic_stripping", "severe")],
+)
+def test_recorded_airs_freshness_equals_the_true_value_staleness(
+    task, pipeline, fault, severity
+):
+    config = _config(pipeline, fault, severity)
+    config.task, config.n_queries = task, 6
+    airs, _ = _run_offline(config)
+    expected = freshness_score(value_staleness_s(config))
+    assert airs["freshness"] == pytest.approx(expected, abs=0.05)
+
+
+@needs_data
+def test_the_regression_would_be_caught_end_to_end():
+    """The artifact value itself: 19.80, not the 9.95 that was recorded."""
+    config = _config("streaming", "freshness", "severe")
+    config.n_queries = 6
+    airs, _ = _run_offline(config)
+    assert airs["freshness"] == pytest.approx(19.80, abs=0.05)
+
+
+@needs_data
+@pytest.mark.parametrize("task", ["retrieval", "classification"])
+def test_delivering_record_age_does_not_change_the_airs_freshness_score(task):
+    """The detectability treatment must not perturb the measurement."""
+    scores = {}
+    for emit in (False, True):
+        config = _config("streaming", "freshness", "severe")
+        config.task, config.n_queries, config.emit_record_age = task, 6, emit
+        airs, client = _run_offline(config)
+        scores[emit] = airs["freshness"]
+        shown = any(RECORD_AGE_FIELD in message for message in client.seen)
+        assert shown is emit, f"age field {'missing' if emit else 'leaked'}"
+    assert scores[False] == pytest.approx(scores[True], abs=0.05)
+
+
+@needs_data
+def test_the_age_shown_to_the_agent_is_the_true_staleness():
+    """Condition B must not overstate the age — that would be a different arm."""
+    config = _config("streaming", "freshness", "severe")
+    config.n_queries, config.emit_record_age = 6, True
+    _, client = _run_offline(config)
+    shown = {
+        round(float(line.split(":")[1].strip().rstrip(",")), 2)
+        for message in client.seen
+        for line in message.splitlines()
+        if RECORD_AGE_FIELD in line
+    }
+    assert len(shown) == 1, f"age must be constant within a run, saw {shown}"
+    assert shown.pop() == pytest.approx(value_staleness_s(config), abs=0.01)
