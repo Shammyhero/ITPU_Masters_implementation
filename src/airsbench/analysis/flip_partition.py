@@ -47,7 +47,7 @@ from typing import Any
 
 from ..agents.retrieval import RetrievalAgent
 from ..pipelines.loader import CatalogTimeMachine
-from ..runner.config import RunConfig
+from ..runner.config import RunConfig, run_arm
 from ..runner.execute import N_CANDIDATES, value_staleness_s
 
 
@@ -218,12 +218,24 @@ class Replayer:
         return outcomes
 
 
-def load_retrieval_runs(results_dir: Path) -> list[dict[str, Any]]:
+def load_retrieval_runs(
+    results_dir: Path, include_other_arms: bool = False
+) -> list[dict[str, Any]]:
+    """Retrieval runs from the main factorial.
+
+    Other arms are excluded by default. The detectability arm contains
+    streaming/freshness/severe retrieval runs too, half of them delivering
+    record age — pooling those into the main factorial's freshness cell would
+    quietly mix a different treatment into the headline table.
+    """
     runs = []
     for path in sorted(results_dir.glob("*.json")):
         data = json.loads(path.read_text())
-        if data["config"]["task"] == "retrieval":
-            runs.append(data)
+        if data["config"]["task"] != "retrieval":
+            continue
+        if not include_other_arms and run_arm(data) != "main":
+            continue
+        runs.append(data)
     return runs
 
 

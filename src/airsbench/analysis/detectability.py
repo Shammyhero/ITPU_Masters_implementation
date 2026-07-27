@@ -35,19 +35,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ..runner.config import DETECTABILITY_SEED_RANGE, run_arm
 from .flip_partition import Replayer
 from .phase1_check import wilson_halfwidth
 
-# The arm's seed block (runner/config.build_detectability_arm). Runs are
-# identified by it rather than by condition, because the main factorial also
-# contains streaming/freshness/severe runs without the metadata — those are a
-# different replication of a different arm and must not be pooled in.
-ARM_SEED_RANGE = (60_000, 70_000)
+# Runs are identified by their seed block rather than by condition, because the
+# main factorial also contains streaming/freshness/severe runs without the
+# metadata — those belong to a different arm and must not be pooled in.
+ARM_SEED_RANGE = DETECTABILITY_SEED_RANGE
 
 
 def in_arm(run: dict[str, Any]) -> bool:
-    low, high = ARM_SEED_RANGE
-    return low <= run["config"].get("seed", 0) < high
+    return run_arm(run) == "detectability"
 
 
 def load_arm(results_dir: Path) -> list[dict[str, Any]]:

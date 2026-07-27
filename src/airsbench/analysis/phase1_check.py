@@ -27,6 +27,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+from ..runner.config import run_arm
+
 # A faulted condition scoring this far ABOVE its own baseline is not
 # noise — it indicates the comparison is not controlled.
 COHERENCE_TOLERANCE = 0.10
@@ -35,10 +37,17 @@ CHANCE = {"classification": 0.50, "retrieval": 1.0 / 6.0}
 FLOOR_MARGIN = 0.08
 
 
-def load_runs(results_dir: Path) -> list[dict[str, Any]]:
+def load_runs(
+    results_dir: Path, include_other_arms: bool = False
+) -> list[dict[str, Any]]:
+    """Main-factorial runs. Other arms are excluded by default — the
+    detectability arm and the freshness sweep contain conditions that also
+    appear here, and pooling them would distort the checkpoint's own numbers."""
     runs = []
     for path in sorted(results_dir.glob("*.json")):
         data = json.loads(path.read_text())
+        if not include_other_arms and run_arm(data) != "main":
+            continue
         cfg, met = data["config"], data["metrics"]
         runs.append(
             {

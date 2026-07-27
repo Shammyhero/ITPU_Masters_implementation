@@ -48,6 +48,40 @@ SEVERITY_PARAMS: dict[str, dict[str, dict[str, Any]]] = {
 # batch arm's inherent staleness.
 FRESHNESS_SWEEP_SECONDS = (0.5, 1.5, 3.0, 5.0, 8.0, 12.0)
 
+# Seed blocks. Each arm draws its seeds from its own range, so a completed run
+# can be attributed to the arm that produced it from the artifact alone. This
+# matters because arms overlap in condition: the detectability arm and the main
+# factorial both contain streaming/freshness/severe runs, and an analysis that
+# selected on condition rather than provenance would silently pool them.
+#
+# Keep these in step with the seed expressions in the builders below; the
+# correspondence is asserted in tests/test_seed_blocks.py.
+MAIN_SEED_RANGE = (0, 50_000)
+SWEEP_SEED_RANGE = (50_000, 60_000)
+DETECTABILITY_SEED_RANGE = (60_000, 70_000)
+CROSS_MODEL_SEED_RANGE = (70_000, 80_000)
+
+SEED_BLOCKS = {
+    "main": MAIN_SEED_RANGE,
+    "freshness_sweep": SWEEP_SEED_RANGE,
+    "detectability": DETECTABILITY_SEED_RANGE,
+    "cross_model": CROSS_MODEL_SEED_RANGE,
+}
+
+
+def arm_of(seed: int) -> str:
+    """Which arm a seed belongs to; 'unknown' if it falls outside every block."""
+    for name, (low, high) in SEED_BLOCKS.items():
+        if low <= seed < high:
+            return name
+    return "unknown"
+
+
+def run_arm(run: dict) -> str:
+    """Arm of a loaded run artifact."""
+    return arm_of(run["config"].get("seed", 0))
+
+
 DEFAULT_MODEL = "gpt-4o-mini"
 # Methodological commitment (research plan §6.3): temperature fixed per
 # task family, seeds documented, model constant across all conditions.
