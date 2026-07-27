@@ -16,8 +16,8 @@ the invariants that must not be broken, then this file for what to do next.
 | Phase 2 | ⏸ **paused at 30/108** by decision, not by failure |
 | Runs on disk | **66 / 144** in `results/runs/*.json` |
 | Spent | **$0.70** of ~$7 OpenAI · $0 of ~$4 Anthropic |
-| Tests | 70 passing · lint clean |
-| Last commit | `d99c223` |
+| Tests | 77 passing · lint clean |
+| Analysis | flip partition ✅ — see `docs/flip_partition_findings.md` |
 
 Resumption is exact: `build_grid()` is deterministic and every run writes its
 JSON on completion. Interrupting mid-run loses only that run (~$0.01).
@@ -51,8 +51,8 @@ cheaper to fix before the remaining 78 runs than after.
 
 | # | Step | Cost | Why this order |
 |---|---|---|---|
-| 1 | **Flip-partition analysis** — split freshness queries by whether the correct answer actually changed | **$0** | Retroactive over the 66 completed runs. Determines whether freshness can be reported as accuracy at all (see §"Known weakness"). |
-| 2 | **Detectability arm** — 14 runs, freshness severe ± `_record_age_seconds` | ~$0.15 | Best scientific value per dollar in the study. Design in `docs/detectability_arm.md`. |
+| ~~1~~ | ~~**Flip-partition analysis**~~ | $0 | ✅ **done** — `docs/flip_partition_findings.md`. Changed how freshness *and* RQ2 must be reported. |
+| 2 | **Detectability arm** — 14 runs, freshness severe ± `_record_age_seconds` | ~$0.15 | Best scientific value per dollar in the study. Design in `docs/detectability_arm.md`. Now has a pre-registered baseline to move: 5% abstention, 89% silent failure. |
 | 3 | **Finish phase 2** — `--main --n-queries 80 --offset 66 --limit 78 --max-cost 2.00` | ~$0.85 | Gives the ranking and thresholds regardless of how (1) and (2) land. |
 | 4 | Freshness sweep — `--freshness-sweep --n-queries 60 --replications 3` | ~$0.29 | RQ1 monotonicity (Shisher & Sun) |
 | 5 | Cross-model: local open weights via Ollama | $0 | |
@@ -103,23 +103,32 @@ streaming/retrieval 0.861 · batch/retrieval 0.810.
 
 ---
 
-## Known weakness: freshness accuracy is near-arithmetic
+## Resolved: freshness accuracy was near-arithmetic — it is, entirely
 
-At severe staleness ~16% of queries have a *different* correct answer — measured
-offline with no model calls (`airsbench.dataprep.check_sensitivity`). The
-observed 12.9-point drop is slightly **below** that mechanical ceiling, meaning
-the agent reasoned correctly given what it was shown.
+**Settled by the flip-partition analysis. Full write-up in
+`docs/flip_partition_findings.md`; re-runnable free with
+`python -m airsbench.analysis.flip_partition`.**
 
-Reporting "freshness lowers accuracy" as a headline is therefore measuring the
-answer-flip rate with an expensive language model. The analysis must partition:
+On queries whose correct answer did *not* move, accuracy is baseline 0.860 vs
+freshness/severe **0.868** — zero residual. Freshness costs accuracy exactly and
+only where it moved the answer key, and does not impair the agent's reasoning at
+all. The 12.9-point drop must never be reported as a result about the agent.
 
-- **Answer did not flip (~84%)** — accuracy should match baseline. If not,
-  staleness is doing something beyond changing the right answer.
-- **Answer did flip (~16%)** — the agent cannot be right. **Does it abstain or
-  commit confidently?** *This cell is the actual finding.*
+The finding is the other cell. On the 63 queries staleness made unanswerable:
 
-Free and retroactive: sampling is deterministic, so replaying each run's
-`sample_seed` regenerates the exact queries and timestamps. This is step 1 above.
+| abstained | silent failure | chose the answer the served data implied | confidence when wrong |
+|---|---|---|---|
+| **5%** | **89%** | **71%** | **1.00** |
+
+The agent is not making mistakes — it is reasoning correctly over corrupt input
+and reporting the result at maximal confidence. Two further consequences:
+
+- **The RQ2 damage ranking changes.** On residual (non-mechanical) impairment:
+  schema drift −0.159 > semantic stripping −0.093 > freshness +0.008 ≈ latency 0.
+  Semantic stripping is *not* the most damaging fault — most of its raw drop is
+  abstention, which is the safe behaviour. Schema drift is.
+- **The batch baseline is not clean.** With no fault injected, its inherent 3 s
+  staleness flips 7.1% of answers and silently fails on **100%** of them.
 
 ---
 
@@ -131,6 +140,7 @@ Everything needed is in the repo — this file plus:
 |---|---|
 | `CLAUDE.md` | The seven invariants, budget discipline, known traps, layout |
 | `docs/detectability_arm.md` | **The pending design decision** — read before spending |
+| `docs/flip_partition_findings.md` | Why freshness accuracy is not a result, and what is |
 | `docs/research_questions_v2.md` | Current RQs, hypotheses, stats plan, declared parameters. Supersedes the proposal. |
 | `docs/chapter3_methodology.md` | Methodology as implemented (Chapter 3 draft) |
 | `docs/literature_review.md` | 25+ verified sources; the gap claim as it can actually be defended |
