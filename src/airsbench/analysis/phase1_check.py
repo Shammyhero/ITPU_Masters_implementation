@@ -214,9 +214,15 @@ def report(runs: list[dict[str, Any]]) -> int:
         return 1
     print(f"VERDICT: GO — {len(degraded)} of 4 faults degrade accuracy at severe "
           f"({', '.join(degraded)}).")
-    print("  No floored arm, no incoherent comparison. Proceed to phase 2:")
-    print("    python -m airsbench.runner.run --main --n-queries 80 --offset 36 "
-          "--max-cost 2.00")
+    print("  No floored arm, no incoherent comparison.")
+    if len(runs) >= 144:
+        print("\n  The main factorial is complete. This checkpoint has served its")
+        print("  purpose; the accuracy column above is NOT the headline result —")
+        print("  freshness's drop is mechanical. Read it through the partition:")
+        print("    python -m airsbench.analysis.flip_partition")
+    else:
+        print("  Resume the campaign — campaign_state prints the exact command:")
+        print("    python -m airsbench.analysis.campaign_state")
     return 0
 
 

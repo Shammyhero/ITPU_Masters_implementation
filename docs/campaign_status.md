@@ -1,6 +1,6 @@
 # Campaign status & session handoff
 
-**Updated:** 2026-07-27 · **phase 2 deliberately paused at 66/144**
+**Updated:** 2026-07-28 · **main factorial COMPLETE — 144/144**
 
 This is the operational entry point for any session. Read `CLAUDE.md` first for
 the invariants that must not be broken, then this file for what to do next.
@@ -13,12 +13,12 @@ the invariants that must not be broken, then this file for what to do next.
 |---|---|
 | Design | Paired, replication-major, 144 runs @ 80 queries |
 | Phase 1 | ✅ **complete — GO** (36/36, all four checks passed) |
-| Phase 2 | ⏸ **paused at 30/108** by decision, not by failure |
-| Runs on disk | **66 / 144** main factorial + **14** detectability arm |
-| Spent | **$0.85** of ~$7 OpenAI · $0 of ~$4 Anthropic |
-| Tests | 164 passing · lint clean |
+| Phase 2 | ✅ **complete** — 78/78, zero failures |
+| Runs on disk | **144 / 144** main factorial + **14** detectability arm |
+| Spent | **$1.62** of ~$7 OpenAI · $0 of ~$4 Anthropic |
+| Tests | 172 passing · lint clean |
 | AIRS fix | freshness double-count corrected in code; 16 old runs recomputed in the analysis layer |
-| Analysis | flip partition ✅ — see `docs/flip_partition_findings.md` |
+| Analysis | flip partition ✅ at full replication · detectability arm ✅ |
 
 Resumption is exact: `build_grid()` is deterministic and every run writes its
 JSON on completion. Interrupting mid-run loses only that run (~$0.01).
@@ -36,7 +36,7 @@ command if completed runs are not a contiguous prefix.
 
 ---
 
-## Why phase 2 was paused — resolved, resume when ready
+## Why phase 2 was paused — resolved, and phase 2 has since completed
 
 A question mid-campaign — *"why should the agent doubt the price?"* — exposed
 that the rendered record carried **no timestamp, no age, nothing about when the
@@ -44,20 +44,20 @@ value was true**. The agent was never given anything by which staleness could be
 detected, so the phase-1 reading blamed the agent for missing what the pipeline
 never delivered.
 
-Both follow-ups are now done, and **the framing question the pause existed to
-settle is settled**, so phase 2 can resume as-is:
+Both follow-ups ran before the remaining 78 runs, which was the point of pausing
+— framing is cheaper to fix before the data than after:
 
 - The **flip partition** showed freshness does not impair the agent at all — it
-  only moves the answer key. The finding is the 89% silent-failure rate on the
+  only moves the answer key. The finding is the 90% silent-failure rate on the
   queries it makes unanswerable.
 - The **detectability arm** delivered the record's age and **nothing changed**.
-  So the reframing holds, but its remedy does not: the pipeline delivering
+  The reframing holds, but its obvious remedy does not: the pipeline delivering
   nothing to notice is the problem, and delivering the number alone is not the
-  fix.
+  fix. Ship the age *and* the staleness budget, and enforce the budget outside
+  the model.
 
-Net effect on the remaining 78 runs: **none required.** The main factorial's
-conditions are unchanged and its results are interpreted through the flip
-partition rather than re-run.
+Net effect on the conditions: **none.** Phase 2 ran the design unchanged; what
+changed is how its results are read.
 
 ---
 
@@ -67,8 +67,8 @@ partition rather than re-run.
 |---|---|---|---|
 | ~~1~~ | ~~**Flip-partition analysis**~~ | $0 | ✅ **done** — `docs/flip_partition_findings.md`. Changed how freshness *and* RQ2 must be reported. |
 | ~~2~~ | ~~**Detectability arm**~~ | $0.153 | ✅ **done — null branch.** Metadata alone changes nothing. `docs/detectability_findings.md`. |
-| **3** | **Finish phase 2** — `--main --n-queries 80 --offset 66 --limit 78 --max-cost 2.00` | ~$0.85 | **← resume here.** Gives the ranking and thresholds regardless of how (1) and (2) landed. Note `--offset 66` still selects correctly: the arm's runs are in their own seed block and are not part of `build_grid()`. |
-| 4 | Freshness sweep — `--freshness-sweep --n-queries 60 --replications 3` | ~$0.29 | RQ1 monotonicity (Shisher & Sun) |
+| ~~3~~ | ~~**Finish phase 2**~~ | $0.768 | ✅ **done — 144/144, zero failures.** All conclusions held and tightened at 4 replications. |
+| **4** | Freshness sweep — `--freshness-sweep --n-queries 60` | ~$0.29 | **← next.** RQ1 monotonicity (Shisher & Sun). Test it on the *flip-conditioned* silent-failure rate, not on accuracy — accuracy under freshness is mechanical. |
 | 5 | Cross-model: local open weights via Ollama | $0 | |
 | 6 | Cross-model: `--cross-model claude-haiku-4-5 --n-queries 100` | ~$1.68 | Haiku, not Sonnet 5 — it still accepts `temperature` |
 | 7 | Statistical analysis | $0 | Per `research_questions_v2.md` §5 — decision-level mixed-effects logistic, not ANOVA on run means |
@@ -84,36 +84,42 @@ risk register rates late writing High/High — it is the likeliest failure mode.
 
 ---
 
-## Phase 1 results (final — 36 runs, all conditions, $0.371)
+## Main factorial — final (144 runs, all conditions, $1.470)
 
-Verdict: **GO.** No floored arm, no incoherent comparison, 3 of 4 faults degrade
-accuracy at severe. Re-runnable any time with
-`python -m airsbench.analysis.phase1_check`.
+Coverage balanced at 36 runs per arm, no floored arm, no coherence violation.
+Re-runnable with `python -m airsbench.analysis.phase1_check`.
+
+**Raw accuracy — necessary, but NOT the headline.** Freshness's drop here is
+almost entirely mechanical; read this table through §"flip partition" below.
 
 | fault (severe) | accuracy | Δ vs baseline | abstained | silent failure |
 |---|---|---|---|---|
-| baseline | 0.877 | — | 0% | 12% |
-| latency | 0.877 | **0.000** | 0% | 12% |
-| freshness | 0.748 | −0.129 | 1% | **25%** |
-| schema drift | 0.748 | −0.129 | 1% | **24%** |
-| semantic stripping | **0.648** | **−0.230** | **23%** | 17% |
+| baseline | 0.856 | — | 0% | 14% |
+| latency | 0.856 | **+0.000** | 0% | 14% |
+| freshness | 0.741 | −0.116 | 1% | **25%** |
+| schema drift | 0.744 | −0.112 | 1% | **25%** |
+| semantic stripping | **0.639** | **−0.218** | **18%** | 22% |
 
-Baselines by arm: streaming/classification 0.938 · batch/classification 0.900 ·
-streaming/retrieval 0.861 · batch/retrieval 0.810.
+Baselines by arm: streaming/classification 0.900 · batch/classification 0.850 ·
+streaming/retrieval 0.861 · batch/retrieval 0.762.
 
 **Four things to carry forward:**
 
-1. **Latency measured exactly 0.000 effect at both severities.** Correct for a
+1. **Latency measured +0.000 effect at both severities.** Correct for a
    synchronous agent with no deadline — it waits and reads identical data. A
    finding to frame, not a bug.
-2. **Semantic stripping does the most damage *and* is the only fault the agent
-   detects** — abstention 0% → 23%. It refuses rather than guessing.
-3. **Freshness does less damage but produces more silent failure** (25% vs 17%)
-   at ~1% abstention. The agent never signals a problem.
+2. **Semantic stripping is the only fault the agent reliably detects** —
+   abstention 0% → 18%. It refuses rather than guessing. On *raw* accuracy it
+   looks like the most damaging fault, but that is an artifact of counting a
+   refusal as equal to a confident wrong answer; see the flip partition.
+3. **Freshness produces the most silent failure** (25%) at ~1% abstention. The
+   agent never signals a problem — and the arm below shows that handing it the
+   record's age does not change this.
 4. **Schema drift was predicted "visible" but behaves invisible** (1% abstention,
-   24% silent). A renamed field still looks like a legitimate field. So the
-   operative property is not visible/invisible but **whether the corruption is
-   legible *as* corruption** — a sharper claim than H3 as originally written.
+   25% silent) *and* does the most real damage to reasoning (residual −0.173).
+   A renamed field still looks like a legitimate field. So the operative
+   property is not visible/invisible but **whether the corruption is legible
+   *as* corruption** — a sharper claim than H3 as originally written.
 
 ---
 
@@ -123,23 +129,24 @@ streaming/retrieval 0.861 · batch/retrieval 0.810.
 `docs/flip_partition_findings.md`; re-runnable free with
 `python -m airsbench.analysis.flip_partition`.**
 
-On queries whose correct answer did *not* move, accuracy is baseline 0.860 vs
-freshness/severe **0.868** — zero residual. Freshness costs accuracy exactly and
-only where it moved the answer key, and does not impair the agent's reasoning at
-all. The 12.9-point drop must never be reported as a result about the agent.
+On queries whose correct answer did *not* move, accuracy is baseline 0.888 vs
+freshness/severe **0.886** — residual **−0.003 at both severities**, flat where a
+real effect would grow with severity. Freshness costs accuracy exactly and only
+where it moved the answer key, and does not impair the agent's reasoning at all.
+The 11.6-point drop must never be reported as a result about the agent.
 
-The finding is the other cell. On the 63 queries staleness made unanswerable:
+The finding is the other cell. On the 140 queries staleness made unanswerable:
 
 | abstained | silent failure | chose the answer the served data implied | confidence when wrong |
 |---|---|---|---|
-| **5%** | **89%** | **71%** | **1.00** |
+| **4%** | **90%** | **75%** | **1.00** |
 
 The agent is not making mistakes — it is reasoning correctly over corrupt input
 and reporting the result at maximal confidence. Two further consequences:
 
 - **The RQ2 damage ranking changes.** On residual (non-mechanical) impairment:
-  schema drift −0.159 > semantic stripping −0.093 > freshness +0.008 ≈ latency 0.
-  Semantic stripping is *not* the most damaging fault — most of its raw drop is
+  schema drift −0.173 > semantic stripping −0.128 > freshness −0.003 ≈ latency 0.
+  Semantic stripping is *not* the most damaging fault — much of its raw drop is
   abstention, which is the safe behaviour. Schema drift is.
 - **The batch baseline is not clean.** With no fault injected, its inherent 3 s
   staleness flips 7.1% of answers and silently fails on **100%** of them.
