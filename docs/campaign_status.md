@@ -69,7 +69,7 @@ changed is how its results are read.
 | ~~2~~ | ~~**Detectability arm**~~ | $0.153 | ✅ **done — null branch.** Metadata alone changes nothing. `docs/detectability_findings.md`. |
 | ~~3~~ | ~~**Finish phase 2**~~ | $0.768 | ✅ **done — 144/144, zero failures.** All conclusions held and tightened at 4 replications. |
 | ~~4~~ | ~~Freshness sweep~~ | $0.290 | ✅ **done — monotone on both tasks.** Threshold 5.05 s. `docs/freshness_sweep_findings.md`. |
-| **5** | Cross-model: local open weights via Ollama | $0 | **← next (free).** |
+| **5** | Cross-model: local open weights via Ollama — **both** `llama3.1:8b` and `qwen2.5:14b-instruct` | $0 | ⏸ **decided, deferred pending wifi.** Support is implemented + tested + dry-run at $0.000; only the install and weights are missing. Runbook below. |
 | 6 | Cross-model: `--cross-model claude-haiku-4-5 --n-queries 100` | ~$1.68 | Haiku, not Sonnet 5 — it still accepts `temperature` |
 | 7 | Statistical analysis | $0 | Per `research_questions_v2.md` §5 — decision-level mixed-effects logistic, not ANOVA on run means |
 | 8 | AIRS calibration | $0 | Target **silent failure**; benchmark against agent self-confidence (already logged) |
@@ -77,6 +77,26 @@ changed is how its results are read.
 | 10 | AIST demo rebuild | $0 | Around detectability: same stale record with/without its age, side by side |
 | 11 | `airs lint` *(stretch)* | $0 | Static semantic-completeness for schemas; first to cut if time is short |
 | 12 | Release + chapters | $0 | HuggingFace, Zenodo DOI, Results/Discussion/Conclusion |
+
+### The deferred local arm — runbook
+
+Decided 2026-07-28: run **both** models. Held only for bandwidth, not for the
+decision. `LLMClient` addresses local models as `ollama/<tag>` and routes them
+to an OpenAI-compatible endpoint; they are absent from `PRICING`, which is what
+makes them free, so the budget guard passes at `--max-cost 0.01`.
+
+```bash
+brew install ollama && ollama serve &
+ollama pull llama3.1:8b && ollama pull qwen2.5:14b-instruct
+python -m airsbench.runner.run --cross-model ollama/llama3.1:8b --n-queries 100 --dry-run --max-cost 0.01
+python -m airsbench.runner.run --cross-model ollama/llama3.1:8b --n-queries 100 --max-cost 0.01
+python -m airsbench.runner.run --cross-model ollama/qwen2.5:14b-instruct --n-queries 100 --max-cost 0.01
+```
+
+~1 h and ~2 h of wall-clock on an M4 Pro / 24 GB. `campaign_state` tracks each
+model independently, so the two can be run days apart.
+
+---
 
 **Writing runs throughout.** Chapter 3 is drafted. Chapters 1–2 follow from
 `literature_review.md` §7 and `research_questions_v2.md` §8. The project's own
