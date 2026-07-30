@@ -5,17 +5,21 @@ The main factorial tests freshness at two severities, and two points always look
 monotonic. Shisher & Sun (MobiHoc 2022) prove prediction error need not be
 monotone in age, so the claim needs more levels than the factorial provides.
 
-**The outcome variable is not accuracy.** The flip partition established that
-freshness does not impair the agent at all — it moves the answer key, and raw
-accuracy under staleness traces the answer-flip rate, which is a property of the
-catalog's velocity rather than of the agent. Sweeping accuracy against staleness
-would therefore chart the dataset. The monotonicity claim is tested on the
-**flip-conditioned silent-failure rate**: of the queries staleness made
-unanswerable, the share the agent answers confidently anyway.
+**Retrieval is reported as a decomposition, not as one curve.** Silent failure
+under staleness is the product of two different things:
 
-Raw accuracy is still reported, decomposed into its mechanical and residual
-parts, because RQ1's threshold is defined operationally on the observable an
-engineer would actually watch.
+    silent failure  =  EXPOSURE  x  CONDITIONAL rate
+
+*Exposure* is how often staleness makes a query unanswerable — a property of the
+catalog's velocity, not of the agent. The *conditional rate* is what the agent
+does when it happens. Only the product is what an operator observes.
+
+Monotonicity is tested on exposure and on the unconditional rate, both estimated
+from every decision in a level. It is **not** tested on the conditional rate
+unless that rate can bear it: its denominator is the flip count, which is small
+at low staleness *by construction* (n=4 at the mildest level here), so an
+apparent trend there reflects the denominator rather than the agent. Reporting
+one would be the easiest wrong answer this arm could produce.
 
 Methods follow `research_questions_v2.md` §5 (RQ1):
 
@@ -45,9 +49,17 @@ from ..pipelines.loader import DEP_DELAY_KNOWLEDGE_HORIZON_S
 from ..runner.config import RunConfig, run_arm
 from ..runner.execute import value_staleness_s
 from .flip_partition import Replayer
+from .phase1_check import wilson_halfwidth
 
 # Degradation of this many points defines the operational threshold (RQ1).
 THRESHOLD_BAND = 0.10
+# A conditional rate resting on fewer observations than this cannot carry a
+# monotonicity verdict. The flip count is small at low staleness by
+# construction, so a trend in the conditional rate at small n reflects the
+# denominator rather than the agent.
+MIN_CONDITIONAL_N = 10
+# At or above this, a rate has no headroom left to rise.
+CEILING = 0.80
 
 
 @dataclass
@@ -69,6 +81,8 @@ class Level:
     # Per-run values, for the run-level monotonicity tests.
     run_accuracy: list[float] = None
     run_flip_silent: list[float] = None
+    run_silent: list[float] = None
+    run_flip_rate: list[float] = None
 
     @property
     def saturated_classification(self) -> bool:
@@ -129,7 +143,9 @@ def build_levels(
             abstained=abstained,
             silent=silent,
             run_accuracy=[_rates(run["decisions"])[0] for run in group],
+            run_silent=[_rates(run["decisions"])[2] for run in group],
             run_flip_silent=[],
+            run_flip_rate=[],
         )
 
         if task == "retrieval" and replayer is not None:
@@ -148,6 +164,7 @@ def build_levels(
                 level.run_flip_silent.append(
                     _rates(flipped)[2] if flipped else float("nan")
                 )
+                level.run_flip_rate.append(len(flipped) / max(len(run["decisions"]), 1))
             level.n_flipped = len(flipped_all)
             level.flip_rate = len(flipped_all) / max(len(decisions), 1)
             level.unflipped_accuracy = _rates(unflipped_all)[0]
@@ -236,72 +253,30 @@ def _fmt(value: float | None, pct: bool = True) -> str:
     return f"{value:>8.0%} " if pct else f"{value:>9.3f}"
 
 
-def report_task(task: str, levels: list[Level]) -> None:
-    print(f"\n{'=' * 78}\n{task.upper()}\n")
-    if not levels:
-        print("  no runs")
+def _monotonicity(
+    name: str, levels: list[Level], run_x: list[float], run_y: list[float],
+    pooled: list[float], rising: bool,
+) -> None:
+    """One monotonicity block: Spearman, isotonic cost, changepoint, threshold."""
+    if len([v for v in pooled if v == v]) < 3 or len(run_y) < 3:
+        print(f"\n  {name}: too few usable levels to test")
         return
 
-    if task == "retrieval":
-        print(f"  {'stale':>7}{'runs':>6}{'n':>7}{'raw acc':>10}{'flip%':>9}"
-              f"{'unflip acc':>12}{'silent|flip':>12}{'abst|flip':>11}")
-        print("  " + "-" * 74)
-        for lv in levels:
-            print(f"  {lv.staleness_s:>6.2f}s{lv.n_runs:>6}{lv.n_decisions:>7}"
-                  f"{lv.accuracy:>10.3f}{_fmt(lv.flip_rate)}"
-                  f"{lv.unflipped_accuracy:>12.3f}"
-                  f"{_fmt(lv.flip_silent):>12}{_fmt(lv.flip_abstained):>11}")
-    else:
-        print(f"  {'stale':>7}{'runs':>6}{'n':>7}{'accuracy':>10}{'abstain':>10}"
-              f"{'silent':>9}   note")
-        print("  " + "-" * 74)
-        for lv in levels:
-            note = "<- feature zeroed by the horizon" if lv.saturated_classification else ""
-            print(f"  {lv.staleness_s:>6.2f}s{lv.n_runs:>6}{lv.n_decisions:>7}"
-                  f"{lv.accuracy:>10.3f}{lv.abstained:>10.0%}{lv.silent:>9.0%}   {note}")
-
-    # ---- monotonicity on the primary outcome -----------------------------
-    if task == "retrieval":
-        outcome_name = "flip-conditioned silent failure"
-        pooled = [lv.flip_silent for lv in levels]
-        run_x = [lv.staleness_s for lv in levels for v in lv.run_flip_silent if v == v]
-        run_y = [v for lv in levels for v in lv.run_flip_silent if v == v]
-        rising = True
-    else:
-        usable = [lv for lv in levels if not lv.saturated_classification]
-        if len(usable) < len(levels):
-            print(f"\n  Levels at or beyond the {DEP_DELAY_KNOWLEDGE_HORIZON_S:.0f}s "
-                  "knowledge horizon are EXCLUDED from the tests below:")
-            print("  the delay feature is clamped to zero there, so the arm measures")
-            print("  an absent feature rather than a stale one. Reported, not tested.")
-        levels = usable
-        outcome_name = "accuracy"
-        pooled = [lv.accuracy for lv in levels]
-        run_x = [lv.staleness_s for lv in levels for _ in lv.run_accuracy]
-        run_y = [v for lv in levels for v in lv.run_accuracy]
-        rising = False
-
-    pooled = [v for v in pooled if v is not None and v == v]
-    if len(pooled) < 3:
-        print("\n  too few usable levels for a monotonicity test")
-        return
-
-    print(f"\n  MONOTONICITY — outcome: {outcome_name}")
+    print(f"\n  MONOTONICITY — {name}")
     rho, p = spearman(run_x, run_y)
-    direction = "increasing" if rising else "decreasing"
     print(f"    Spearman rho = {rho:+.3f} (p = {p:.4f}) over {len(run_y)} runs "
-          f"[expected {direction}]")
+          f"[expected {'increasing' if rising else 'decreasing'}]")
 
     iso_sse, free_sse = isotonic_cost(run_x, run_y, increasing=rising)
     cost = (iso_sse - free_sse) / free_sse if free_sse > 0 else 0.0
     print(f"    isotonic SSE {iso_sse:.4f} vs unconstrained {free_sse:.4f} "
           f"({cost:+.1%} cost)")
     if cost < 0.05:
-        print("    => monotone constraint costs almost nothing: response is")
-        print("       consistent with monotonicity in data age.")
+        print("    => monotone constraint costs almost nothing: consistent with")
+        print("       monotonicity in data age.")
     else:
-        print("    => the monotone constraint costs real error: the response is")
-        print("       NOT monotone in age (cf. Shisher & Sun). Report the curve.")
+        print("    => the monotone constraint costs real error: NOT monotone in")
+        print("       age (cf. Shisher & Sun). Report the curve, not a threshold.")
 
     split, explained = changepoint(pooled)
     if split is not None:
@@ -310,11 +285,110 @@ def report_task(task: str, levels: list[Level]) -> None:
 
     crossing = first_crossing(levels, pooled, rising=rising)
     if crossing is None:
-        print(f"    threshold: never crosses the {THRESHOLD_BAND:.0%} band "
-              f"within the sweep")
+        print(f"    threshold: never crosses the {THRESHOLD_BAND:.0%} band in the sweep")
     else:
-        print(f"    threshold: {outcome_name} crosses the {THRESHOLD_BAND:.0%} band "
-              f"at {crossing:.2f}s")
+        print(f"    threshold: crosses the {THRESHOLD_BAND:.0%} band at {crossing:.2f}s")
+
+
+def _report_retrieval(levels: list[Level]) -> None:
+    """Retrieval is reported as a decomposition, not as one curve.
+
+    Silent failure under staleness is the product of two very different things:
+    how often staleness makes a query unanswerable (EXPOSURE, a property of the
+    catalog's velocity) and how the agent behaves when it does (the CONDITIONAL
+    rate, a property of the agent). Only their product is what an operator sees.
+    Testing the conditional rate alone is a trap — its denominator is the flip
+    count, which is tiny at low staleness by construction.
+    """
+    print(f"  {'stale':>7}{'runs':>6}{'n':>6}{'raw acc':>9}{'exposure':>10}"
+          f"{'unflip acc':>12}{'n_flip':>8}{'silent|flip':>13}{'95% CI':>16}"
+          f"{'uncond':>9}")
+    print("  " + "-" * 96)
+    for lv in levels:
+        hw = wilson_halfwidth(lv.flip_silent or 0.0, lv.n_flipped)
+        lo, hi = max(0.0, (lv.flip_silent or 0) - hw), min(1.0, (lv.flip_silent or 0) + hw)
+        ci = f"[{lo:.0%}, {hi:.0%}]" if lv.n_flipped else "—"
+        print(f"  {lv.staleness_s:>6.2f}s{lv.n_runs:>6}{lv.n_decisions:>6}"
+              f"{lv.accuracy:>9.3f}{lv.flip_rate:>10.1%}"
+              f"{lv.unflipped_accuracy:>12.3f}{lv.n_flipped:>8}"
+              f"{_fmt(lv.flip_silent):>13}{ci:>16}"
+              f"{(lv.flip_rate or 0) * (lv.flip_silent or 0):>9.1%}")
+
+    # 1. Exposure — the mechanical component, and the one that has a threshold.
+    _monotonicity(
+        "exposure (share of queries staleness makes unanswerable)", levels,
+        [lv.staleness_s for lv in levels for _ in lv.run_flip_rate],
+        [v for lv in levels for v in lv.run_flip_rate],
+        [lv.flip_rate for lv in levels], rising=True,
+    )
+
+    # 2. Unconditional silent failure — what an operator actually observes.
+    _monotonicity(
+        "unconditional silent-failure rate (all queries)", levels,
+        [lv.staleness_s for lv in levels for _ in lv.run_silent],
+        [v for lv in levels for v in lv.run_silent],
+        [lv.silent for lv in levels], rising=True,
+    )
+
+    # 3. Conditional rate — reported, but only tested if it can bear a test.
+    smallest = min((lv.n_flipped for lv in levels), default=0)
+    rates = [lv.flip_silent for lv in levels if lv.flip_silent is not None]
+    print(f"\n  CONDITIONAL rate given exposure — smallest level n = {smallest}")
+    if smallest < MIN_CONDITIONAL_N:
+        print(f"    NOT TESTED. Below n={MIN_CONDITIONAL_N} the per-level estimate is")
+        print("    too unstable to carry a monotonicity verdict: the flip count is")
+        print("    small at low staleness *by construction*, so an apparent trend")
+        print("    here is an artifact of the denominator, not a property of the")
+        print("    agent. Reported descriptively above, with intervals.")
+    else:
+        _monotonicity(
+            "conditional silent failure given exposure", levels,
+            [lv.staleness_s for lv in levels for v in lv.run_flip_silent if v == v],
+            [v for lv in levels for v in lv.run_flip_silent if v == v],
+            rates, rising=True,
+        )
+    if rates and min(rates) >= CEILING:
+        print(f"    Every level sits at or above {CEILING:.0%}, and every interval")
+        print("    overlaps. The conditional rate is SATURATED across the whole")
+        print("    sweep — there is no headroom for staleness to make it worse,")
+        print("    and therefore no conditional threshold to find.")
+
+
+def _report_classification(levels: list[Level]) -> list[Level]:
+    print(f"  {'stale':>7}{'runs':>6}{'n':>7}{'accuracy':>10}{'abstain':>10}"
+          f"{'silent':>9}   note")
+    print("  " + "-" * 74)
+    for lv in levels:
+        note = "<- feature zeroed by the horizon" if lv.saturated_classification else ""
+        print(f"  {lv.staleness_s:>6.2f}s{lv.n_runs:>6}{lv.n_decisions:>7}"
+              f"{lv.accuracy:>10.3f}{lv.abstained:>10.0%}{lv.silent:>9.0%}   {note}")
+
+    usable = [lv for lv in levels if not lv.saturated_classification]
+    if len(usable) < len(levels):
+        print(f"\n  Levels at or beyond the {DEP_DELAY_KNOWLEDGE_HORIZON_S:.0f}s "
+              "knowledge horizon are EXCLUDED from the tests below:")
+        print("  the delay feature is clamped to zero there, so the arm measures")
+        print("  an absent feature rather than a stale one. Reported, not tested.")
+    return usable
+
+
+def report_task(task: str, levels: list[Level]) -> None:
+    print(f"\n{'=' * 96}\n{task.upper()}\n")
+    if not levels:
+        print("  no runs")
+        return
+
+    if task == "retrieval":
+        _report_retrieval(levels)
+        return
+
+    usable = _report_classification(levels)
+    _monotonicity(
+        "accuracy", usable,
+        [lv.staleness_s for lv in usable for _ in lv.run_accuracy],
+        [v for lv in usable for v in lv.run_accuracy],
+        [lv.accuracy for lv in usable], rising=False,
+    )
 
 
 def report(runs: list[dict[str, Any]], data_dir: Path) -> int:
@@ -327,9 +401,9 @@ def report(runs: list[dict[str, Any]], data_dir: Path) -> int:
     cost = sum(r["usage"]["cost_usd"] for r in runs)
     print(f"Freshness sweep — {len(runs)} runs, ${cost:.3f}\n")
     print("RQ1: is degradation monotone in data age, and where is the threshold?")
-    print("Outcome for retrieval is the FLIP-CONDITIONED silent-failure rate, not")
-    print("accuracy — raw accuracy under staleness traces the answer-flip rate,")
-    print("which is a property of the catalog rather than of the agent.")
+    print("Retrieval is decomposed: silent failure = EXPOSURE x CONDITIONAL rate.")
+    print("Exposure is a property of the catalog's velocity; the conditional rate")
+    print("is a property of the agent. Only their product is what an operator sees.")
 
     replayer = Replayer(data_dir)
     for task in ("retrieval", "classification"):

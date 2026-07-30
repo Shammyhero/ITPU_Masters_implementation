@@ -1,6 +1,6 @@
 # Campaign status & session handoff
 
-**Updated:** 2026-07-28 · **main factorial COMPLETE — 144/144**
+**Updated:** 2026-07-28 · **main factorial + detectability + sweep COMPLETE**
 
 This is the operational entry point for any session. Read `CLAUDE.md` first for
 the invariants that must not be broken, then this file for what to do next.
@@ -14,11 +14,11 @@ the invariants that must not be broken, then this file for what to do next.
 | Design | Paired, replication-major, 144 runs @ 80 queries |
 | Phase 1 | ✅ **complete — GO** (36/36, all four checks passed) |
 | Phase 2 | ✅ **complete** — 78/78, zero failures |
-| Runs on disk | **144 / 144** main factorial + **14** detectability arm |
-| Spent | **$1.62** of ~$7 OpenAI · $0 of ~$4 Anthropic |
-| Tests | 172 passing · lint clean |
+| Runs on disk | **144** main · **14** detectability · **36** freshness sweep |
+| Spent | **$1.91** of ~$7 OpenAI · $0 of ~$4 Anthropic |
+| Tests | 191 passing · lint clean |
 | AIRS fix | freshness double-count corrected in code; 16 old runs recomputed in the analysis layer |
-| Analysis | flip partition ✅ at full replication · detectability arm ✅ |
+| Analysis | flip partition ✅ · detectability ✅ · freshness sweep ✅ |
 
 Resumption is exact: `build_grid()` is deterministic and every run writes its
 JSON on completion. Interrupting mid-run loses only that run (~$0.01).
@@ -68,8 +68,8 @@ changed is how its results are read.
 | ~~1~~ | ~~**Flip-partition analysis**~~ | $0 | ✅ **done** — `docs/flip_partition_findings.md`. Changed how freshness *and* RQ2 must be reported. |
 | ~~2~~ | ~~**Detectability arm**~~ | $0.153 | ✅ **done — null branch.** Metadata alone changes nothing. `docs/detectability_findings.md`. |
 | ~~3~~ | ~~**Finish phase 2**~~ | $0.768 | ✅ **done — 144/144, zero failures.** All conclusions held and tightened at 4 replications. |
-| **4** | Freshness sweep — `--freshness-sweep --n-queries 60` | ~$0.29 | **← next.** RQ1 monotonicity (Shisher & Sun). Test it on the *flip-conditioned* silent-failure rate, not on accuracy — accuracy under freshness is mechanical. |
-| 5 | Cross-model: local open weights via Ollama | $0 | |
+| ~~4~~ | ~~Freshness sweep~~ | $0.290 | ✅ **done — monotone on both tasks.** Threshold 5.05 s. `docs/freshness_sweep_findings.md`. |
+| **5** | Cross-model: local open weights via Ollama | $0 | **← next (free).** |
 | 6 | Cross-model: `--cross-model claude-haiku-4-5 --n-queries 100` | ~$1.68 | Haiku, not Sonnet 5 — it still accepts `temperature` |
 | 7 | Statistical analysis | $0 | Per `research_questions_v2.md` §5 — decision-level mixed-effects logistic, not ANOVA on run means |
 | 8 | AIRS calibration | $0 | Target **silent failure**; benchmark against agent self-confidence (already logged) |
@@ -163,6 +163,7 @@ Everything needed is in the repo — this file plus:
 | `docs/detectability_arm.md` | **The pending design decision** — read before spending |
 | `docs/flip_partition_findings.md` | Why freshness accuracy is not a result, and what is |
 | `docs/detectability_findings.md` | The detectability arm's null, and why it is the useful answer |
+| `docs/freshness_sweep_findings.md` | RQ1 answered: monotone, threshold 5.05 s, and the decomposition it rests on |
 | `docs/research_questions_v2.md` | Current RQs, hypotheses, stats plan, declared parameters. Supersedes the proposal. |
 | `docs/chapter3_methodology.md` | Methodology as implemented (Chapter 3 draft) |
 | `docs/literature_review.md` | 25+ verified sources; the gap claim as it can actually be defended |

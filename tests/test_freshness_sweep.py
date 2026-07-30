@@ -12,6 +12,8 @@ from __future__ import annotations
 import pytest
 
 from airsbench.analysis.freshness_sweep import (
+    CEILING,
+    MIN_CONDITIONAL_N,
     THRESHOLD_BAND,
     Level,
     changepoint,
@@ -143,3 +145,41 @@ def test_the_sweep_actually_reaches_the_horizon():
     ]
     assert any(s >= DEP_DELAY_KNOWLEDGE_HORIZON_S for s in stalenesses)
     assert any(s < DEP_DELAY_KNOWLEDGE_HORIZON_S for s in stalenesses)
+
+
+# ---- the small-n guard -----------------------------------------------------
+#
+# The conditional rate's denominator is the flip count, which is small at low
+# staleness by construction. Reporting a monotonicity verdict off it would be
+# the easiest wrong answer this arm could produce, so the guard is pinned.
+
+def test_the_guard_threshold_is_above_the_smallest_real_denominator():
+    """The observed sweep has n=4 at its mildest level; the guard must catch it."""
+    assert MIN_CONDITIONAL_N > 4
+
+
+def test_ceiling_is_below_every_observed_conditional_rate():
+    """Observed conditional rates run 85-100%; the ceiling test must fire."""
+    assert CEILING <= 0.85
+
+
+def test_a_tiny_denominator_produces_an_interval_that_spans_most_of_the_range():
+    """Why the guard exists: 100% of 4 is not evidence of a high rate."""
+    from airsbench.analysis.phase1_check import wilson_halfwidth
+
+    assert wilson_halfwidth(1.0, 4) > 0.4
+    assert wilson_halfwidth(1.0, 100) < 0.1
+
+
+def test_spearman_can_be_significant_on_noise_at_small_n():
+    """The failure mode the guard prevents, reproduced.
+
+    A flat-at-ceiling series read through unstable small-n estimates can yield
+    a significant rank correlation in the WRONG direction. The statistic is not
+    at fault; using it on this series would be.
+    """
+    staleness = [0.55, 0.55, 0.55, 1.55, 1.55, 1.55, 3.05, 3.05, 3.05]
+    at_ceiling_with_noise = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9, 0.85, 0.88]
+    rho, p = spearman(staleness, at_ceiling_with_noise)
+    assert rho < 0, "declining, though the underlying rate is flat at ceiling"
+    assert p < 0.05, "and significantly so — hence the guard, not the p-value"
