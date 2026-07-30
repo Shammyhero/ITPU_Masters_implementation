@@ -18,8 +18,19 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+# Locally-served open-weight models, addressed as "ollama/<model>". Ollama
+# exposes an OpenAI-compatible endpoint, so the same client drives it and no
+# extra dependency is needed. They are absent from PRICING, which is what makes
+# them free: estimate_cost_usd and LLMUsage.cost_usd both return 0.0 for a
+# model they do not price.
+OLLAMA_PREFIX = "ollama/"
+DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434/v1"
+# Local inference is far slower than a hosted API, especially on first load
+# while weights page in. A 60 s timeout fails runs that would have succeeded.
+LOCAL_TIMEOUT_S = 300
+
 # Pricing (USD per token), for run-level cost accounting and the budget guard.
-# Local models via Ollama are free and priced at zero.
+# Locally-served models are deliberately absent — see OLLAMA_PREFIX above.
 PRICING = {
     "gpt-4o-mini": {"input": 0.15 / 1e6, "output": 0.60 / 1e6},
     "gpt-4.1-mini": {"input": 0.40 / 1e6, "output": 1.60 / 1e6},
@@ -63,23 +74,53 @@ class LLMUsage:
         return self.input_tokens * price["input"] + self.output_tokens * price["output"]
 
 
+def is_local_model(model: str) -> bool:
+    """True for open-weight models served locally rather than by an API."""
+    return model.startswith(OLLAMA_PREFIX)
+
+
+def local_model_name(model: str) -> str:
+    """Strip the routing prefix: 'ollama/llama3.1:8b' -> 'llama3.1:8b'."""
+    return model[len(OLLAMA_PREFIX):] if is_local_model(model) else model
+
+
+def ollama_base_url() -> str:
+    return os.environ.get("OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL)
+
+
 class LLMClient:
-    """Thin wrapper over ChatOpenAI with usage accounting."""
+    """Thin wrapper over ChatOpenAI with usage accounting.
+
+    Also drives locally-served open-weight models: Ollama speaks the OpenAI
+    protocol, so a base-URL swap is the whole integration. Everything
+    downstream — prompts, parsing, the treatment of unparseable output as a
+    failure rather than an error — is identical by construction, which is what
+    makes the cross-model comparison in RQ5 a comparison of models rather than
+    of harnesses.
+    """
 
     def __init__(self, model: str, temperature: float, max_retries: int = 3) -> None:
         from langchain_openai import ChatOpenAI
 
         load_dotenv()
-        if not os.environ.get("OPENAI_API_KEY"):
-            raise RuntimeError("OPENAI_API_KEY not set (put it in .env)")
         self.model = model
-        self.chat = ChatOpenAI(
-            model=model,
-            temperature=temperature,
-            max_retries=max_retries,
-            timeout=60,
-            model_kwargs={"response_format": {"type": "json_object"}},
-        )
+        local = is_local_model(model)
+        if not local and not os.environ.get("OPENAI_API_KEY"):
+            raise RuntimeError("OPENAI_API_KEY not set (put it in .env)")
+
+        options: dict[str, Any] = {
+            "model": local_model_name(model),
+            "temperature": temperature,
+            "max_retries": max_retries,
+            "timeout": LOCAL_TIMEOUT_S if local else 60,
+            "model_kwargs": {"response_format": {"type": "json_object"}},
+        }
+        if local:
+            # No key is required by Ollama, but the OpenAI client insists on
+            # one being present.
+            options["openai_api_base"] = ollama_base_url()
+            options["openai_api_key"] = "ollama"
+        self.chat = ChatOpenAI(**options)
         self.usage = LLMUsage()
 
     def call_json(self, messages: list[tuple[str, str]]) -> dict[str, Any] | None:

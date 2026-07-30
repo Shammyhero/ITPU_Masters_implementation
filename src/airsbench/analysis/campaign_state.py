@@ -32,11 +32,16 @@ from ..runner.config import (
 
 
 # Identity of a run, independent of run_id and of execution order.
+#
+# The model is part of the identity. The cross-model arm reuses one seed block
+# for every model it is run against, so keying without the model would make a
+# local open-weight run and a hosted run of the same condition look like a
+# duplicate of each other rather than the two halves of RQ5.
 def _key(config: dict[str, Any]) -> tuple:
     return (
         config["pipeline"], config["task"], config["fault_type"],
         config["severity"], config["replication"], config["seed"],
-        bool(config.get("emit_record_age", False)),
+        bool(config.get("emit_record_age", False)), config.get("model", ""),
     )
 
 
@@ -44,11 +49,13 @@ ARMS = {
     "main": ("--main --n-queries 80", lambda: build_grid(replications=4)),
     "detectability": ("--detectability --n-queries 80", build_detectability_arm),
     "freshness_sweep": ("--freshness-sweep --n-queries 60", build_freshness_sweep),
-    "cross_model": (
-        "--cross-model claude-haiku-4-5 --n-queries 100",
-        lambda: build_cross_model_subset("claude-haiku-4-5"),
-    ),
 }
+
+# The cross-model arm is reported once per model, because RQ5 runs the same
+# reduced factorial against several models and each is complete or not on its
+# own. Which models to expect cannot be known in advance, so they are read from
+# the artifacts rather than hard-coded.
+CROSS_MODEL = "cross_model"
 
 
 def load(results_dir: Path) -> list[dict[str, Any]]:
@@ -64,9 +71,22 @@ def report(runs: list[dict[str, Any]]) -> int:
     print(f"{len(runs)} run artifacts on disk · ${total_cost:.3f} spent\n")
 
     problems: list[str] = []
+    arms: list[tuple[str, str, list, list[dict]]] = []
     for arm, (flags, builder) in ARMS.items():
-        grid = builder()
-        done_runs = on_disk.get(arm, [])
+        arms.append((arm, flags, builder(), on_disk.get(arm, [])))
+
+    cross_runs = on_disk.get(CROSS_MODEL, [])
+    for model in sorted({r["config"].get("model", "?") for r in cross_runs}):
+        arms.append((
+            f"{CROSS_MODEL} [{model}]",
+            f"--cross-model {model} --n-queries 100",
+            build_cross_model_subset(model),
+            [r for r in cross_runs if r["config"].get("model") == model],
+        ))
+    if not cross_runs:
+        arms.append((CROSS_MODEL, "--cross-model MODEL --n-queries 100", [], []))
+
+    for arm, flags, grid, done_runs in arms:
         counts: dict[tuple, int] = {}
         for run in done_runs:
             key = _key(run["config"])
@@ -76,13 +96,14 @@ def report(runs: list[dict[str, Any]]) -> int:
         status = [key in counts for key in keys]
         done, remaining = sum(status), len(status) - sum(status)
 
-        label = f"{arm} ({len(grid)} runs)"
+        label = f"{arm} ({len(grid)} runs)" if grid else f"{arm}"
         if not done_runs:
-            print(f"  {label:<34} not started")
+            print(f"  {label:<40} not started")
             continue
 
-        print(f"  {label:<34} {done}/{len(grid)} done · "
-              f"${sum(r['usage']['cost_usd'] for r in done_runs):.3f}")
+        spent = sum(r["usage"]["cost_usd"] for r in done_runs)
+        print(f"  {label:<40} {done}/{len(grid)} done · "
+              f"{'free (local)' if spent == 0 else f'${spent:.3f}'}")
 
         duplicates = {k: v for k, v in counts.items() if v > 1}
         orphans = [k for k in counts if k not in set(keys)]
