@@ -16,9 +16,9 @@ the invariants that must not be broken, then this file for what to do next.
 | Phase 2 | ✅ **complete** — 78/78, zero failures |
 | Runs on disk | **144** main · **14** detectability · **36** freshness sweep |
 | Spent | **$1.91** of ~$7 OpenAI · $0 of ~$4 Anthropic |
-| Tests | 191 passing · lint clean |
+| Tests | 218 passing · lint clean |
 | AIRS fix | freshness double-count corrected in code; 16 old runs recomputed in the analysis layer |
-| Analysis | flip partition ✅ · detectability ✅ · freshness sweep ✅ |
+| Analysis | flip partition ✅ · detectability ✅ · sweep ✅ · RQ2/RQ3 models ✅ |
 
 Resumption is exact: `build_grid()` is deterministic and every run writes its
 JSON on completion. Interrupting mid-run loses only that run (~$0.01).
@@ -71,8 +71,8 @@ changed is how its results are read.
 | ~~4~~ | ~~Freshness sweep~~ | $0.290 | ✅ **done — monotone on both tasks.** Threshold 5.05 s. `docs/freshness_sweep_findings.md`. |
 | **5** | Cross-model: local open weights via Ollama — **both** `llama3.1:8b` and `qwen2.5:14b-instruct` | $0 | ⏸ **decided, deferred pending wifi.** Support is implemented + tested + dry-run at $0.000; only the install and weights are missing. Runbook below. |
 | 6 | Cross-model: `--cross-model claude-haiku-4-5 --n-queries 100` | ~$1.68 | Haiku, not Sonnet 5 — it still accepts `temperature` |
-| 7 | Statistical analysis | $0 | Per `research_questions_v2.md` §5 — decision-level mixed-effects logistic, not ANOVA on run means |
-| 8 | AIRS calibration | $0 | Target **silent failure**; benchmark against agent self-confidence (already logged) |
+| ~~7~~ | ~~Statistical analysis~~ | $0 | ✅ **done — RQ2 + RQ3 answered.** Freshness on answerable retrieval: **OR 1.00, p = 0.998**. `docs/statistical_analysis_findings.md`. |
+| **8** | AIRS calibration | $0 | **← next (free).** Target **flip-conditioned** silent failure; benchmark against agent self-confidence (already logged) |
 | 9 | `airs probe` | $0 | Standalone pipeline scorer — makes "pre-deployment" concrete |
 | 10 | AIST demo rebuild | $0 | Around detectability: same stale record with/without its age, side by side |
 | 11 | `airs lint` *(stretch)* | $0 | Static semantic-completeness for schemas; first to cut if time is short |
@@ -184,6 +184,7 @@ Everything needed is in the repo — this file plus:
 | `docs/flip_partition_findings.md` | Why freshness accuracy is not a result, and what is |
 | `docs/detectability_findings.md` | The detectability arm's null, and why it is the useful answer |
 | `docs/freshness_sweep_findings.md` | RQ1 answered: monotone, threshold 5.05 s, and the decomposition it rests on |
+| `docs/statistical_analysis_findings.md` | RQ2 + RQ3 answered at decision level; why 'freshness' is two phenomena |
 | `docs/research_questions_v2.md` | Current RQs, hypotheses, stats plan, declared parameters. Supersedes the proposal. |
 | `docs/chapter3_methodology.md` | Methodology as implemented (Chapter 3 draft) |
 | `docs/literature_review.md` | 25+ verified sources; the gap claim as it can actually be defended |

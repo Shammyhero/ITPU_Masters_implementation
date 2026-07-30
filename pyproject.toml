@@ -20,8 +20,7 @@ pipelines = ["confluent-kafka>=2.3", "psycopg2-binary>=2.9", "prometheus-client>
 agents = ["langchain>=0.2", "langgraph>=0.1", "langchain-openai>=0.1", "scikit-learn>=1.4"]
 analysis = [
     "scipy>=1.12",
-    "pingouin>=0.5",
-    "ruptures>=1.1",
+    "scikit-learn>=1.4",
     "statsmodels>=0.14",
     "seaborn>=0.13",
     "jupyter",
