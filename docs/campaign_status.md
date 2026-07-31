@@ -1,6 +1,6 @@
 # Campaign status & session handoff
 
-**Updated:** 2026-07-31 · **all five paid/free arms COMPLETE — 230 runs**
+**Updated:** 2026-07-31 · **ALL EXPERIMENTAL ARMS COMPLETE — 248 runs**
 
 This is the operational entry point for any session. Read `CLAUDE.md` first for
 the invariants that must not be broken, then this file for what to do next.
@@ -14,11 +14,11 @@ the invariants that must not be broken, then this file for what to do next.
 | Design | Paired, replication-major, 144 runs @ 80 queries |
 | Phase 1 | ✅ **complete — GO** (36/36, all four checks passed) |
 | Phase 2 | ✅ **complete** — 78/78, zero failures |
-| Runs on disk | **144** main · **14** detectability · **36** sweep · **36** local cross-model |
-| Spent | **$1.91** of ~$7 OpenAI · $0 of ~$4 Anthropic |
-| Tests | 235 passing · lint clean |
+| Runs on disk | **144** main · **14** detectability · **36** sweep · **54** cross-model (3 models) |
+| Spent | **$1.91** of ~$7 OpenAI · **$2.73** of ~$4 Anthropic |
+| Tests | 247 passing · lint clean |
 | AIRS fix | freshness double-count corrected in code; 16 old runs recomputed in the analysis layer |
-| Analysis | RQ1 ✅ · RQ2 ✅ · RQ3 ✅ · RQ5 (retrieval) ✅ · flip partition ✅ · detectability ✅ |
+| Analysis | **RQ1 ✅ · RQ2 ✅ · RQ3 ✅ · RQ5 ✅** · flip partition ✅ · detectability ✅ |
 
 Resumption is exact: `build_grid()` is deterministic and every run writes its
 JSON on completion. Interrupting mid-run loses only that run (~$0.01).
@@ -70,9 +70,9 @@ changed is how its results are read.
 | ~~3~~ | ~~**Finish phase 2**~~ | $0.768 | ✅ **done — 144/144, zero failures.** All conclusions held and tightened at 4 replications. |
 | ~~4~~ | ~~Freshness sweep~~ | $0.290 | ✅ **done — monotone on both tasks.** Threshold 5.05 s. `docs/freshness_sweep_findings.md`. |
 | ~~5~~ | ~~Cross-model: local open weights~~ | $0 | ✅ **done — ranking transfers (mean τ +0.778).** Both models FLOOR on classification; retrieval only. `docs/cross_model_findings.md`. |
-| **6** | Cross-model: `--cross-model claude-haiku-4-5 --n-queries 100` | ~$1.68 | **← next, and now the strongest remaining use of budget.** Both local models floored on classification, so cross-model generalisation there is untested and needs a capable model. $5.09 of the OpenAI+Anthropic budget remains. |
+| ~~6~~ | ~~Cross-model: Haiku~~ | $2.73 | ✅ **done — 18/18.** Ranking transfers across models but **inverts across tasks**. `docs/cross_model_findings.md`. Cost ran 1.8× the estimate; the spend guard caught it at 12/18 and the estimator is now calibrated per model family. |
 | ~~7~~ | ~~Statistical analysis~~ | $0 | ✅ **done — RQ2 + RQ3 answered.** Freshness on answerable retrieval: **OR 1.00, p = 0.998**. `docs/statistical_analysis_findings.md`. |
-| **8** | AIRS calibration | $0 | **← next (free).** Target **flip-conditioned** silent failure; benchmark against agent self-confidence (already logged) |
+| **8** | AIRS calibration | $0 | **← next (free), and now the critical path.** Target **flip-conditioned** silent failure; benchmark against agent self-confidence. RQ5 says calibrate **per task**, not per model — and rank on more than silent failure alone. |
 | 9 | `airs probe` | $0 | Standalone pipeline scorer — makes "pre-deployment" concrete |
 | 10 | AIST demo rebuild | $0 | Around detectability: same stale record with/without its age, side by side |
 | 11 | `airs lint` *(stretch)* | $0 | Static semantic-completeness for schemas; first to cut if time is short |
@@ -175,7 +175,7 @@ Everything needed is in the repo — this file plus:
 | `docs/detectability_findings.md` | The detectability arm's null, and why it is the useful answer |
 | `docs/freshness_sweep_findings.md` | RQ1 answered: monotone, threshold 5.05 s, and the decomposition it rests on |
 | `docs/statistical_analysis_findings.md` | RQ2 + RQ3 answered at decision level; why 'freshness' is two phenomena |
-| `docs/cross_model_findings.md` | RQ5: the ranking transfers; both local models floor on classification |
+| `docs/cross_model_findings.md` | RQ5: ranking transfers across models, inverts across tasks; refusal can mask damage |
 | `docs/research_questions_v2.md` | Current RQs, hypotheses, stats plan, declared parameters. Supersedes the proposal. |
 | `docs/chapter3_methodology.md` | Methodology as implemented (Chapter 3 draft) |
 | `docs/literature_review.md` | 25+ verified sources; the gap claim as it can actually be defended |

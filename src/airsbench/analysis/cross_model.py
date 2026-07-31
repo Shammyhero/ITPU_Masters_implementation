@@ -163,6 +163,35 @@ def min_achievable_p(k: int) -> float:
     return float(kendalltau(list(range(k)), list(range(k))).pvalue)
 
 
+def abstention_rates(frame, model: str, task: str) -> dict[str, float]:
+    """Abstention rate per fault — the other half of the damage picture.
+
+    A fault that drives refusal LOWERS the silent-failure odds ratio while
+    destroying accuracy, so silent failure alone can rank a devastating fault
+    as harmless. Haiku under semantic stripping on classification is the case
+    in point: accuracy 0.29, abstention 64%, and silent failure BELOW baseline
+    for an OR of 0.80. Reporting the ranking without this would repeat the
+    exact conflation the flip partition removed.
+    """
+    sel = frame[(frame["model"] == model) & (frame["task"] == task)]
+    if task == "retrieval":
+        sel = sel[~sel["flipped"]]
+    return {
+        fault: float(group["abstained"].mean())
+        for fault, group in sel.groupby("fault")
+    }
+
+
+def accuracy_by_fault(frame, model: str, task: str) -> dict[str, float]:
+    sel = frame[(frame["model"] == model) & (frame["task"] == task)]
+    if task == "retrieval":
+        sel = sel[~sel["flipped"]]
+    return {
+        fault: float(group["correct"].mean())
+        for fault, group in sel.groupby("fault")
+    }
+
+
 def damaging_set(effects: dict[str, float]) -> frozenset[str]:
     """Which faults materially raise silent failure for this model."""
     return frozenset(f for f, orr in effects.items() if orr >= DAMAGING_OR)
@@ -229,6 +258,31 @@ def report(frame) -> int:
                 order = sorted(rankings[(model, task)],
                                key=lambda f: rankings[(model, task)][f])
                 print(f"     {model:<28} {' > '.join(order)}")
+
+    # ---- 2b. what a low silent-failure OR can hide ------------------------
+    print("\n2b. DETECTION CHECK — accuracy and abstention behind each OR")
+    print("    A fault that drives REFUSAL lowers the silent-failure OR while")
+    print("    destroying accuracy. An OR below 1 is not evidence of safety.")
+    for task in ("retrieval", "classification"):
+        eligible = [m for m in models if (m, task) in rankings]
+        if not eligible:
+            continue
+        print(f"\n   {task}")
+        print(f"   {'model':<30}{'fault':<22}{'acc':>7}{'abstain':>9}{'OR':>7}")
+        print("   " + "-" * 75)
+        for model in eligible:
+            effects = fault_effects(frame, model, task)
+            abst = abstention_rates(frame, model, task)
+            acc = accuracy_by_fault(frame, model, task)
+            base_acc = acc.get("none", float("nan"))
+            for fault in FAULTS:
+                if fault not in effects:
+                    continue
+                flag = ""
+                if effects[fault] < 1.2 and acc.get(fault, 1.0) < base_acc - 0.15:
+                    flag = "  <- masked by refusal"
+                print(f"   {model:<30}{fault:<22}{acc.get(fault, float('nan')):>7.3f}"
+                      f"{abst.get(fault, 0.0):>9.0%}{effects[fault]:>7.2f}{flag}")
 
     # ---- 3. the coarse claim: which faults matter at all ------------------
     print(f"\n3. PARTITION STABILITY — which faults are damaging (OR >= "

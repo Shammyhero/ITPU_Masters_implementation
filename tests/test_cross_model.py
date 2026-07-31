@@ -210,3 +210,30 @@ def test_two_shared_faults_are_still_incomparable():
     """Kendall needs 3 points; 2 always looks perfectly concordant."""
     tau, _ = kendall({"freshness": 1, "latency": 2}, {"freshness": 1, "latency": 2})
     assert tau != tau
+
+
+# ---- a refusal-driven fault must not read as harmless ----------------------
+
+def test_a_low_odds_ratio_with_collapsed_accuracy_is_flagged():
+    """Haiku under semantic stripping on classification: accuracy 0.29,
+    abstention 64%, silent failure BELOW baseline for an OR of 0.80. Ranking
+    on silent failure alone would call the most destructive fault the safest."""
+    import pandas as pd
+
+    from airsbench.analysis.cross_model import abstention_rates, accuracy_by_fault
+
+    rows = []
+    for fault, correct, abstained in (("none", 90, 2), ("semantic_stripping", 29, 64)):
+        for i in range(100):
+            rows.append({
+                "model": "m", "task": "classification", "fault": fault,
+                "correct": int(i < correct), "abstained": int(i < abstained),
+                "silent": 0, "parse_failed": 0, "flipped": False,
+                "run_id": fault, "condition": fault,
+            })
+    frame = pd.DataFrame(rows)
+    acc = accuracy_by_fault(frame, "m", "classification")
+    abst = abstention_rates(frame, "m", "classification")
+
+    assert acc["semantic_stripping"] < acc["none"] - 0.15, "accuracy must have collapsed"
+    assert abst["semantic_stripping"] > 0.5, "and refusal must be where it went"
