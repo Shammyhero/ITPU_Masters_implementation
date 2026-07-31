@@ -19,6 +19,7 @@ from airsbench.agents.llm import (
     LLMClient,
     LLMUsage,
     estimate_cost_usd,
+    is_anthropic_model,
     is_local_model,
     local_model_name,
     ollama_base_url,
@@ -129,3 +130,59 @@ def test_the_cross_model_grid_costs_nothing_to_estimate_for_a_local_model():
     for cfg in grid:
         cfg.n_queries = 100
     assert estimate_grid_cost(grid) == 0.0
+
+
+# ---- Anthropic routing -----------------------------------------------------
+#
+# Claude goes through langchain-anthropic rather than the Anthropic SDK so the
+# harness stays identical across arms — same prompts, same parser, same
+# treatment of unparseable output. RQ5 must compare models, not harnesses.
+
+HAIKU = "claude-haiku-4-5"
+
+
+def test_claude_models_route_to_anthropic_and_nothing_else_does():
+    assert is_anthropic_model(HAIKU)
+    assert not is_anthropic_model("gpt-4o-mini")
+    assert not is_anthropic_model(LOCAL)
+    assert not is_local_model(HAIKU)
+
+
+def test_haiku_is_priced_and_matches_the_published_rate():
+    """$1.00 / $5.00 per million tokens."""
+    assert PRICING[HAIKU]["input"] == pytest.approx(1.00 / 1e6)
+    assert PRICING[HAIKU]["output"] == pytest.approx(5.00 / 1e6)
+
+
+def test_no_priced_claude_id_carries_a_date_suffix():
+    """The aliases are complete as written; a date-suffixed variant 404s."""
+    import re
+
+    for model in (m for m in PRICING if is_anthropic_model(m)):
+        assert not re.search(r"-20\d{6}$", model), f"{model} looks date-suffixed"
+
+
+def test_an_anthropic_client_needs_its_own_key(monkeypatch):
+    monkeypatch.setattr("airsbench.agents.llm.load_dotenv", lambda *a, **k: None)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-openai")
+    with pytest.raises(RuntimeError, match="ANTHROPIC_API_KEY"):
+        LLMClient(HAIKU, temperature=0.2)
+
+
+def test_temperature_reaches_haiku_unchanged(monkeypatch):
+    """Held-constant variable. Haiku 4.5 still accepts sampling parameters —
+    Sonnet 5 and Opus 4.7+ reject them, which is why this arm uses Haiku."""
+    monkeypatch.setattr("airsbench.agents.llm.load_dotenv", lambda *a, **k: None)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    assert LLMClient(HAIKU, temperature=0.2).chat.temperature == pytest.approx(0.2)
+
+
+def test_the_cross_model_arm_costs_what_the_roadmap_budgeted():
+    from airsbench.runner.config import build_cross_model_subset
+    from airsbench.runner.run import estimate_grid_cost
+
+    grid = build_cross_model_subset(HAIKU)
+    for cfg in grid:
+        cfg.n_queries = 100
+    assert estimate_grid_cost(grid) == pytest.approx(1.68, abs=0.05)

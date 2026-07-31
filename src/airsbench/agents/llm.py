@@ -23,6 +23,7 @@ from typing import Any
 # extra dependency is needed. They are absent from PRICING, which is what makes
 # them free: estimate_cost_usd and LLMUsage.cost_usd both return 0.0 for a
 # model they do not price.
+ANTHROPIC_PREFIX = "claude-"
 OLLAMA_PREFIX = "ollama/"
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434/v1"
 # Local inference is far slower than a hosted API, especially on first load
@@ -79,6 +80,10 @@ def is_local_model(model: str) -> bool:
     return model.startswith(OLLAMA_PREFIX)
 
 
+def is_anthropic_model(model: str) -> bool:
+    return model.startswith(ANTHROPIC_PREFIX)
+
+
 def local_model_name(model: str) -> str:
     """Strip the routing prefix: 'ollama/llama3.1:8b' -> 'llama3.1:8b'."""
     return model[len(OLLAMA_PREFIX):] if is_local_model(model) else model
@@ -100,10 +105,16 @@ class LLMClient:
     """
 
     def __init__(self, model: str, temperature: float, max_retries: int = 3) -> None:
-        from langchain_openai import ChatOpenAI
-
         load_dotenv()
         self.model = model
+
+        if is_anthropic_model(model):
+            self.chat = self._anthropic_chat(model, temperature, max_retries)
+            self.usage = LLMUsage()
+            return
+
+        from langchain_openai import ChatOpenAI
+
         local = is_local_model(model)
         if not local and not os.environ.get("OPENAI_API_KEY"):
             raise RuntimeError("OPENAI_API_KEY not set (put it in .env)")
@@ -122,6 +133,39 @@ class LLMClient:
             options["openai_api_key"] = "ollama"
         self.chat = ChatOpenAI(**options)
         self.usage = LLMUsage()
+
+    @staticmethod
+    def _anthropic_chat(model: str, temperature: float, max_retries: int):
+        """Claude via langchain-anthropic, on the same LangChain path as the rest.
+
+        The Anthropic SDK would be the idiomatic client, but this harness must
+        stay identical across arms or RQ5 measures harnesses rather than models.
+        Same prompts, same parser, same treatment of unparseable output.
+
+        One asymmetry, recorded rather than hidden: the OpenAI path pins
+        `response_format: json_object`, and the Anthropic Messages API has no
+        equivalent knob exposed here. Claude is therefore held to the prompt's
+        "Respond with JSON only" instruction plus `call_json`'s block-extraction
+        fallback. Any residual failure is counted as a parse failure — which is
+        an agent failure by invariant 6, and is reported per run.
+
+        Haiku 4.5 still accepts `temperature`; Sonnet 5 and Opus 4.7+ reject
+        non-default sampling parameters, which is why this arm uses Haiku.
+        Model IDs carry no date suffix.
+        """
+        from langchain_anthropic import ChatAnthropic
+
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            raise RuntimeError("ANTHROPIC_API_KEY not set (put it in .env)")
+        return ChatAnthropic(
+            model=model,
+            temperature=temperature,
+            max_retries=max_retries,
+            timeout=60,
+            # Task outputs are a single short JSON object; 1024 is ample
+            # headroom without inviting a long generation.
+            max_tokens=1024,
+        )
 
     def call_json(self, messages: list[tuple[str, str]]) -> dict[str, Any] | None:
         """Return parsed JSON, or None when the agent's output is unusable."""
