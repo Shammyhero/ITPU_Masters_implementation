@@ -1,0 +1,46 @@
+{
+  "schema": "airs-weights/1",
+  "calibrated_at": "2026-08-01",
+  "target": "wrong",
+  "target_note": "Total error, not silent failure. The silent/refusal split is an agent property; a pipeline score predicts pipeline-caused harm.",
+  "fitted_on": {
+    "model": "gpt-4o-mini",
+    "arms": [
+      "main",
+      "freshness_sweep"
+    ],
+    "decisions": 13554,
+    "split_seed": 20260731
+  },
+  "profiles": {
+    "classification": {
+      "freshness": 0.2115,
+      "latency": 0.0,
+      "consistency": 0.2543,
+      "semantic": 0.5342
+    },
+    "retrieval": {
+      "freshness": 0.1294,
+      "latency": 0.0,
+      "consistency": 0.702,
+      "semantic": 0.1686
+    }
+  },
+  "validation": {
+    "classification": {
+      "train_runs": 72,
+      "held_out_runs": 18,
+      "held_out_spearman": -0.8816,
+      "held_out_p": 1e-06,
+      "n_held_out_for_rho": 18
+    },
+    "retrieval": {
+      "train_runs": 72,
+      "held_out_runs": 18,
+      "held_out_spearman": -0.7483,
+      "held_out_p": 0.000354,
+      "n_held_out_for_rho": 18
+    }
+  },
+  "caveat": "Weights are fitted on synthetic faults in one study. AIRS is a method to recalibrate per deployment, not a universal constant. Per-task profiles are required: the ranking inverts across tasks."
+}

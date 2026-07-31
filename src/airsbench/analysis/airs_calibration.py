@@ -306,12 +306,83 @@ def report(frame) -> int:
     return 0
 
 
+def export_weights(frame, out_path: Path, target: str = "wrong") -> dict[str, Any]:
+    """Write the calibrated per-task weights for `airs probe` to consume.
+
+    Target defaults to total error, not silent failure — see RQ4 §3. The split
+    between silent failure and refusal is a property of the agent, so a
+    pipeline score should be fitted against pipeline-caused harm.
+    """
+    import datetime
+
+    primary = frame[
+        (frame["model"] == PRIMARY_MODEL) & (frame["arm"].isin(TRAINING_ARMS))
+    ]
+    profiles: dict[str, dict[str, float]] = {}
+    provenance: dict[str, Any] = {}
+    for task in sorted(primary["task"].unique()):
+        task_frame = primary[primary["task"] == task]
+        train, held = split_by_run(task_frame)
+        weights = normalised_weights(fit_weights(train, target))
+        rho, rho_p, n_runs = run_level_ranking(held, weights, target)
+        profiles[task] = {d: round(weights[d], 4) for d in DIMENSIONS}
+        provenance[task] = {
+            "train_runs": int(train["run_id"].nunique()),
+            "held_out_runs": int(held["run_id"].nunique()),
+            "held_out_spearman": round(rho, 4),
+            "held_out_p": round(rho_p, 6),
+            "n_held_out_for_rho": n_runs,
+        }
+
+    payload = {
+        "schema": "airs-weights/1",
+        "calibrated_at": datetime.date.today().isoformat(),
+        "target": target,
+        "target_note": (
+            "Total error, not silent failure. The silent/refusal split is an "
+            "agent property; a pipeline score predicts pipeline-caused harm."
+        ),
+        "fitted_on": {
+            "model": PRIMARY_MODEL,
+            "arms": list(TRAINING_ARMS),
+            "decisions": int(len(primary)),
+            "split_seed": SPLIT_SEED,
+        },
+        "profiles": profiles,
+        "validation": provenance,
+        "caveat": (
+            "Weights are fitted on synthetic faults in one study. AIRS is a "
+            "method to recalibrate per deployment, not a universal constant. "
+            "Per-task profiles are required: the ranking inverts across tasks."
+        ),
+    }
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(payload, indent=2) + "\n")
+    return payload
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--results", type=Path, default=Path("results/runs"))
     parser.add_argument("--data-dir", type=Path, default=Path("data/ecommerce"))
+    parser.add_argument(
+        "--export",
+        type=Path,
+        default=None,
+        metavar="PATH",
+        help="write calibrated per-task weights for `airs probe` and exit",
+    )
     args = parser.parse_args(argv)
-    return report(build_frame(args.results, args.data_dir))
+    frame = build_frame(args.results, args.data_dir)
+    if args.export is not None:
+        payload = export_weights(frame, args.export)
+        print(f"Wrote {args.export} — target={payload['target']}")
+        for task, weights in payload["profiles"].items():
+            rho = payload["validation"][task]["held_out_spearman"]
+            print(f"  {task:<16}" + "  ".join(f"{d}={w:.1%}" for d, w in weights.items())
+                  + f"   (held-out rho {rho:+.3f})")
+        return 0
+    return report(frame)
 
 
 if __name__ == "__main__":

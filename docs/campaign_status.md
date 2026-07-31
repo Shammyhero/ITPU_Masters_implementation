@@ -16,7 +16,7 @@ the invariants that must not be broken, then this file for what to do next.
 | Phase 2 | ✅ **complete** — 78/78, zero failures |
 | Runs on disk | **144** main · **14** detectability · **36** sweep · **54** cross-model (3 models) |
 | Spent | **$1.91** of ~$7 OpenAI · **$2.73** of ~$4 Anthropic |
-| Tests | 265 passing · lint clean |
+| Tests | 291 passing · lint clean |
 | AIRS fix | freshness double-count corrected in code; 16 old runs recomputed in the analysis layer |
 | Analysis | **RQ1 ✅ · RQ2 ✅ · RQ3 ✅ · RQ4 ✅ · RQ5 ✅ — all five answered** |
 
@@ -73,8 +73,8 @@ changed is how its results are read.
 | ~~6~~ | ~~Cross-model: Haiku~~ | $2.73 | ✅ **done — 18/18.** Ranking transfers across models but **inverts across tasks**. `docs/cross_model_findings.md`. Cost ran 1.8× the estimate; the spend guard caught it at 12/18 and the estimator is now calibrated per model family. |
 | ~~7~~ | ~~Statistical analysis~~ | $0 | ✅ **done — RQ2 + RQ3 answered.** Freshness on answerable retrieval: **OR 1.00, p = 0.998**. `docs/statistical_analysis_findings.md`. |
 | ~~8~~ | ~~AIRS calibration~~ | $0 | ✅ **done — RQ4 answered.** Ranks held-out pipelines at ρ ≈ −0.8; **beats agent confidence on retrieval, where confidence is at chance (AUC 0.501)**. `docs/airs_calibration_findings.md`. |
-| **9** | `airs probe` | $0 | **← next.** Standalone pipeline scorer — makes "pre-deployment" concrete. Ship the two calibrated weight vectors (one per task family) from RQ4. |
-| 10 | AIST demo rebuild | $0 | Around detectability: same stale record with/without its age, side by side |
+| ~~9~~ | ~~`airs probe`~~ | $0 | ✅ **done — `python -m airsbench.probe`.** Scores a pipeline with no agent, no ground truth, no model calls. Ships the RQ4 weights as a versioned artifact; refuses to score an unmeasured dimension as healthy. Worked example in `examples/probe/`. |
+| **10** | AIST demo rebuild | $0 | **← next.** Three-way panel per `cross_model_findings.md` §5: no metadata, age alone, age + enforced budget. The two-way contrast the arm was designed around does not exist — both lie. |
 | 11 | `airs lint` *(stretch)* | $0 | Static semantic-completeness for schemas; first to cut if time is short |
 | 12 | Release + chapters | $0 | HuggingFace, Zenodo DOI, Results/Discussion/Conclusion |
 
@@ -177,6 +177,7 @@ Everything needed is in the repo — this file plus:
 | `docs/statistical_analysis_findings.md` | RQ2 + RQ3 answered at decision level; why 'freshness' is two phenomena |
 | `docs/cross_model_findings.md` | RQ5: ranking transfers across models, inverts across tasks; refusal can mask damage |
 | `docs/airs_calibration_findings.md` | RQ4: calibrated weights per task; agent confidence is at chance on retrieval |
+| `examples/probe/README.md` | `airs probe` worked example — healthy vs degraded pipeline, real catalog data |
 | `docs/research_questions_v2.md` | Current RQs, hypotheses, stats plan, declared parameters. Supersedes the proposal. |
 | `docs/chapter3_methodology.md` | Methodology as implemented (Chapter 3 draft) |
 | `docs/literature_review.md` | 25+ verified sources; the gap claim as it can actually be defended |
