@@ -178,11 +178,36 @@ def test_temperature_reaches_haiku_unchanged(monkeypatch):
     assert LLMClient(HAIKU, temperature=0.2).chat.temperature == pytest.approx(0.2)
 
 
-def test_the_cross_model_arm_costs_what_the_roadmap_budgeted():
+def test_the_haiku_arm_is_estimated_from_measured_claude_token_use():
+    """The roadmap's $1.68 came from gpt-4o-mini's token profile and was 1.8x
+    low — the guard stopped the arm 12 runs in. Measured cost projects to
+    $3.05; the estimate must now land near that, not near the old figure."""
     from airsbench.runner.config import build_cross_model_subset
     from airsbench.runner.run import estimate_grid_cost
 
     grid = build_cross_model_subset(HAIKU)
     for cfg in grid:
         cfg.n_queries = 100
-    assert estimate_grid_cost(grid) == pytest.approx(1.68, abs=0.05)
+    assert estimate_grid_cost(grid) == pytest.approx(3.05, rel=0.10)
+
+
+def test_claude_is_estimated_more_expensively_than_the_openai_default():
+    """Output tokens dominate on Claude (priced 5x input), and Haiku emits
+    3-6x more of them than gpt-4o-mini. A shared profile hides that."""
+    from airsbench.runner.run import TOKEN_PROFILES, token_profile
+
+    assert token_profile(HAIKU) is TOKEN_PROFILES["claude"]
+    assert token_profile("gpt-4o-mini") is TOKEN_PROFILES["default"]
+    assert token_profile(LOCAL) is TOKEN_PROFILES["default"]
+    for task in ("retrieval", "classification"):
+        assert token_profile(HAIKU)[task][1] > token_profile("gpt-4o-mini")[task][1]
+
+
+def test_the_openai_estimate_is_unchanged_by_the_recalibration():
+    """Phase 1/2 were costed on the default profile; it must not have moved."""
+    from airsbench.runner.run import TOKEN_PROFILES
+
+    assert TOKEN_PROFILES["default"] == {
+        "retrieval": (1150, 30),
+        "classification": (420, 30),
+    }

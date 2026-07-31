@@ -180,3 +180,33 @@ def test_the_partition_threshold_sits_in_the_observed_gap():
 
 def test_a_fault_below_threshold_is_excluded():
     assert damaging_set({"freshness": 1.49, "schema_drift": 1.51}) == {"schema_drift"}
+
+
+# ---- incomparable pairs must not poison the verdict ------------------------
+#
+# A pair with fewer than 3 shared faults yields NaN. Averaging that NaN in
+# turns "not enough data" into a confident "does not generalise" — which is
+# exactly what happened when the Haiku arm stopped part-way through
+# classification and left one shared fault.
+
+def test_a_nan_pair_would_poison_a_naive_mean():
+    """The failure this guard exists to prevent, reproduced."""
+    import math
+
+    taus = [1.0, 0.667, 0.667, float("nan")]
+    assert math.isnan(sum(taus) / len(taus))
+
+    comparable = [t for t in taus if t == t]
+    assert sum(comparable) / len(comparable) == pytest.approx(0.778, abs=0.01)
+
+
+def test_one_shared_fault_is_reported_as_incomparable_not_as_disagreement(capsys):
+    """An arm that only ran one condition must not read as a failed transfer."""
+    tau, p = kendall({"freshness": 1}, {"freshness": 1})
+    assert tau != tau and p != p
+
+
+def test_two_shared_faults_are_still_incomparable():
+    """Kendall needs 3 points; 2 always looks perfectly concordant."""
+    tau, _ = kendall({"freshness": 1, "latency": 2}, {"freshness": 1, "latency": 2})
+    assert tau != tau

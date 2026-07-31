@@ -23,13 +23,35 @@ from .config import (
     build_grid,
 )
 
-# Calibrated against observed token usage from smoke runs rather than
-# estimated from the templates: the original estimates (1600/550/40) ran
-# ~35% high, which made the spend guard refuse runs that would have fit.
-# Re-derive these from `results/runs/*.json` usage fields if the prompts
-# change materially.
-AVG_INPUT_TOKENS = {"retrieval": 1150, "classification": 420}
+# Token profiles per model family, calibrated against measured usage in
+# results/runs/*.json. Re-derive after any material prompt change.
+#
+# There are TWO figures per task because output length varies far more by model
+# than input length does, and output is priced 5x input on Claude. A single
+# global output figure (30 tokens, measured on gpt-4o-mini) under-estimated the
+# Haiku arm by 1.8x and tripped the spend guard 12 runs in: Haiku emits 102
+# output tokens per retrieval call and 192 per classification call, not 30.
+# Input was close (1.09x / 1.34x); output was 3.4x / 6.4x off.
+TOKEN_PROFILES: dict[str, dict[str, tuple[int, int]]] = {
+    # (avg input tokens, avg output tokens) per call
+    "default": {"retrieval": (1150, 30), "classification": (420, 30)},
+    "claude": {"retrieval": (1250, 105), "classification": (565, 195)},
+}
+
+# Kept for callers that only need the input figure (and for the tests that
+# pinned the original calibration).
+AVG_INPUT_TOKENS = {
+    task: tokens[0] for task, tokens in TOKEN_PROFILES["default"].items()
+}
 AVG_OUTPUT_TOKENS = 30
+
+
+def token_profile(model: str) -> dict[str, tuple[int, int]]:
+    """Per-call token estimates for this model's family."""
+    from ..agents.llm import is_anthropic_model
+
+    return TOKEN_PROFILES["claude" if is_anthropic_model(model) else "default"]
+
 
 SMOKE_CONDITIONS = [
     # (task, fault_type, severity) — baseline vs. the two faults the
@@ -65,12 +87,11 @@ def build_smoke_grid(n_queries: int) -> list[RunConfig]:
 
 
 def estimate_grid_cost(configs: list[RunConfig]) -> float:
-    return sum(
-        estimate_cost_usd(
-            cfg.model, cfg.n_queries, AVG_INPUT_TOKENS[cfg.task], AVG_OUTPUT_TOKENS
-        )
-        for cfg in configs
-    )
+    total = 0.0
+    for cfg in configs:
+        avg_in, avg_out = token_profile(cfg.model)[cfg.task]
+        total += estimate_cost_usd(cfg.model, cfg.n_queries, avg_in, avg_out)
+    return total
 
 
 def execute_configs(configs: list[RunConfig], args) -> int:

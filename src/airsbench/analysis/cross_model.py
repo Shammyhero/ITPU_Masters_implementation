@@ -248,6 +248,7 @@ def report(frame) -> int:
 
     # ---- 4. does the fine ranking hold? ----------------------------------
     print("\n4. RANK AGREEMENT — Kendall's tau on the full fault ordering")
+    skipped: list[str] = []
     floor = min_achievable_p(len(FAULTS))
     print(f"   NOTE: with {len(FAULTS)} faults the smallest attainable two-sided p is "
           f"{floor:.4f},\n   so NO pairwise tau here can reach p < 0.05 however cleanly the "
@@ -258,16 +259,30 @@ def report(frame) -> int:
         for i, a in enumerate(eligible):
             for b in eligible[i + 1:]:
                 tau, p = kendall(rankings[(a, task)], rankings[(b, task)])
-                pairs.append(tau)
                 print(f"   {task:<16}{a} vs {b}")
+                if tau != tau:  # NaN — fewer than 3 faults in common
+                    shared = sorted(set(rankings[(a, task)]) & set(rankings[(b, task)]))
+                    skipped.append(f"{task}: {a} vs {b} ({len(shared)} shared fault(s))")
+                    print(f"   {'':<16}not comparable — only {len(shared)} fault(s) in "
+                          f"common, tau needs 3")
+                    continue
+                pairs.append(tau)
                 print(f"   {'':<16}tau = {tau:+.3f}  (p = {p:.4f})")
+    if skipped:
+        print(f"\n   {len(skipped)} pair(s) EXCLUDED from the mean as incomparable:")
+        for entry in skipped:
+            print(f"     - {entry}")
+        print("   An incomparable pair is not a disagreement. Averaging a NaN in")
+        print("   would turn 'not enough data' into a false 'does not generalise'.")
+
     if not pairs:
-        print("   no comparable pairs")
+        print("\n   No comparable pairs — RQ5 cannot be answered from this data.")
         return 0
 
     mean_tau = sum(pairs) / len(pairs)
     print("\n" + "=" * 78)
-    print(f"Mean Kendall's tau across {len(pairs)} model pairs: {mean_tau:+.3f}")
+    print(f"Mean Kendall's tau across {len(pairs)} comparable model pairs: "
+          f"{mean_tau:+.3f}")
     if mean_tau >= 0.5:
         print("=> The RANKING generalises across model classes. Which "
               "infrastructure\n   property hurts most is a property of the "
