@@ -16,9 +16,9 @@ the invariants that must not be broken, then this file for what to do next.
 | Phase 2 | ✅ **complete** — 78/78, zero failures |
 | Runs on disk | **144** main · **14** detectability · **36** sweep · **54** cross-model (3 models) |
 | Spent | **$1.91** of ~$7 OpenAI · **$2.73** of ~$4 Anthropic |
-| Tests | 247 passing · lint clean |
+| Tests | 265 passing · lint clean |
 | AIRS fix | freshness double-count corrected in code; 16 old runs recomputed in the analysis layer |
-| Analysis | **RQ1 ✅ · RQ2 ✅ · RQ3 ✅ · RQ5 ✅** · flip partition ✅ · detectability ✅ |
+| Analysis | **RQ1 ✅ · RQ2 ✅ · RQ3 ✅ · RQ4 ✅ · RQ5 ✅ — all five answered** |
 
 Resumption is exact: `build_grid()` is deterministic and every run writes its
 JSON on completion. Interrupting mid-run loses only that run (~$0.01).
@@ -72,8 +72,8 @@ changed is how its results are read.
 | ~~5~~ | ~~Cross-model: local open weights~~ | $0 | ✅ **done — ranking transfers (mean τ +0.778).** Both models FLOOR on classification; retrieval only. `docs/cross_model_findings.md`. |
 | ~~6~~ | ~~Cross-model: Haiku~~ | $2.73 | ✅ **done — 18/18.** Ranking transfers across models but **inverts across tasks**. `docs/cross_model_findings.md`. Cost ran 1.8× the estimate; the spend guard caught it at 12/18 and the estimator is now calibrated per model family. |
 | ~~7~~ | ~~Statistical analysis~~ | $0 | ✅ **done — RQ2 + RQ3 answered.** Freshness on answerable retrieval: **OR 1.00, p = 0.998**. `docs/statistical_analysis_findings.md`. |
-| **8** | AIRS calibration | $0 | **← next (free), and now the critical path.** Target **flip-conditioned** silent failure; benchmark against agent self-confidence. RQ5 says calibrate **per task**, not per model — and rank on more than silent failure alone. |
-| 9 | `airs probe` | $0 | Standalone pipeline scorer — makes "pre-deployment" concrete |
+| ~~8~~ | ~~AIRS calibration~~ | $0 | ✅ **done — RQ4 answered.** Ranks held-out pipelines at ρ ≈ −0.8; **beats agent confidence on retrieval, where confidence is at chance (AUC 0.501)**. `docs/airs_calibration_findings.md`. |
+| **9** | `airs probe` | $0 | **← next.** Standalone pipeline scorer — makes "pre-deployment" concrete. Ship the two calibrated weight vectors (one per task family) from RQ4. |
 | 10 | AIST demo rebuild | $0 | Around detectability: same stale record with/without its age, side by side |
 | 11 | `airs lint` *(stretch)* | $0 | Static semantic-completeness for schemas; first to cut if time is short |
 | 12 | Release + chapters | $0 | HuggingFace, Zenodo DOI, Results/Discussion/Conclusion |
@@ -176,6 +176,7 @@ Everything needed is in the repo — this file plus:
 | `docs/freshness_sweep_findings.md` | RQ1 answered: monotone, threshold 5.05 s, and the decomposition it rests on |
 | `docs/statistical_analysis_findings.md` | RQ2 + RQ3 answered at decision level; why 'freshness' is two phenomena |
 | `docs/cross_model_findings.md` | RQ5: ranking transfers across models, inverts across tasks; refusal can mask damage |
+| `docs/airs_calibration_findings.md` | RQ4: calibrated weights per task; agent confidence is at chance on retrieval |
 | `docs/research_questions_v2.md` | Current RQs, hypotheses, stats plan, declared parameters. Supersedes the proposal. |
 | `docs/chapter3_methodology.md` | Methodology as implemented (Chapter 3 draft) |
 | `docs/literature_review.md` | 25+ verified sources; the gap claim as it can actually be defended |
