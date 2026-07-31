@@ -1,6 +1,6 @@
 # Campaign status & session handoff
 
-**Updated:** 2026-07-28 · **main factorial + detectability + sweep COMPLETE**
+**Updated:** 2026-07-31 · **all five paid/free arms COMPLETE — 230 runs**
 
 This is the operational entry point for any session. Read `CLAUDE.md` first for
 the invariants that must not be broken, then this file for what to do next.
@@ -14,11 +14,11 @@ the invariants that must not be broken, then this file for what to do next.
 | Design | Paired, replication-major, 144 runs @ 80 queries |
 | Phase 1 | ✅ **complete — GO** (36/36, all four checks passed) |
 | Phase 2 | ✅ **complete** — 78/78, zero failures |
-| Runs on disk | **144** main · **14** detectability · **36** freshness sweep |
+| Runs on disk | **144** main · **14** detectability · **36** sweep · **36** local cross-model |
 | Spent | **$1.91** of ~$7 OpenAI · $0 of ~$4 Anthropic |
-| Tests | 218 passing · lint clean |
+| Tests | 235 passing · lint clean |
 | AIRS fix | freshness double-count corrected in code; 16 old runs recomputed in the analysis layer |
-| Analysis | flip partition ✅ · detectability ✅ · sweep ✅ · RQ2/RQ3 models ✅ |
+| Analysis | RQ1 ✅ · RQ2 ✅ · RQ3 ✅ · RQ5 (retrieval) ✅ · flip partition ✅ · detectability ✅ |
 
 Resumption is exact: `build_grid()` is deterministic and every run writes its
 JSON on completion. Interrupting mid-run loses only that run (~$0.01).
@@ -69,8 +69,8 @@ changed is how its results are read.
 | ~~2~~ | ~~**Detectability arm**~~ | $0.153 | ✅ **done — null branch.** Metadata alone changes nothing. `docs/detectability_findings.md`. |
 | ~~3~~ | ~~**Finish phase 2**~~ | $0.768 | ✅ **done — 144/144, zero failures.** All conclusions held and tightened at 4 replications. |
 | ~~4~~ | ~~Freshness sweep~~ | $0.290 | ✅ **done — monotone on both tasks.** Threshold 5.05 s. `docs/freshness_sweep_findings.md`. |
-| **5** | Cross-model: local open weights via Ollama — **both** `llama3.1:8b` and `qwen2.5:14b-instruct` | $0 | ⏸ **decided, deferred pending wifi.** Support is implemented + tested + dry-run at $0.000; only the install and weights are missing. Runbook below. |
-| 6 | Cross-model: `--cross-model claude-haiku-4-5 --n-queries 100` | ~$1.68 | Haiku, not Sonnet 5 — it still accepts `temperature` |
+| ~~5~~ | ~~Cross-model: local open weights~~ | $0 | ✅ **done — ranking transfers (mean τ +0.778).** Both models FLOOR on classification; retrieval only. `docs/cross_model_findings.md`. |
+| **6** | Cross-model: `--cross-model claude-haiku-4-5 --n-queries 100` | ~$1.68 | **← next, and now the strongest remaining use of budget.** Both local models floored on classification, so cross-model generalisation there is untested and needs a capable model. $5.09 of the OpenAI+Anthropic budget remains. |
 | ~~7~~ | ~~Statistical analysis~~ | $0 | ✅ **done — RQ2 + RQ3 answered.** Freshness on answerable retrieval: **OR 1.00, p = 0.998**. `docs/statistical_analysis_findings.md`. |
 | **8** | AIRS calibration | $0 | **← next (free).** Target **flip-conditioned** silent failure; benchmark against agent self-confidence (already logged) |
 | 9 | `airs probe` | $0 | Standalone pipeline scorer — makes "pre-deployment" concrete |
@@ -78,23 +78,13 @@ changed is how its results are read.
 | 11 | `airs lint` *(stretch)* | $0 | Static semantic-completeness for schemas; first to cut if time is short |
 | 12 | Release + chapters | $0 | HuggingFace, Zenodo DOI, Results/Discussion/Conclusion |
 
-### The deferred local arm — runbook
+### Note on local models, for anyone re-running them
 
-Decided 2026-07-28: run **both** models. Held only for bandwidth, not for the
-decision. `LLMClient` addresses local models as `ollama/<tag>` and routes them
-to an OpenAI-compatible endpoint; they are absent from `PRICING`, which is what
-makes them free, so the budget guard passes at `--max-cost 0.01`.
-
-```bash
-brew install ollama && ollama serve &
-ollama pull llama3.1:8b && ollama pull qwen2.5:14b-instruct
-python -m airsbench.runner.run --cross-model ollama/llama3.1:8b --n-queries 100 --dry-run --max-cost 0.01
-python -m airsbench.runner.run --cross-model ollama/llama3.1:8b --n-queries 100 --max-cost 0.01
-python -m airsbench.runner.run --cross-model ollama/qwen2.5:14b-instruct --n-queries 100 --max-cost 0.01
-```
-
-~1 h and ~2 h of wall-clock on an M4 Pro / 24 GB. `campaign_state` tracks each
-model independently, so the two can be run days apart.
+Ollama is installed and both models are pulled. Local throughput is **~4 s per
+retrieval call**, not the ~1 s a naive benchmark suggests — a benchmark that
+reuses one prompt hits llama.cpp's prompt cache, and real queries never do.
+Budget ~90 min per 8B model at 1800 calls, ~2.5 h at 14B. Use `caffeinate -i -w
+<pid>` and keep the lid open; closing it sleeps an Apple Silicon Mac regardless.
 
 ---
 
@@ -185,6 +175,7 @@ Everything needed is in the repo — this file plus:
 | `docs/detectability_findings.md` | The detectability arm's null, and why it is the useful answer |
 | `docs/freshness_sweep_findings.md` | RQ1 answered: monotone, threshold 5.05 s, and the decomposition it rests on |
 | `docs/statistical_analysis_findings.md` | RQ2 + RQ3 answered at decision level; why 'freshness' is two phenomena |
+| `docs/cross_model_findings.md` | RQ5: the ranking transfers; both local models floor on classification |
 | `docs/research_questions_v2.md` | Current RQs, hypotheses, stats plan, declared parameters. Supersedes the proposal. |
 | `docs/chapter3_methodology.md` | Methodology as implemented (Chapter 3 draft) |
 | `docs/literature_review.md` | 25+ verified sources; the gap claim as it can actually be defended |

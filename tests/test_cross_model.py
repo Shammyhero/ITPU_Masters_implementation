@@ -13,10 +13,13 @@ from pathlib import Path
 import pytest
 
 from airsbench.analysis.cross_model import (
+    DAMAGING_OR,
     FAULTS,
     baseline_health,
     build_frame,
+    damaging_set,
     kendall,
+    min_achievable_p,
     rank,
 )
 from airsbench.analysis.phase1_check import CHANCE
@@ -138,3 +141,42 @@ def test_retrieval_effects_exclude_mechanically_unanswerable_decisions():
     if effects:
         assert effects["freshness"] == pytest.approx(1.0, abs=0.4)
         assert effects["latency"] == pytest.approx(1.0, abs=0.2)
+
+
+# ---- the p-value floor -----------------------------------------------------
+#
+# With 4 faults even perfect agreement gives p = 0.083. Reporting the p-values
+# without saying so invites "not significant, so it does not generalise" from a
+# number that could not have been significant.
+
+def test_four_faults_cannot_reach_significance():
+    assert min_achievable_p(len(FAULTS)) == pytest.approx(0.0833, abs=1e-3)
+    assert min_achievable_p(len(FAULTS)) > 0.05
+
+
+def test_more_ranked_items_would_allow_significance():
+    assert min_achievable_p(6) < 0.05
+
+
+def test_too_few_items_returns_nan():
+    assert min_achievable_p(2) != min_achievable_p(2)
+
+
+# ---- partition stability ---------------------------------------------------
+
+def test_the_damaging_partition_ignores_order_within_each_group():
+    """The coarse claim must survive the top two swapping places."""
+    a = damaging_set({"freshness": 0.9, "latency": 1.0,
+                      "schema_drift": 3.8, "semantic_stripping": 2.9})
+    b = damaging_set({"freshness": 1.3, "latency": 1.4,
+                      "schema_drift": 2.5, "semantic_stripping": 3.7})
+    assert a == b == {"schema_drift", "semantic_stripping"}
+
+
+def test_the_partition_threshold_sits_in_the_observed_gap():
+    """Observed ORs cluster at 0.9-1.4 and 2.1-3.8, so the cut is not delicate."""
+    assert 1.4 < DAMAGING_OR < 2.1
+
+
+def test_a_fault_below_threshold_is_excluded():
+    assert damaging_set({"freshness": 1.49, "schema_drift": 1.51}) == {"schema_drift"}

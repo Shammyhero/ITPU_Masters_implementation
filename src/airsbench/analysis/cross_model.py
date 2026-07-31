@@ -37,6 +37,10 @@ from .phase1_check import CHANCE, FLOOR_MARGIN
 
 FAULTS = ("freshness", "latency", "schema_drift", "semantic_stripping")
 PRIMARY_MODEL = "gpt-4o-mini"
+# An odds ratio at or above this counts a fault as materially damaging. The
+# observed values cluster far from it (0.9-1.4 versus 2.1-3.8), so the partition
+# is not sensitive to where in that gap the line is drawn.
+DAMAGING_OR = 1.5
 
 
 def build_frame(results_dir: Path, data_dir: Path):
@@ -142,6 +146,28 @@ def kendall(a: dict[str, int], b: dict[str, int]) -> tuple[float, float]:
     return float(result.statistic), float(result.pvalue)
 
 
+def min_achievable_p(k: int) -> float:
+    """Smallest two-sided p Kendall's tau can return for k ranked items.
+
+    With k=4 faults even PERFECT agreement gives p = 0.083, so no pairwise
+    comparison in this arm can reach conventional significance however cleanly
+    the ranking transfers. Reporting the p-values without this would invite the
+    reader to conclude "not significant, so it does not generalise" from a
+    number that could not have been significant. The tau point estimate and the
+    partition stability below are the evidence; the p-value is not.
+    """
+    from scipy.stats import kendalltau
+
+    if k < 3:
+        return float("nan")
+    return float(kendalltau(list(range(k)), list(range(k))).pvalue)
+
+
+def damaging_set(effects: dict[str, float]) -> frozenset[str]:
+    """Which faults materially raise silent failure for this model."""
+    return frozenset(f for f, orr in effects.items() if orr >= DAMAGING_OR)
+
+
 def report(frame) -> int:
     models = sorted(frame["model"].unique(),
                     key=lambda m: (m != PRIMARY_MODEL, m))
@@ -176,6 +202,7 @@ def report(frame) -> int:
 
     # ---- 2. effects and rankings -----------------------------------------
     rankings: dict[tuple[str, str], dict[str, int]] = {}
+    partitions: dict[tuple[str, str], frozenset[str]] = {}
     print("2. SILENT-FAILURE ODDS RATIO vs each model's own baseline")
     for task in ("retrieval", "classification"):
         eligible = [m for m in models if task in usable.get(m, [])]
@@ -190,6 +217,7 @@ def report(frame) -> int:
             if not effects:
                 continue
             rankings[(model, task)] = rank(effects)
+            partitions[(model, task)] = damaging_set(effects)
             cells = "".join(
                 f"{effects[f]:>14.2f} " if f in effects else f"{'—':>15}"
                 for f in FAULTS
@@ -202,8 +230,28 @@ def report(frame) -> int:
                                key=lambda f: rankings[(model, task)][f])
                 print(f"     {model:<28} {' > '.join(order)}")
 
-    # ---- 3. does the ranking hold? ---------------------------------------
-    print("\n3. RANK AGREEMENT — Kendall's tau on the fault ordering")
+    # ---- 3. the coarse claim: which faults matter at all ------------------
+    print(f"\n3. PARTITION STABILITY — which faults are damaging (OR >= "
+          f"{DAMAGING_OR})")
+    print("   Coarser than a full ranking, and the more useful claim: an")
+    print("   operator needs to know WHICH properties to guard, not their exact")
+    print("   order.")
+    for task in ("retrieval", "classification"):
+        sets = {m: p for (m, t), p in partitions.items() if t == task}
+        if len(sets) < 2:
+            continue
+        print(f"\n   {task}")
+        for model, damaging in sets.items():
+            print(f"     {model:<30}{', '.join(sorted(damaging)) or '(none)'}")
+        agree = len(set(sets.values())) == 1
+        print(f"     => {'IDENTICAL across every model' if agree else 'DIFFERS across models'}")
+
+    # ---- 4. does the fine ranking hold? ----------------------------------
+    print("\n4. RANK AGREEMENT — Kendall's tau on the full fault ordering")
+    floor = min_achievable_p(len(FAULTS))
+    print(f"   NOTE: with {len(FAULTS)} faults the smallest attainable two-sided p is "
+          f"{floor:.4f},\n   so NO pairwise tau here can reach p < 0.05 however cleanly the "
+          "ranking\n   transfers. Read the tau values, not the p-values.")
     pairs = []
     for task in ("retrieval", "classification"):
         eligible = [m for m in models if (m, task) in rankings]
