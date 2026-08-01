@@ -26,3 +26,17 @@ same stale record with and without its age, *one lying and one declining*.
 lie, at confidence 1.00, on the same query. Columns 1 and 2 are real logged
 decisions; column 3 is the recommendation the null implies, and is labelled as
 not an experimental condition.
+
+## Interactive, not just readable
+
+Two panels are driven by the reader, which is what makes this a stress test
+rather than a report:
+
+- **Stress the pipeline** — pick a fault, drag severity, watch accuracy,
+  abstention and silent failure move. Every stop is a *measured* condition with
+  its own decision count; nothing is interpolated and nothing between two stops
+  is claimed. AIRS is recomputed live from the dimension scores.
+- **Probe your own pipeline** — paste your own JSONL and it is scored in the
+  browser (`ProbeLive.tsx` is a port of `airsbench.probe`). Nothing is uploaded.
+  Clearing the upstream box demonstrates the guard: consistency goes
+  `UNMEASURED`, never 100.

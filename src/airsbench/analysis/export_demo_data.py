@@ -212,6 +212,104 @@ def task_inversion() -> dict[str, Any]:
     }
 
 
+# Human-readable dial stops. Every entry is a REAL condition that was run —
+# the dial interpolates nothing, so each position carries its own n.
+LEVEL_LABELS = {
+    ("none", "none"): "healthy",
+    ("freshness", "sweep_0.5s"): "0.55s stale",
+    ("freshness", "sweep_1.5s"): "1.55s stale",
+    ("freshness", "sweep_3s"): "3.05s stale",
+    ("freshness", "sweep_5s"): "5.05s stale",
+    ("freshness", "sweep_8s"): "8.05s stale",
+    ("freshness", "sweep_12s"): "12.05s stale",
+    ("latency", "mild"): "500ms spike",
+    ("latency", "severe"): "3000ms spike",
+    ("schema_drift", "mild"): "5% of fields",
+    ("schema_drift", "severe"): "25% of fields",
+    ("semantic_stripping", "mild"): "30% stripped",
+    ("semantic_stripping", "severe"): "80% stripped",
+}
+LEVEL_ORDER = {
+    "freshness": ["sweep_0.5s", "sweep_1.5s", "sweep_3s",
+                  "sweep_5s", "sweep_8s", "sweep_12s"],
+    "latency": ["mild", "severe"],
+    "schema_drift": ["mild", "severe"],
+    "semantic_stripping": ["mild", "severe"],
+}
+DIMENSIONS = ("freshness", "latency", "consistency", "semantic")
+
+
+def stress_levels(results_dir: Path) -> dict[str, Any]:
+    """Per task and fault, the measured dial stops.
+
+    This is what makes the demo a stress test rather than a report: the reader
+    moves a real experimental variable and watches measured outcomes respond.
+    Every stop is an actual condition with its own decision count — nothing is
+    interpolated, and nothing between two stops is claimed.
+
+    Restricted to streaming + the primary model so the series is comparable:
+    the batch archetype carries inherent staleness that would offset freshness,
+    and each model has its own ceiling.
+    """
+    from collections import defaultdict
+
+    cells: dict[tuple, dict[str, Any]] = defaultdict(
+        lambda: {"n": 0, "correct": 0, "abstained": 0, "silent": 0, "dims": None}
+    )
+    for path in sorted(results_dir.glob("*.json")):
+        run = json.loads(path.read_text())
+        if run_arm(run) not in ("main", "freshness_sweep"):
+            continue
+        cfg = run["config"]
+        if cfg["model"] != "gpt-4o-mini" or cfg["pipeline"] != "streaming":
+            continue
+        key = (cfg["task"], cfg["fault_type"], cfg["severity"])
+        cell = cells[key]
+        airs = corrected_airs(run)
+        cell["dims"] = {d: round(airs[d], 2) for d in DIMENSIONS}
+        for decision in run["decisions"]:
+            cell["n"] += 1
+            cell["correct"] += bool(decision["correct"])
+            cell["abstained"] += bool(decision["abstained"])
+            cell["silent"] += bool(
+                not decision["correct"]
+                and not decision["abstained"]
+                and not decision["parse_failed"]
+            )
+
+    def rate(cell, field):
+        return round(cell[field] / cell["n"], 4) if cell["n"] else None
+
+    out: dict[str, Any] = {"note": "Each stop is a measured condition, not an "
+                                   "interpolation. Streaming pipeline, gpt-4o-mini.",
+                           "tasks": {}}
+    for task in ("retrieval", "classification"):
+        baseline_key = (task, "none", "none")
+        if baseline_key not in cells:
+            continue
+        faults: dict[str, Any] = {}
+        for fault, severities in LEVEL_ORDER.items():
+            stops = []
+            for key in [("none", "none")] + [(fault, sev) for sev in severities]:
+                cell = cells.get((task, *key))
+                if cell is None or not cell["n"]:
+                    continue
+                stops.append({
+                    "label": LEVEL_LABELS.get(key, key[1]),
+                    "fault": key[0],
+                    "severity": key[1],
+                    "n": cell["n"],
+                    "dims": cell["dims"],
+                    "accuracy": rate(cell, "correct"),
+                    "abstained": rate(cell, "abstained"),
+                    "silent": rate(cell, "silent"),
+                })
+            if len(stops) > 1:
+                faults[fault] = stops
+        out["tasks"][task] = faults
+    return out
+
+
 def probe_samples(examples_dir: Path) -> dict[str, Any]:
     """The two shipped probe fixtures, scored, so the demo needs no Python."""
     from ..probe import band, composite, load_records, load_weights, measure
@@ -256,6 +354,7 @@ def build(results_dir: Path, data_dir: Path, examples_dir: Path) -> dict[str, An
             "summary": detectability_summary(results_dir, data_dir),
         },
         "inversion": task_inversion(),
+        "stress": stress_levels(results_dir),
         "probe": probe_samples(examples_dir),
     }
 

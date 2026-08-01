@@ -3,6 +3,8 @@ import Detectability, { type DetectabilityData } from "@/components/Detectabilit
 import Headline, { type Stat } from "@/components/Headline";
 import Inversion, { type InversionData } from "@/components/Inversion";
 import Probe, { type ProbeData } from "@/components/Probe";
+import ProbeLive from "@/components/ProbeLive";
+import Stress, { type StressData } from "@/components/Stress";
 
 export default function Page() {
   return (
@@ -23,9 +25,14 @@ export default function Page() {
         <Headline stats={data.headline as Stat[]} />
       </div>
 
+      <Stress
+        data={data.stress as StressData}
+        weights={data.probe.weights as Record<string, number>}
+      />
       <Detectability data={data.detectability as unknown as DetectabilityData} />
       <Inversion data={data.inversion as InversionData} />
       <Probe data={data.probe as ProbeData} />
+      <ProbeLive weights={data.probe.weights as Record<string, number>} />
 
       <footer>
         <p>
