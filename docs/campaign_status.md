@@ -125,52 +125,33 @@ changed is how its results are read.
 | ~~7~~ | ~~Statistical analysis~~ | $0 | ✅ **done — RQ2 + RQ3 answered.** Freshness on answerable retrieval: **OR 1.00, p = 0.998**. `docs/statistical_analysis_findings.md`. |
 | ~~8~~ | ~~AIRS calibration~~ | $0 | ✅ **done — RQ4 answered.** Ranks held-out pipelines at ρ ≈ −0.8; **beats agent confidence on retrieval, where confidence is at chance (AUC 0.501)**. `docs/airs_calibration_findings.md`. |
 | ~~9~~ | ~~`airs probe`~~ | $0 | ✅ **done — `python -m airsbench.probe`.** Scores a pipeline with no agent, no ground truth, no model calls. Ships the RQ4 weights as a versioned artifact; refuses to score an unmeasured dimension as healthy. Worked example in `examples/probe/`. |
-| **10** | **AIST demo rebuild — React / Next.js** | $0 | **← next.** Stack chosen 2026-08-01: replace `demo/aist_app.py` (Streamlit). Spec below. |
-| 11 | `airs lint` *(stretch)* | $0 | Static semantic-completeness for schemas; first to cut if time is short |
-| 12 | Release + chapters | $0 | HuggingFace, Zenodo DOI, Results/Discussion/Conclusion |
+| ~~10~~ | ~~AIST demo — React / Next.js~~ | $0 | ✅ **done.** Four interactive acts, not a dashboard: the reader plays the agent and walks into the silent failure, then judges four faults by eye and finds their instinct matches the agent's abstention rate. `demo/README.md`. |
+| **11** | `airs lint` *(stretch)* | $0 | Static semantic-completeness for schemas; **first to cut** — the writing matters more. |
+| **12** | **Release + chapters** | $0 | **← the critical path now.** Every RQ has a findings doc to draw from. The risk register rates late writing High/High and it is the only thing left that can still go wrong. |
 
-### AIST demo — spec for the rebuild (step 10)
+### AIST demo — built, and what it argues
 
-**Stack decided 2026-08-01: React / Next.js.** Replaces `demo/aist_app.py`
-(Streamlit, 5 KB, written before most of these findings existed and now
-contradicts several of them). Delete it in the same change; `Makefile`'s
-`demo` target and the `demo` mentions in `chapter3_methodology.md`,
-`literature_review.md`, `related_work_positioning.md` need updating with it.
+`demo/` is a Next.js static export (`npm --prefix demo run dev`). Data is baked
+from the artifacts by `airsbench.analysis.export_demo_data`; the page makes no
+model calls and needs no key. Full description in `demo/README.md`.
 
-**Data is pre-baked, not computed live.** Export a JSON fixture from
-`results/runs/` at build time — the demo must not need an API key, a model, or
-the 248 run artifacts to run. Nothing in it should call an LLM.
+It is structured as an argument, not a dashboard — four acts the reader plays:
 
-**The panel the original demo was designed around does not exist.** It planned
-a two-way contrast — the same stale record with and without its age, one lying
-and one declining. The detectability arm showed **both lie** (null result,
-`detectability_findings.md`). Build the honest three-way instead:
+1. **You be the agent.** A real query and the real records the agent was
+   served, reconstructed exactly. The reader picks the cheapest in-stock
+   product, picks what the agent picked, and both are wrong. Nothing in the
+   record could have told either of them.
+2. **Could you have known?** The same record under four faults. The reader's eye
+   and the agent's abstention rate produce the same ordering (1%, 0%, 1%, 18%).
+3. **So ask the agent how sure it is.** The reader guesses, then meets 0.501.
+4. **Probe your own pipeline.** Live, in-browser, with the UNMEASURED guard.
 
-| column | what the agent is shown | what it does |
-|---|---|---|
-| 1 | stale record, no metadata | confident wrong answer |
-| 2 | stale record + `_record_age_seconds` | **still** a confident wrong answer |
-| 3 | age + a declared staleness budget, enforced outside the model | blocked before the agent sees it |
+Then an appendix — severity dial, cross-model table — for readers who want the
+underlying data.
 
-That sequence is the thesis's practitioner argument in one screen: disclosure
-is not a fix; enforcement is.
-
-**Other panels worth having, all backed by shipped numbers:**
-
-- **Confidence is at chance.** Retrieval silent failure: agent self-confidence
-  AUC **0.501** vs AIRS 0.580. The single strongest argument for scoring the
-  pipeline instead of trusting the agent.
-- **`airs probe` live.** Paste or upload a JSONL, get the dimension table,
-  composite, and band. Reuse `examples/probe/{healthy,degraded,source}.jsonl`
-  as one-click samples, and make sure the `UNMEASURED` path is visible — that
-  guard is the most interesting thing about the tool.
-- **The flip partition.** Freshness residual −0.003 beside the 90%
-  silent-failure rate on flipped queries.
-- **Ranking inverts across tasks.** Freshness 0.88 (retrieval) → 2.27
-  (classification); semantic stripping 3.75 → 0.80. Two bar charts, one flip.
-
-**Do not put Prometheus behind it** (invariant 7 — Prometheus is demo-only and
-never a results source). Read the pre-baked fixture.
+**Trap when working on it:** never run `next build` while `next dev` is up. They
+share `.next/` and the dev server 500s with
+`__webpack_modules__[moduleId] is not a function`. Stop dev, `rm -rf .next`.
 
 ### Note on local models, for anyone re-running them
 
