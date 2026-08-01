@@ -108,6 +108,141 @@ def detectability_case(results_dir: Path, data_dir: Path) -> dict[str, Any]:
     return {}
 
 
+def challenge_cases(results_dir: Path, data_dir: Path, want: int = 3) -> list[dict]:
+    """Real queries, reconstructed exactly as the agent received them.
+
+    The demo's opening move is to let the reader BE the agent: here is the
+    query, here are the catalog records, pick the cheapest one in stock. They
+    pick what the agent picked, and they are wrong for the same reason — the
+    catalog was 5 seconds behind the world and nothing in the record says so.
+
+    Reconstruction is exact, not illustrative. `sample_seed` regenerates the
+    query and its timestamp; the catalog time machine replays the update stream
+    to recover both the served state and the true state. The agent's own answer
+    and confidence come from the logged decision.
+    """
+    replayer = Replayer(data_dir)
+    cases: list[dict] = []
+    for path in sorted(results_dir.glob("*.json")):
+        run = json.loads(path.read_text())
+        cfg = run["config"]
+        if run_arm(run) != "main" or cfg["task"] != "retrieval":
+            continue
+        if cfg["fault_type"] != "freshness" or cfg["severity"] != "severe":
+            continue
+        if cfg["pipeline"] != "streaming":
+            continue
+
+        staleness = 5.05
+        plan = replayer._plan(cfg["sample_seed"], cfg["n_queries"])
+        outcomes = replayer.outcomes(run)
+        cursor = 0
+        for query, ids, t_query in plan:
+            if len(ids) < 2:
+                continue
+            if replayer.index.best(ids, t_query) is None:
+                continue
+            outcome = outcomes[cursor]
+            cursor += 1
+            # Want a case the reader can actually be fooled by: the answer
+            # moved, the agent committed, and there are enough candidates that
+            # picking the cheapest is a real choice.
+            if not (outcome.flipped and not outcome.correct and not outcome.abstained):
+                continue
+            if len(ids) < 4 or outcome.chosen != outcome.served_id:
+                continue
+
+            candidates = []
+            for pid in ids:
+                served = replayer.index.value_at(pid, t_query - staleness)
+                true = replayer.index.value_at(pid, t_query)
+                base = replayer.index.base[pid]
+                candidates.append({
+                    "id": pid,
+                    "title": str(base["title"])[:70],
+                    "served_price": round(float(served["price"]), 2),
+                    "served_stock": int(served["stock"]),
+                    "true_price": round(float(true["price"]), 2),
+                    "true_stock": int(true["stock"]),
+                    "changed": served["price"] != true["price"]
+                               or served["stock"] != true["stock"],
+                })
+            cases.append({
+                "query": query,
+                "candidates": candidates,
+                "agent_answer": outcome.chosen,
+                "agent_confidence": outcome.confidence,
+                "true_answer": outcome.truth_id,
+                "staleness_seconds": staleness,
+                "run_id": run["run_id"],
+            })
+            if len(cases) >= want:
+                return cases
+    return cases
+
+
+def legibility_panel() -> dict[str, Any]:
+    """The same record under each fault, plus how often the agent declined.
+
+    The thesis title in one table. What the reader can spot by eye and what the
+    agent abstains on are the same ordering — which is the claim: detectability
+    is a property of what the pipeline delivered, not of how clever the
+    consumer is.
+
+    Abstention rates are the pooled severe-condition figures from the 144-run
+    factorial (see campaign_status.md).
+    """
+    healthy = {"product_id": "B07RYM8DM2", "price": 4.68, "stock": 2}
+    return {
+        "healthy": healthy,
+        "faults": [
+            {
+                "id": "freshness",
+                "name": "Stale data",
+                "record": {"product_id": "B07RYM8DM2", "price": 5.48, "stock": 2},
+                "spot_it": False,
+                "why": "Every field is well-formed and plausible. The price is "
+                       "simply the one from five seconds ago. Nothing in the "
+                       "record refers to when it was true.",
+                "abstained": 0.01,
+            },
+            {
+                "id": "latency",
+                "name": "Slow delivery",
+                "record": {"product_id": "B07RYM8DM2", "price": 4.68, "stock": 2},
+                "spot_it": False,
+                "why": "The record is correct. It just arrived 3 seconds late. "
+                       "A synchronous agent waits and reads identical data.",
+                "abstained": 0.00,
+            },
+            {
+                "id": "schema_drift",
+                "name": "Renamed field",
+                "record": {"product_id": "B07RYM8DM2", "price_v2": 4.68, "stock": 2},
+                "spot_it": False,
+                "why": "`price_v2` looks like a legitimate field from a "
+                       "legitimate migration. It is visible, but not legible AS "
+                       "corruption — which turns out to be the property that "
+                       "matters.",
+                "abstained": 0.01,
+            },
+            {
+                "id": "semantic_stripping",
+                "name": "Stripped meaning",
+                "record": {"f1": "B07RYM8DM2", "f4": 4.68, "f7": 2},
+                "spot_it": True,
+                "why": "The values survived; the meaning did not. You cannot "
+                       "tell which number is the price — and neither can the "
+                       "agent, so it refuses instead of guessing.",
+                "abstained": 0.18,
+            },
+        ],
+        "punchline": "What you can spot and what the agent declines on are the "
+                     "same ordering. Detectability is a property of what the "
+                     "pipeline delivered, not of how clever the reader is.",
+    }
+
+
 def detectability_summary(results_dir: Path, data_dir: Path) -> dict[str, Any]:
     """The arm's aggregate: metadata moved neither number."""
     from .detectability import Behaviour, mcnemar_exact, pair_runs
@@ -349,6 +484,8 @@ def build(results_dir: Path, data_dir: Path, examples_dir: Path) -> dict[str, An
                     "no model calls and needs no API key.",
         },
         "headline": headline_numbers(),
+        "challenge": challenge_cases(results_dir, data_dir),
+        "legibility": legibility_panel(),
         "detectability": {
             "case": detectability_case(results_dir, data_dir),
             "summary": detectability_summary(results_dir, data_dir),

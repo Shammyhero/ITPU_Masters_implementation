@@ -1,51 +1,55 @@
 import data from "@/data/aist.json";
-import Detectability, { type DetectabilityData } from "@/components/Detectability";
-import Headline, { type Stat } from "@/components/Headline";
+import AskTheAgent from "@/components/AskTheAgent";
+import Challenge, { type Case } from "@/components/Challenge";
 import Inversion, { type InversionData } from "@/components/Inversion";
-import Probe, { type ProbeData } from "@/components/Probe";
+import Legibility, { type LegibilityData } from "@/components/Legibility";
 import ProbeLive from "@/components/ProbeLive";
 import Stress, { type StressData } from "@/components/Stress";
 
 export default function Page() {
+  const weights = data.probe.weights as Record<string, number>;
   return (
     <main>
-      <h1>Detectability determines danger</h1>
-      <p className="lede">
-        An autonomous agent given degraded data does not usually crash or
-        refuse. It answers confidently and wrongly. This is what that looks
-        like, measured — and what a pipeline score can tell you{" "}
-        <em>before</em> you deploy an agent on it.
-      </p>
-      <p className="src" style={{ marginTop: "1rem" }}>
-        Every figure below is exported from {data.generated_from.runs} benchmark
-        runs. This page makes no model calls and needs no API key.
-      </p>
+      <header className="hero">
+        <h1>Your agent is not going to tell you.</h1>
+        <p className="lede">
+          Give an autonomous agent degraded data and it rarely crashes, errors,
+          or declines. It answers — fluently, confidently, and wrongly. This page
+          lets you watch that happen on real data, work out why, and then measure
+          the pipeline instead.
+        </p>
+        <p className="src">
+          Every figure comes from {data.generated_from.runs} benchmark runs
+          across four models. Nothing here calls a model or needs an API key.
+        </p>
+      </header>
 
-      <div style={{ marginTop: "2.5rem" }}>
-        <Headline stats={data.headline as Stat[]} />
-      </div>
+      <Challenge cases={data.challenge as Case[]} />
+      <Legibility data={data.legibility as LegibilityData} />
+      <AskTheAgent />
+      <ProbeLive weights={weights} />
 
-      <Stress
-        data={data.stress as StressData}
-        weights={data.probe.weights as Record<string, number>}
-      />
-      <Detectability data={data.detectability as unknown as DetectabilityData} />
+      <hr className="rule" />
+      <p className="explore-note">
+        The rest is for readers who want to poke at the underlying data.
+      </p>
+      <Stress data={data.stress as StressData} weights={weights} />
       <Inversion data={data.inversion as InversionData} />
-      <Probe data={data.probe as ProbeData} />
-      <ProbeLive weights={data.probe.weights as Record<string, number>} />
 
       <footer>
         <p>
           <b>AIST</b> — Agentic Infrastructure Stress Test. Companion to{" "}
-          <em>Detectability Determines Danger: How Data Infrastructure Faults
-          Cause Silent Failure in Agentic AI Systems</em>, Shamsiddin Khamidov,
-          IT Park University, 2026.
+          <em>
+            Detectability Determines Danger: How Data Infrastructure Faults Cause
+            Silent Failure in Agentic AI Systems
+          </em>
+          , Shamsiddin Khamidov, IT Park University, 2026.
         </p>
         <p>
-          Regenerate the data with <span className="mono">npm run data</span>.
-          The benchmark, the fault injector, and the{" "}
+          The benchmark, the record-level fault injector, and the{" "}
           <span className="mono">airs probe</span> scorer are in the same
-          repository.
+          repository. Rebuild this page&rsquo;s data with{" "}
+          <span className="mono">npm run data</span>.
         </p>
       </footer>
     </main>
