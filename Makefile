@@ -10,7 +10,7 @@ test:
 	.venv/bin/pytest -q
 
 lint:
-	.venv/bin/ruff check src tests demo
+	.venv/bin/ruff check src tests
 
 grid:
 	$(PY) -m airsbench.runner.run --grid --dry-run
@@ -22,7 +22,7 @@ down:
 	docker compose down
 
 demo:
-	.venv/bin/npm --prefix demo run dev
+	npm --prefix demo run dev
 
 data-ecommerce:
 	$(PY) -m airsbench.dataprep.prepare_ecommerce --out data/ecommerce
