@@ -22,7 +22,7 @@ down:
 	docker compose down
 
 demo:
-	.venv/bin/streamlit run demo/aist_app.py
+	.venv/bin/npm --prefix demo run dev
 
 data-ecommerce:
 	$(PY) -m airsbench.dataprep.prepare_ecommerce --out data/ecommerce

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "aist-demo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "demo", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}
