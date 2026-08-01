@@ -20,6 +20,57 @@ the invariants that must not be broken, then this file for what to do next.
 | AIRS fix | freshness double-count corrected in code; 16 old runs recomputed in the analysis layer |
 | Analysis | **RQ1 ✅ · RQ2 ✅ · RQ3 ✅ · RQ4 ✅ · RQ5 ✅ — all five answered** |
 
+### For a session starting cold — read this box first
+
+**Every experiment is finished and every RQ is answered.** 248 runs, $4.64 of
+~$11, 291 tests green. Nothing is mid-flight; nothing needs resuming. What
+remains is **build and write**, not measure.
+
+The five findings, in one place:
+
+| RQ | Answer | Where |
+|---|---|---|
+| RQ1 | Degradation **is** monotone in data age; threshold 5.05 s on both tasks. But retrieval decomposes into *exposure* (rises 2.3%→19.2%) × *conditional rate* (flat at ceiling from 0.55 s). | `freshness_sweep_findings.md` |
+| RQ2 | Rank on **residual** impairment, not raw accuracy: schema drift −0.173 > semantic stripping −0.128 > freshness −0.003 ≈ latency 0. | `flip_partition_findings.md` |
+| RQ3 | Silent failure is driven by schema drift + semantic stripping (retrieval) and freshness (classification). Abstention is driven by semantic stripping **and nothing else** (OR 51.9). | `statistical_analysis_findings.md` |
+| RQ4 | AIRS ranks held-out pipelines at ρ ≈ −0.8 and **beats agent confidence exactly where confidence is at chance** (retrieval, AUC 0.501). Calibrate per task, against total error. | `airs_calibration_findings.md` |
+| RQ5 | The ranking transfers **across models** (mean τ +0.762; two hosted models identical at τ +1.000) but **inverts across tasks**. | `cross_model_findings.md` |
+
+**The thesis's central claim, established three independent ways:** freshness
+does not impair the agent — it moves the answer key. Flip-partition residual
+−0.003 at both severities; decision-level OR 1.00 (p = 0.998) on answerable
+retrieval; replicates as a null on all four models (0.88–1.33).
+
+**H3, restated by the data:** an agent abstains only when the corruption is
+legible *inside the delivered record*. Semantic stripping → 64% abstention on
+Haiku classification. Freshness → 5%. Delivering the record's age changed
+nothing (detectability arm, null). So legibility needs the datum **and** a
+standard to judge it against.
+
+**Six methodological traps this campaign hit and fixed** — each would have
+produced a confident wrong number, and each is now pinned by test:
+
+1. Freshness was double-counted (AIRS 9.95 where 19.80 was right) — fixed in
+   `build_event_ts`, 16 old runs corrected in the analysis layer.
+2. Raw accuracy under freshness is the answer-flip rate measured with an LLM —
+   fixed by the flip partition.
+3. Kendall's τ on 4 faults **cannot** reach p<0.05 (floor 0.083) — the report
+   prints the floor so "n.s." is not misread as "does not generalise".
+4. McNemar needs ≥6 one-directional discordant pairs; the detectability arm had
+   2 — the null is reported as underpowered, not as evidence.
+5. A NaN from an incomparable pair poisoned a mean and produced a confident
+   "does NOT generalise" from data saying the opposite.
+6. A fault that drives **refusal** lowers silent failure while destroying
+   accuracy (Haiku: acc 0.29, abstention 64%, OR 0.80) — ranking on silent
+   failure alone would call the worst fault the safest.
+
+**Cost estimation gotcha:** `TOKEN_PROFILES` in `runner/run.py` is per model
+family. A single global output-token figure under-estimated the Haiku arm by
+1.8× and tripped the spend guard mid-run. Re-derive from `results/runs/*.json`
+after any prompt change.
+
+---
+
 Resumption is exact: `build_grid()` is deterministic and every run writes its
 JSON on completion. Interrupting mid-run loses only that run (~$0.01).
 
@@ -74,9 +125,52 @@ changed is how its results are read.
 | ~~7~~ | ~~Statistical analysis~~ | $0 | ✅ **done — RQ2 + RQ3 answered.** Freshness on answerable retrieval: **OR 1.00, p = 0.998**. `docs/statistical_analysis_findings.md`. |
 | ~~8~~ | ~~AIRS calibration~~ | $0 | ✅ **done — RQ4 answered.** Ranks held-out pipelines at ρ ≈ −0.8; **beats agent confidence on retrieval, where confidence is at chance (AUC 0.501)**. `docs/airs_calibration_findings.md`. |
 | ~~9~~ | ~~`airs probe`~~ | $0 | ✅ **done — `python -m airsbench.probe`.** Scores a pipeline with no agent, no ground truth, no model calls. Ships the RQ4 weights as a versioned artifact; refuses to score an unmeasured dimension as healthy. Worked example in `examples/probe/`. |
-| **10** | AIST demo rebuild | $0 | **← next.** Three-way panel per `cross_model_findings.md` §5: no metadata, age alone, age + enforced budget. The two-way contrast the arm was designed around does not exist — both lie. |
+| **10** | **AIST demo rebuild — React / Next.js** | $0 | **← next.** Stack chosen 2026-08-01: replace `demo/aist_app.py` (Streamlit). Spec below. |
 | 11 | `airs lint` *(stretch)* | $0 | Static semantic-completeness for schemas; first to cut if time is short |
 | 12 | Release + chapters | $0 | HuggingFace, Zenodo DOI, Results/Discussion/Conclusion |
+
+### AIST demo — spec for the rebuild (step 10)
+
+**Stack decided 2026-08-01: React / Next.js.** Replaces `demo/aist_app.py`
+(Streamlit, 5 KB, written before most of these findings existed and now
+contradicts several of them). Delete it in the same change; `Makefile`'s
+`demo` target and the `demo` mentions in `chapter3_methodology.md`,
+`literature_review.md`, `related_work_positioning.md` need updating with it.
+
+**Data is pre-baked, not computed live.** Export a JSON fixture from
+`results/runs/` at build time — the demo must not need an API key, a model, or
+the 248 run artifacts to run. Nothing in it should call an LLM.
+
+**The panel the original demo was designed around does not exist.** It planned
+a two-way contrast — the same stale record with and without its age, one lying
+and one declining. The detectability arm showed **both lie** (null result,
+`detectability_findings.md`). Build the honest three-way instead:
+
+| column | what the agent is shown | what it does |
+|---|---|---|
+| 1 | stale record, no metadata | confident wrong answer |
+| 2 | stale record + `_record_age_seconds` | **still** a confident wrong answer |
+| 3 | age + a declared staleness budget, enforced outside the model | blocked before the agent sees it |
+
+That sequence is the thesis's practitioner argument in one screen: disclosure
+is not a fix; enforcement is.
+
+**Other panels worth having, all backed by shipped numbers:**
+
+- **Confidence is at chance.** Retrieval silent failure: agent self-confidence
+  AUC **0.501** vs AIRS 0.580. The single strongest argument for scoring the
+  pipeline instead of trusting the agent.
+- **`airs probe` live.** Paste or upload a JSONL, get the dimension table,
+  composite, and band. Reuse `examples/probe/{healthy,degraded,source}.jsonl`
+  as one-click samples, and make sure the `UNMEASURED` path is visible — that
+  guard is the most interesting thing about the tool.
+- **The flip partition.** Freshness residual −0.003 beside the 90%
+  silent-failure rate on flipped queries.
+- **Ranking inverts across tasks.** Freshness 0.88 (retrieval) → 2.27
+  (classification); semantic stripping 3.75 → 0.80. Two bar charts, one flip.
+
+**Do not put Prometheus behind it** (invariant 7 — Prometheus is demo-only and
+never a results source). Read the pre-baked fixture.
 
 ### Note on local models, for anyone re-running them
 
