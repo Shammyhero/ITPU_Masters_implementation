@@ -1,0 +1,6 @@
+{
+  "name": "retrieval-default",
+  "min_dimension": {"consistency": 90.0, "semantic": 50.0},
+  "unmeasured_is_violation": true,
+  "on_violation": "reject"
+}

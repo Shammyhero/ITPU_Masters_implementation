@@ -1,0 +1,6 @@
+{
+  "name": "staleness-budget",
+  "max_record_age_seconds": 5.05,
+  "unmeasured_is_violation": true,
+  "on_violation": "reject"
+}

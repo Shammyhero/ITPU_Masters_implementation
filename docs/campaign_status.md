@@ -1,6 +1,6 @@
 # Campaign status & session handoff
 
-**Updated:** 2026-07-31 · **ALL EXPERIMENTAL ARMS COMPLETE — 248 runs**
+**Updated:** 2026-08-01 · **ALL EXPERIMENTAL ARMS COMPLETE — 248 runs**
 
 This is the operational entry point for any session. Read `CLAUDE.md` first for
 the invariants that must not be broken, then this file for what to do next.
@@ -16,14 +16,15 @@ the invariants that must not be broken, then this file for what to do next.
 | Phase 2 | ✅ **complete** — 78/78, zero failures |
 | Runs on disk | **144** main · **14** detectability · **36** sweep · **54** cross-model (3 models) |
 | Spent | **$1.91** of ~$7 OpenAI · **$2.73** of ~$4 Anthropic |
-| Tests | 291 passing · lint clean |
+| Tests | 322 passing · lint clean |
 | AIRS fix | freshness double-count corrected in code; 16 old runs recomputed in the analysis layer |
 | Analysis | **RQ1 ✅ · RQ2 ✅ · RQ3 ✅ · RQ4 ✅ · RQ5 ✅ — all five answered** |
+| Tooling | `airs probe` (score) · `airs gate` (enforce) · `gate.replay` (price a policy) |
 
 ### For a session starting cold — read this box first
 
 **Every experiment is finished and every RQ is answered.** 248 runs, $4.64 of
-~$11, 291 tests green. Nothing is mid-flight; nothing needs resuming. What
+~$11, 322 tests green. Nothing is mid-flight; nothing needs resuming. What
 remains is **build and write**, not measure.
 
 The five findings, in one place:
@@ -35,6 +36,14 @@ The five findings, in one place:
 | RQ3 | Silent failure is driven by schema drift + semantic stripping (retrieval) and freshness (classification). Abstention is driven by semantic stripping **and nothing else** (OR 51.9). | `statistical_analysis_findings.md` |
 | RQ4 | AIRS ranks held-out pipelines at ρ ≈ −0.8 and **beats agent confidence exactly where confidence is at chance** (retrieval, AUC 0.501). Calibrate per task, against total error. | `airs_calibration_findings.md` |
 | RQ5 | The ranking transfers **across models** (mean τ +0.762; two hosted models identical at τ +1.000) but **inverts across tasks**. | `cross_model_findings.md` |
+
+**The recommendation, now measured rather than asserted** (`gate_findings.md`):
+enforcement works, but ~75% of silent failure is agent-intrinsic and untouchable
+by any data gate, and every worthwhile policy forfeits **7–21 correct answers per
+silent failure genuinely prevented**. The staleness budget the study originally
+recommended is the *wrong* gate for retrieval — gate on consistency there, on
+freshness for classification. Latency is un-gateable on both, a fifth
+independent route to that null.
 
 **The thesis's central claim, established three independent ways:** freshness
 does not impair the agent — it moves the answer key. Flip-partition residual
@@ -126,6 +135,7 @@ changed is how its results are read.
 | ~~8~~ | ~~AIRS calibration~~ | $0 | ✅ **done — RQ4 answered.** Ranks held-out pipelines at ρ ≈ −0.8; **beats agent confidence on retrieval, where confidence is at chance (AUC 0.501)**. `docs/airs_calibration_findings.md`. |
 | ~~9~~ | ~~`airs probe`~~ | $0 | ✅ **done — `python -m airsbench.probe`.** Scores a pipeline with no agent, no ground truth, no model calls. Ships the RQ4 weights as a versioned artifact; refuses to score an unmeasured dimension as healthy. Worked example in `examples/probe/`. |
 | ~~10~~ | ~~AIST demo — React / Next.js~~ | $0 | ✅ **done.** Four interactive acts, not a dashboard: the reader plays the agent and walks into the silent failure, then judges four faults by eye and finds their instinct matches the agent's abstention rate. `demo/README.md`. |
+| ~~10.5~~ | ~~**`airs gate` — admission control**~~ | $0 | ✅ **done — the recommendation, tested.** `python -m airsbench.gate` refuses a batch before the agent is asked; `gate.replay` prices every policy over all 13 554 decisions. **Enforcement works and costs 7–21 correct answers per silent failure genuinely prevented**, and the staleness budget turns out to be the *wrong* gate for retrieval. `docs/gate_findings.md`, `examples/gate/`. |
 | **11** | `airs lint` *(stretch)* | $0 | Static semantic-completeness for schemas; **first to cut** — the writing matters more. |
 | **12** | **Release + chapters** | $0 | **← the critical path now.** Every RQ has a findings doc to draw from. The risk register rates late writing High/High and it is the only thing left that can still go wrong. |
 
@@ -252,6 +262,8 @@ Everything needed is in the repo — this file plus:
 | `docs/statistical_analysis_findings.md` | RQ2 + RQ3 answered at decision level; why 'freshness' is two phenomena |
 | `docs/cross_model_findings.md` | RQ5: ranking transfers across models, inverts across tasks; refusal can mask damage |
 | `docs/airs_calibration_findings.md` | RQ4: calibrated weights per task; agent confidence is at chance on retrieval |
+| `docs/gate_findings.md` | **The recommendation restated**: most silent failure is not infrastructure's fault, and every worthwhile gate forfeits more correct answers than it saves |
+| `examples/gate/README.md` | `airs gate` worked example — admitted, refused, unmeasured, shadow mode |
 | `examples/probe/README.md` | `airs probe` worked example — healthy vs degraded pipeline, real catalog data |
 | `docs/research_questions_v2.md` | Current RQs, hypotheses, stats plan, declared parameters. Supersedes the proposal. |
 | `docs/chapter3_methodology.md` | Methodology as implemented (Chapter 3 draft) |

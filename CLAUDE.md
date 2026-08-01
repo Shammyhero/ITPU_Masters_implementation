@@ -115,6 +115,7 @@ src/agentic_faults/      four record-level injectors + verification (stdlib only
 src/airsbench/airs/      AIRS operational definitions + calculator
 src/airsbench/agents/    LLM client, prompts, retrieval + classification agents
 src/airsbench/pipelines/ Kafka wrappers, Airflow DAG, catalog time machine
+src/airsbench/gate/      admission control: Policy, Controller, offline policy replay
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema
 src/airsbench/dataprep/  dataset prep (ESCI, BTS) + free sensitivity check
 docs/                    literature review, related-work positioning, RQs v2,
