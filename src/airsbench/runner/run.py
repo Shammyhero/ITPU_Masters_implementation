@@ -21,6 +21,7 @@ from .config import (
     build_detectability_arm,
     build_freshness_sweep,
     build_grid,
+    build_interaction_arm,
 )
 
 # Token profiles per model family, calibrated against measured usage in
@@ -191,6 +192,9 @@ def main(argv: list[str] | None = None) -> int:
                       help="reduced factorial on a second model (generalization arm)")
     mode.add_argument("--detectability", action="store_true",
                       help="14-run arm: freshness severe, with and without record age")
+    mode.add_argument("--interaction", action="store_true",
+                      help="54-run arm (PROVISIONAL): do two faults compose "
+                           "additively? baseline + solos + pairs, self-contained")
     # No global default: each mode's own replication count is part of its
     # design (main 4, sweep 3, detectability 3), so an unset flag must mean
     # "use this arm's design", not "use 4".
@@ -236,6 +240,12 @@ def main(argv: list[str] | None = None) -> int:
         for cfg in sweep:
             cfg.n_queries = args.n_queries
         return execute_configs(sweep, args)
+
+    if args.interaction:
+        arm = build_interaction_arm(replications=reps or 3)
+        for cfg in arm:
+            cfg.n_queries = args.n_queries
+        return execute_configs(arm, args)
 
     if args.detectability:
         arm = build_detectability_arm(replications=reps or 3)

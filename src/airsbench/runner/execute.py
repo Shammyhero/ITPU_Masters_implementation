@@ -45,7 +45,7 @@ from ..pipelines.loader import (
     load_semantic_context,
     stale_dep_delay,
 )
-from .config import RunConfig
+from .config import COMPOSITION_ORDER, RunConfig, fault_components
 from .scoring import RunMetrics, failure_modes, score_binary, score_retrieval
 
 # Batch pipelines serve data assembled at the last scheduled load, so the
@@ -131,17 +131,65 @@ def build_fault_chain(config: RunConfig) -> FaultChain:
     (hours, at severe severity across the retrieval arm). Reported in the
     methodology as a measurement choice, not a modelling one.
     """
-    injectors = []
-    params = config.injector_params
-    if config.fault_type == "freshness":
-        injectors.append(FreshnessInjector(seed=config.seed, **params))
-    elif config.fault_type == "latency":
-        injectors.append(LatencyInjector(seed=config.seed, sleep=False, **params))
-    elif config.fault_type == "schema_drift":
-        injectors.append(SchemaDriftInjector(seed=config.seed, **params))
-    elif config.fault_type == "semantic_stripping":
-        injectors.append(SemanticStrippingInjector(seed=config.seed, **params))
+    components = fault_components(config.fault_type)
+    injectors = [
+        _build_injector(name, _component_seed(config.seed, name),
+                        _params_for(config, name, len(components)))
+        for name in components
+    ]
     return FaultChain(injectors)
+
+
+def _params_for(config: RunConfig, name: str, n_components: int) -> dict[str, Any]:
+    """Injector kwargs, from a flat dict (single fault) or a nested one (compound).
+
+    A compound condition needs per-fault parameters, so `injector_params` is
+    keyed by fault name there. Single-fault runs keep the flat shape every
+    artifact already on disk uses — `{"delay_seconds": 5.0}`.
+
+    The shape is DETECTED, not inferred from the component count. Deciding by
+    count meant a solo condition written in the nested shape was passed straight
+    through to the injector, which raised `unexpected keyword argument
+    'freshness'` — loudly, and only because the interaction arm happens to write
+    its solos that way. A quieter version of the same mistake would have run a
+    component at its injector default instead of the declared severity.
+    """
+    params = config.injector_params
+    nested = n_components > 1 or isinstance(params.get(name), dict)
+    if not nested:
+        return dict(params)
+    entry = params.get(name)
+    if entry is None:
+        raise ValueError(
+            f"compound fault {config.fault_type!r} has no injector_params entry "
+            f"for {name!r}; a missing entry would silently run that component at "
+            f"its injector default rather than at the declared severity"
+        )
+    return dict(entry)
+
+
+def _component_seed(seed: int, name: str) -> int:
+    """A distinct, deterministic RNG stream per injector within one run.
+
+    Handing both injectors `config.seed` would give them identical random draws,
+    so schema drift and semantic stripping would hit a correlated subset of
+    records instead of independent ones. The compound condition would then not
+    be "both faults" but "both faults, on the same records" — a different
+    treatment, and one that would bias the additivity test.
+    """
+    return seed + 1_000_003 * (COMPOSITION_ORDER.index(name) + 1)
+
+
+def _build_injector(name: str, seed: int, params: dict[str, Any]):
+    if name == "freshness":
+        return FreshnessInjector(seed=seed, **params)
+    if name == "latency":
+        return LatencyInjector(seed=seed, sleep=False, **params)
+    if name == "schema_drift":
+        return SchemaDriftInjector(seed=seed, **params)
+    if name == "semantic_stripping":
+        return SemanticStrippingInjector(seed=seed, **params)
+    raise ValueError(f"no injector for fault type {name!r}")
 
 
 def inherent_staleness_s(config: RunConfig) -> float:
@@ -155,12 +203,11 @@ def inherent_staleness_s(config: RunConfig) -> float:
 
 def value_staleness_s(config: RunConfig) -> float:
     """Total staleness of the VALUES the agent is served."""
-    injected = (
-        float(config.injector_params.get("delay_seconds", 0.0))
-        if config.fault_type == "freshness"
-        else 0.0
-    )
-    return inherent_staleness_s(config) + injected
+    components = fault_components(config.fault_type)
+    if "freshness" not in components:
+        return inherent_staleness_s(config)
+    params = _params_for(config, "freshness", len(components))
+    return inherent_staleness_s(config) + float(params.get("delay_seconds", 0.0))
 
 
 def build_event_ts(config: RunConfig, now: float) -> float:
