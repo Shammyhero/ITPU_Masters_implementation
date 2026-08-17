@@ -1,0 +1,138 @@
+{
+  "run_id": "9d6ceb3a-67be-4fc0-8e88-279c76562614",
+  "config": {
+    "pipeline": "streaming",
+    "fault_type": "none",
+    "severity": "none",
+    "task": "retrieval",
+    "replication": 1,
+    "injector_params": {},
+    "dataset": "ecommerce_esci",
+    "model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "n_queries": 12,
+    "seed": 9003,
+    "run_id": "9d6ceb3a-67be-4fc0-8e88-279c76562614"
+  },
+  "started_at": "2026-07-24T22:46:53.501430+00:00",
+  "finished_at": "2026-07-24T22:47:05.056856+00:00",
+  "metrics": {
+    "accuracy": 0.9166666666666666,
+    "f1": 0.9565217391304348,
+    "auc_roc": 0.5,
+    "n": 12,
+    "parse_failures": 0,
+    "llm_latency_ms_p50": 802.207937114872
+  },
+  "airs": {
+    "freshness": 100.0,
+    "latency": 100.0,
+    "consistency": 100.0,
+    "semantic": 100.0,
+    "total": 100.0
+  },
+  "usage": {
+    "calls": 12,
+    "input_tokens": 11533,
+    "output_tokens": 258,
+    "cost_usd": 0.001885
+  },
+  "decisions": [
+    {
+      "query": "1 pocket folder without prongs",
+      "chosen": "B07ZQM19H4",
+      "ground_truth": "B07ZQM19H4",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "real skin like vibrator",
+      "chosen": "B081ZG53FG",
+      "ground_truth": "B081ZG53FG",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "4/0 circle hooks",
+      "chosen": "B07GQY4ZBG",
+      "ground_truth": "B07GQY4ZBG",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "1 ply disposable mask without nose clip",
+      "chosen": "B08914CRBT",
+      "ground_truth": "B08914CRBT",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "golf carts gas powered",
+      "chosen": "B000VEWWF6",
+      "ground_truth": "B000VEWWF6",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "face masks medical",
+      "chosen": "B086HKN7SS",
+      "ground_truth": "B086HKN7SS",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "plastic runner for chair",
+      "chosen": "B001TQ8MSQ",
+      "ground_truth": "B001TQ8MSQ",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "split air condition",
+      "chosen": "B07XKDCR4N",
+      "ground_truth": "B07XKDCR4N",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "baby rock kids toy",
+      "chosen": "B07M9233QG",
+      "ground_truth": "B07M9233QG",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "face cream with retinol",
+      "chosen": "B00S2G7AUC",
+      "ground_truth": "B00S2G7AUC",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "black knife block without knives",
+      "chosen": "B08B626RC2",
+      "ground_truth": "B08NPXJ8HZ",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "disposable face masks without metal",
+      "chosen": "B089TX3BPY",
+      "ground_truth": "B089TX3BPY",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    }
+  ]
+}

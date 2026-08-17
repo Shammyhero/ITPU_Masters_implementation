@@ -1,0 +1,47 @@
+14 runs x 80 queries = 1120 agent calls
+Estimated cost: $0.152 (guard: $0.30)
+
+[1/14] streaming/retrieval/freshness/severe/rep1 ... acc=0.759 f1=0.863 auc=0.526
+      AIRS=79.9 (fresh=20 lat=100 cons=100 sem=100) n=79 failures=0 $0.0151
+      abstained=0% silent_failure=24%
+[2/14] streaming/retrieval/freshness/severe+age/rep1 ... acc=0.734 f1=0.847 auc=0.571
+      AIRS=79.9 (fresh=20 lat=100 cons=100 sem=100) n=79 failures=0 $0.0156
+      abstained=4% silent_failure=23%
+[3/14] streaming/retrieval/freshness/severe/rep2 ... acc=0.779 f1=0.876 auc=0.559
+      AIRS=79.9 (fresh=20 lat=100 cons=100 sem=100) n=77 failures=0 $0.0149
+      abstained=1% silent_failure=21%
+[4/14] streaming/retrieval/freshness/severe+age/rep2 ... acc=0.792 f1=0.884 auc=0.562
+      AIRS=79.9 (fresh=20 lat=100 cons=100 sem=100) n=77 failures=0 $0.0155
+      abstained=3% silent_failure=18%
+[5/14] streaming/retrieval/freshness/severe/rep3 ... acc=0.821 f1=0.901 auc=0.607
+      AIRS=80.0 (fresh=20 lat=100 cons=100 sem=100) n=78 failures=0 $0.0140
+      abstained=4% silent_failure=14%
+[6/14] streaming/retrieval/freshness/severe+age/rep3 ... acc=0.782 f1=0.878 auc=0.588
+      AIRS=80.0 (fresh=20 lat=100 cons=100 sem=100) n=78 failures=0 $0.0145
+      abstained=3% silent_failure=19%
+[7/14] streaming/classification/freshness/severe/rep1 ... acc=0.812 f1=0.795 auc=0.850
+      AIRS=80.0 (fresh=20 lat=100 cons=100 sem=100) n=80 failures=0 $0.0067
+      abstained=0% silent_failure=19%
+[8/14] streaming/classification/freshness/severe+age/rep1 ... acc=0.812 f1=0.795 auc=0.842
+      AIRS=80.0 (fresh=20 lat=100 cons=100 sem=100) n=80 failures=0 $0.0069
+      abstained=0% silent_failure=19%
+[9/14] streaming/classification/freshness/severe/rep2 ... acc=0.787 f1=0.738 auc=0.802
+      AIRS=80.0 (fresh=20 lat=100 cons=100 sem=100) n=80 failures=0 $0.0067
+      abstained=0% silent_failure=21%
+[10/14] streaming/classification/freshness/severe+age/rep2 ... acc=0.787 f1=0.738 auc=0.796
+      AIRS=80.0 (fresh=20 lat=100 cons=100 sem=100) n=80 failures=0 $0.0068
+      abstained=0% silent_failure=21%
+[11/14] streaming/classification/freshness/severe/rep3 ... acc=0.762 f1=0.716 auc=0.785
+      AIRS=80.0 (fresh=20 lat=100 cons=100 sem=100) n=80 failures=0 $0.0068
+      abstained=0% silent_failure=24%
+[12/14] streaming/classification/freshness/severe+age/rep3 ... acc=0.775 f1=0.735 auc=0.842
+      AIRS=80.0 (fresh=20 lat=100 cons=100 sem=100) n=80 failures=0 $0.0069
+      abstained=0% silent_failure=22%
+[13/14] streaming/retrieval/none/none+age/rep1 ... acc=0.848 f1=0.918 auc=0.542
+      AIRS=100.0 (fresh=100 lat=100 cons=100 sem=100) n=79 failures=0 $0.0156
+      abstained=0% silent_failure=15%
+[14/14] streaming/classification/none/none+age/rep1 ... acc=0.938 f1=0.941 auc=0.940
+      AIRS=100.0 (fresh=100 lat=100 cons=100 sem=100) n=80 failures=0 $0.0069
+      abstained=0% silent_failure=6%
+
+Total spend: $0.1529 | results in results/runs

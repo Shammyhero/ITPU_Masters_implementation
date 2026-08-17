@@ -1,0 +1,766 @@
+{
+  "run_id": "38f14590-1148-46c0-9960-374c83a627f7",
+  "config": {
+    "pipeline": "batch",
+    "fault_type": "latency",
+    "severity": "severe",
+    "task": "retrieval",
+    "replication": 1,
+    "injector_params": {
+      "spike_ms": 3000
+    },
+    "dataset": "ecommerce_esci",
+    "model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "n_queries": 80,
+    "seed": 4001,
+    "run_id": "38f14590-1148-46c0-9960-374c83a627f7"
+  },
+  "started_at": "2026-07-26T15:50:57.954151+00:00",
+  "finished_at": "2026-07-26T15:52:34.809813+00:00",
+  "metrics": {
+    "accuracy": 0.925,
+    "f1": 0.961038961038961,
+    "auc_roc": 0.5,
+    "n": 80,
+    "parse_failures": 0,
+    "abstention_rate": 0.0,
+    "silent_failure_rate": 0.075,
+    "llm_latency_ms_p50": 947.401708457619
+  },
+  "airs": {
+    "freshness": 10.0,
+    "latency": 16.666666666666668,
+    "consistency": 99.93006993006993,
+    "semantic": 100.0,
+    "total": 56.64918414918415
+  },
+  "usage": {
+    "calls": 80,
+    "input_tokens": 81624,
+    "output_tokens": 2564,
+    "cost_usd": 0.013782
+  },
+  "decisions": [
+    {
+      "query": "smart switch no neutral required",
+      "chosen": "B01M3XJUAD",
+      "ground_truth": "B01M3XJUAD",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "k mini plus",
+      "chosen": "B07DR89BR6",
+      "ground_truth": "B07DR89BR6",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "crayola blending marker",
+      "chosen": "B071CP6X88",
+      "ground_truth": "B071CP6X88",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "face cream with retinol",
+      "chosen": "B00S2G7AUC",
+      "ground_truth": "B00S2G7AUC",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "ink pens",
+      "chosen": "B001E6D3W6",
+      "ground_truth": "B001E6D3W6",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "little black couch",
+      "chosen": "B07KN1RPBB",
+      "ground_truth": "B07KN1RPBB",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "100% down pillow without feathers",
+      "chosen": "B07XRCKPNY",
+      "ground_truth": "B07XRCKPNY",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "male stripper underwear",
+      "chosen": "B0779PF8TQ",
+      "ground_truth": "B0779PF8TQ",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 wooden beads without holes bulk",
+      "chosen": "B086W6TZK9",
+      "ground_truth": "B086W6TZK9",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "coq10 without soy",
+      "chosen": "B0014BDZ88",
+      "ground_truth": "B0014BDZ88",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10.1 tablet without lock screen ads",
+      "chosen": "B07K2HBB1H",
+      "ground_truth": "B07K2HBB1H",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "saltwater aquarium",
+      "chosen": "B01N53XPQ8",
+      "ground_truth": "B01N53XPQ8",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "100 pclight up favors bulk without finger lights",
+      "chosen": "B07KZ2XFLK",
+      "ground_truth": "B081PN2PZQ",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "funny bunny opi",
+      "chosen": "B004VKHIA0",
+      "ground_truth": "B004VKHIA0",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "0.25 syringe without needle",
+      "chosen": "B07G3CQBWK",
+      "ground_truth": "B07G3CQBWK",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "elecrolyte packets",
+      "chosen": "B07NR8FBMT",
+      "ground_truth": "B07NR8FBMT",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "$10 candles",
+      "chosen": "B06XG22LLJ",
+      "ground_truth": "B06XG22LLJ",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "protein powder without whey",
+      "chosen": "B007SYT7LO",
+      "ground_truth": "B007SYT7LO",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "bronze bathroom trash can",
+      "chosen": "B000NOPL48",
+      "ground_truth": "B000NOPL48",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 ml syringes without needles",
+      "chosen": "B07QF3GNS2",
+      "ground_truth": "B07G3CQBWK",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "playdough small containers",
+      "chosen": "B00JM5GW10",
+      "ground_truth": "B00JM5GW10",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "votive and pilar candles",
+      "chosen": "B071L1Z51Z",
+      "ground_truth": "B071L1Z51Z",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "14 year old girl gifts",
+      "chosen": "B06XWV5X9N",
+      "ground_truth": "B06XWV5X9N",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 14 brown leather belt without buckle",
+      "chosen": "B01MG0EULX",
+      "ground_truth": "B01MG0EULX",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "0baby what is not a toy and the so much rea",
+      "chosen": "B072X7CYH4",
+      "ground_truth": "B072X7CYH4",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "fingertip toothbrush baby",
+      "chosen": "B0881HKDNV",
+      "ground_truth": "B0881HKDNV",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "antenna for tv without cable outdoor",
+      "chosen": "B00IF70QCW",
+      "ground_truth": "B00IF70QCW",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "02 yamaha raptor 80cc what would cause it not to firer",
+      "chosen": "B079NCHSLY",
+      "ground_truth": "B00KGIEFMU",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "saccharomyces boulardii vegan",
+      "chosen": "B079H53D2B",
+      "ground_truth": "B079H53D2B",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "100%cotton teen girl without paddi bra",
+      "chosen": "B07DLTG4V8",
+      "ground_truth": "B07BY9MY5D",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "15 month montessori",
+      "chosen": "B007IS36UI",
+      "ground_truth": "B007IS36UI",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 key calculator without tape",
+      "chosen": "B003822IRA",
+      "ground_truth": "B003822IRA",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "cathe stability ball",
+      "chosen": "B01AVDVHTI",
+      "ground_truth": "B01AVDVHTI",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "japanese calligraphy set colour",
+      "chosen": "B072WNLF71",
+      "ground_truth": "B072WNLF71",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "six toys for couples sex set",
+      "chosen": "B07HB9ZYJB",
+      "ground_truth": "B07HB9ZYJB",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "iphone charger 10 ft anker",
+      "chosen": "B0721456BZ",
+      "ground_truth": "B0721456BZ",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "kids water bottle",
+      "chosen": "B07X28981H",
+      "ground_truth": "B07X28981H",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "loving naturals sunscreen",
+      "chosen": "B08CFVM1TT",
+      "ground_truth": "B08CFVM1TT",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "keurig coffee maker problems",
+      "chosen": "B083248S3B",
+      "ground_truth": "B083248S3B",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "4/0 circle hooks",
+      "chosen": "B07GQY4ZBG",
+      "ground_truth": "B07GQY4ZBG",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "camper outdoor grill",
+      "chosen": "B00F3BHB80",
+      "ground_truth": "B00F3BHB80",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "spread love not germs sticker",
+      "chosen": "B08BJJZGBR",
+      "ground_truth": "B08BJJZGBR",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "lysol toilet wand refill",
+      "chosen": "B014P0K2A8",
+      "ground_truth": "B014P0K2A8",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "girl toys for girls ages 8-12",
+      "chosen": "B07YSVBYHW",
+      "ground_truth": "B07YSVBYHW",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "computers",
+      "chosen": "B07RF1XD36",
+      "ground_truth": "B07RF1XD36",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "hifts for him for christmas",
+      "chosen": "B07J2Q8L2F",
+      "ground_truth": "B07J2Q8L2F",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1-1/2 inch black sink drain without overflow -pop",
+      "chosen": "B07V5VTZSS",
+      "ground_truth": "B07V5VTZSS",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "2 year old boy toys",
+      "chosen": "B004RSGAQY",
+      "ground_truth": "B004RSGAQY",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "hands free cordless phone",
+      "chosen": "B004OA758C",
+      "ground_truth": "B004OA758C",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "picture hangers without nails command",
+      "chosen": "B073XS3CHW",
+      "ground_truth": "B073XS3CHW",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "I want the new laptop to have a replaceable battery and to be solid state and ruggedized to deal with bumps and scrapes.",
+      "chosen": "B07GM2J11Q",
+      "ground_truth": "B07GM2J11Q",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1/4 inch galvanized anchor chain",
+      "chosen": "B08BCS5Z7N",
+      "ground_truth": "B08BCS5Z7N",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "black stockings for women",
+      "chosen": "B003R9FRRC",
+      "ground_truth": "B003R9FRRC",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "vitamin b 12",
+      "chosen": "B00K5NEPJY",
+      "ground_truth": "B00K5NEPJY",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": ", rotating extended fans not a ceiling fan",
+      "chosen": "B07BNGPWT4",
+      "ground_truth": "B07BNGPWT4",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "hardrive 1 tb external",
+      "chosen": "B079D359S6",
+      "ground_truth": "B079D359S6",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 elastic bands for sewing white",
+      "chosen": "B076YVZG3F",
+      "ground_truth": "B076YVZG3F",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "appollon supplements",
+      "chosen": "B07R8GD47V",
+      "ground_truth": "B07R8GD47V",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "k mini plus keurig single serve coffee maker",
+      "chosen": "B07DR89BR6",
+      "ground_truth": "B07DR89BR6",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "frito lay",
+      "chosen": "B07179XBP9",
+      "ground_truth": "B07179XBP9",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "toys for 8 year old girls",
+      "chosen": "B0084JUNVU",
+      "ground_truth": "B0084JUNVU",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "brand water filter dupont",
+      "chosen": "B01N1IJ5V1",
+      "ground_truth": "B01N1IJ5V1",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 galaxy s9 plus phone cover not bulcky",
+      "chosen": "B08PYYF1ZW",
+      "ground_truth": "B08PYYF1ZW",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "instant pot",
+      "chosen": "B07VM28XTR",
+      "ground_truth": "B07VM28XTR",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "eczema bath treatment for kids",
+      "chosen": "B01N0O0TV7",
+      "ground_truth": "B01N0O0TV7",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "kids twin bed mattress",
+      "chosen": "B01IU6RJYA",
+      "ground_truth": "B01IU6RJYA",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1/2 x 3/32 master link",
+      "chosen": "B07BP9S1V9",
+      "ground_truth": "B07BP9S1V9",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "0.5 cc syringe without needle",
+      "chosen": "B01JJYYWH4",
+      "ground_truth": "B01JJYYWH4",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "oh no not you again door mat",
+      "chosen": "B07VG9JDTB",
+      "ground_truth": "B07VG9JDTB",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "electrolyte water without sugar",
+      "chosen": "B07NR8FBMT",
+      "ground_truth": "B07NR8FBMT",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "office chair without wheels or lift",
+      "chosen": "B072Y5MZQH",
+      "ground_truth": "B072Y5MZQH",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "I want a lightweight, portable laptop that fits in with my other electrical products.",
+      "chosen": "B07N6S4SY1",
+      "ground_truth": "B07N6S4SY1",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "-headphones without mic",
+      "chosen": "B00J0NKZBC",
+      "ground_truth": "B00J0NKZBC",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "generic brand pc",
+      "chosen": "B0002GRUIM",
+      "ground_truth": "B0002GRUIM",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "Something casual, that i can wear out and about and to work, nothing to flashy but easy to clean. Will try and get something in the sale.",
+      "chosen": "B00NMFTWD6",
+      "ground_truth": "B00NMFM242",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "led pencils 0.5",
+      "chosen": "B0006HXQXA",
+      "ground_truth": "B0006HXQXA",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "#i may not look like diesel decals",
+      "chosen": "B07D91LFG1",
+      "ground_truth": "B07D91LFG1",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "3-5 gal open top trash can",
+      "chosen": "B00B2F8BOY",
+      "ground_truth": "B00B2F8BOY",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "Since I have a desktop any laptop for work with decent specifications would do",
+      "chosen": "B07RF1XD36",
+      "ground_truth": "B07RF1XD36",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": ".5 female not fitting plastic",
+      "chosen": "B0045LKB4A",
+      "ground_truth": "B087GKPMVG",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    }
+  ]
+}

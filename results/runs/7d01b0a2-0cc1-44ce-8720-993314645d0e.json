@@ -1,0 +1,648 @@
+{
+  "run_id": "7d01b0a2-0cc1-44ce-8720-993314645d0e",
+  "config": {
+    "pipeline": "streaming",
+    "fault_type": "freshness",
+    "severity": "sweep_3s",
+    "task": "classification",
+    "replication": 1,
+    "injector_params": {
+      "delay_seconds": 3.0
+    },
+    "dataset": "airline_ontime",
+    "model": "gpt-4o-mini",
+    "temperature": 0.0,
+    "n_queries": 60,
+    "seed": 51201,
+    "sample_seed": 20001,
+    "emit_record_age": false,
+    "run_id": "7d01b0a2-0cc1-44ce-8720-993314645d0e"
+  },
+  "started_at": "2026-07-30T20:29:07.509921+00:00",
+  "finished_at": "2026-07-30T20:30:03.579535+00:00",
+  "metrics": {
+    "accuracy": 0.8666666666666667,
+    "f1": 0.8666666666666666,
+    "auc_roc": 0.8914027149321267,
+    "n": 60,
+    "parse_failures": 0,
+    "abstention_rate": 0.0,
+    "silent_failure_rate": 0.13333333333333333,
+    "llm_latency_ms_p50": 878.2785839866847
+  },
+  "airs": {
+    "freshness": 32.786885758491984,
+    "latency": 100.0,
+    "consistency": 100.0,
+    "semantic": 100.0,
+    "total": 83.19672143962299
+  },
+  "usage": {
+    "calls": 60,
+    "input_tokens": 29000,
+    "output_tokens": 1206,
+    "cost_usd": 0.005074
+  },
+  "decisions": [
+    {
+      "origin": "MCI",
+      "dest": "DAL",
+      "predicted": 0,
+      "label": 1,
+      "correct": false,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "CHO",
+      "dest": "ATL",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "DEN",
+      "dest": "SAT",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "PHX",
+      "dest": "LAS",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "DFW",
+      "dest": "LIT",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "LGA",
+      "dest": "ORD",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "FSD",
+      "dest": "DFW",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "ORD",
+      "dest": "MSP",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "ATL",
+      "dest": "DEN",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "BDL",
+      "dest": "DTW",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "DHN",
+      "dest": "ATL",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "DEN",
+      "dest": "CLE",
+      "predicted": 0,
+      "label": 1,
+      "correct": false,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "MKE",
+      "dest": "MCO",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "LAX",
+      "dest": "ASE",
+      "predicted": 0,
+      "label": 1,
+      "correct": false,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "MOB",
+      "dest": "DFW",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "CMH",
+      "dest": "IAH",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "COS",
+      "dest": "LAS",
+      "predicted": 0,
+      "label": 1,
+      "correct": false,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "DFW",
+      "dest": "MCI",
+      "predicted": 0,
+      "label": 1,
+      "correct": false,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "GNV",
+      "dest": "ATL",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "ORD",
+      "dest": "JAC",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "PSE",
+      "dest": "JFK",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "PBI",
+      "dest": "JFK",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "LAS",
+      "dest": "DEN",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "MSY",
+      "dest": "DEN",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "LAX",
+      "dest": "EWR",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "LAX",
+      "dest": "DEN",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "PBI",
+      "dest": "EWR",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "LAX",
+      "dest": "RNO",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "ATL",
+      "dest": "MDW",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "SJC",
+      "dest": "BUR",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "DEN",
+      "dest": "STL",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "BOS",
+      "dest": "CLT",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "STL",
+      "dest": "AUS",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "PHX",
+      "dest": "ORD",
+      "predicted": 0,
+      "label": 1,
+      "correct": false,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "RDM",
+      "dest": "SFO",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "DAB",
+      "dest": "DCA",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "RAP",
+      "dest": "DEN",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "ATL",
+      "dest": "MIA",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "CHS",
+      "dest": "DAL",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "SAN",
+      "dest": "BOS",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "MCO",
+      "dest": "BOS",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "LGA",
+      "dest": "IAH",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "PDX",
+      "dest": "HNL",
+      "predicted": 0,
+      "label": 1,
+      "correct": false,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "CMH",
+      "dest": "IAH",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "LRD",
+      "dest": "DFW",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "PHX",
+      "dest": "IAH",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "TPA",
+      "dest": "BWI",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "AUS",
+      "dest": "SNA",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "SAT",
+      "dest": "LAS",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "MSO",
+      "dest": "SLC",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "ATL",
+      "dest": "JAX",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "SAN",
+      "dest": "AUS",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "AVL",
+      "dest": "ATL",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "CLT",
+      "dest": "RSW",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "HOU",
+      "dest": "IND",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "SJU",
+      "dest": "ATL",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "DFW",
+      "dest": "ONT",
+      "predicted": 0,
+      "label": 1,
+      "correct": false,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "SAN",
+      "dest": "TUS",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "DFW",
+      "dest": "ATL",
+      "predicted": 1,
+      "label": 1,
+      "correct": true,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "origin": "SLC",
+      "dest": "LGB",
+      "predicted": 0,
+      "label": 0,
+      "correct": true,
+      "confidence": 0.8,
+      "parse_failed": false,
+      "abstained": false
+    }
+  ]
+}

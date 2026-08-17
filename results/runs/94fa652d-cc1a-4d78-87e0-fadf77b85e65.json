@@ -1,0 +1,755 @@
+{
+  "run_id": "94fa652d-cc1a-4d78-87e0-fadf77b85e65",
+  "config": {
+    "pipeline": "streaming",
+    "fault_type": "latency+schema_drift",
+    "severity": "severe",
+    "task": "retrieval",
+    "replication": 3,
+    "injector_params": {
+      "latency": {
+        "spike_ms": 3000
+      },
+      "schema_drift": {
+        "drift_probability": 0.25
+      }
+    },
+    "dataset": "ecommerce_esci",
+    "model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "n_queries": 80,
+    "seed": 80003,
+    "sample_seed": 10003,
+    "emit_record_age": false,
+    "run_id": "94fa652d-cc1a-4d78-87e0-fadf77b85e65"
+  },
+  "started_at": "2026-08-05T04:16:28.604525+00:00",
+  "finished_at": "2026-08-05T06:27:22.204391+00:00",
+  "metrics": {
+    "accuracy": 0.6794871794871795,
+    "f1": 0.8091603053435115,
+    "auc_roc": 0.52,
+    "n": 78,
+    "parse_failures": 0,
+    "abstention_rate": 0.0,
+    "silent_failure_rate": 0.32051282051282054,
+    "llm_latency_ms_p50": 1135.8851250261068
+  },
+  "airs": {
+    "freshness": 100.0,
+    "latency": 16.666666666666668,
+    "consistency": 74.70829391359193,
+    "semantic": 100.0,
+    "total": 72.84374014506464
+  },
+  "usage": {
+    "calls": 78,
+    "input_tokens": 82840,
+    "output_tokens": 2453,
+    "cost_usd": 0.013898
+  },
+  "decisions": [
+    {
+      "query": "social stories for children with autism",
+      "chosen": "B07D4NSSY9",
+      "ground_truth": "B07D4NSSY9",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "office chair without wheels or lift",
+      "chosen": "B072Y5MZQH",
+      "ground_truth": "B072Y5MZQH",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 foot long hinge without holes",
+      "chosen": "B08KP39G2L",
+      "ground_truth": "B08KP39G2L",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "-lazy oaf not for your team sweatshirt in a men's size",
+      "chosen": "B07Q19QY3T",
+      "ground_truth": "B07Q19QY3T",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 3 extension without cord connectors",
+      "chosen": "B088GSJLWX",
+      "ground_truth": "B011BD2B5Q",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10\u201d tube pan without removable bottom",
+      "chosen": "B00WZ50S0K",
+      "ground_truth": "B07FXVRJZL",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "0.25 syringe without needle",
+      "chosen": "B07G3CQBWK",
+      "ground_truth": "B07G3CQBWK",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "wax strung",
+      "chosen": "B0163G7FFC",
+      "ground_truth": "B00JKQJZ56",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "06 colorado driver side power window regulator without motor",
+      "chosen": "B089NYBP7R",
+      "ground_truth": "B089NYBP7R",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "0.8mm tin lead solder without rosin core",
+      "chosen": "category_14",
+      "ground_truth": "B073LHK99Z",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "outdoor solar lights without motion sensor",
+      "chosen": "B08Q3791H5",
+      "ground_truth": "B08Q3791H5",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "hifts for him for christmas",
+      "chosen": "B07J2Q8L2F",
+      "ground_truth": "B07J2Q8L2F",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "blocking light",
+      "chosen": "B00BQ7KBV4",
+      "ground_truth": "B00BQ7KBV4",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 52 by 84 thermal drape not blackout",
+      "chosen": "B08CY34DRV",
+      "ground_truth": "B08JCFVMVX",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": ".nnn not much",
+      "chosen": "B079JD7F7G",
+      "ground_truth": "B079JD7F7G",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "ultra fine pencil",
+      "chosen": "B01ES5D7CU",
+      "ground_truth": "B01ES5D7CU",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "hair dryer and curler in one",
+      "chosen": "B01LSUQSB0",
+      "ground_truth": "B01LSUQSB0",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "drawer knife block without knives",
+      "chosen": "B085474M7L",
+      "ground_truth": "B085474M7L",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "siringes medical without needle large",
+      "chosen": "B07MHMN3Y8",
+      "ground_truth": "B07MHMN3Y8",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1/4 grommet without washer",
+      "chosen": "B07Y64NCYV",
+      "ground_truth": "B07Y64NCYV",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "kids bag chair",
+      "chosen": "B07W71FKQD",
+      "ground_truth": "B07W71FKQD",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "industrial ceiling fans high velocity",
+      "chosen": "B01CDG0UA8",
+      "ground_truth": "B001B1C8Q6",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "cuadricular notebook",
+      "chosen": "B07BGHG4B9",
+      "ground_truth": "B07BGHG4B9",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "small upright freezers only",
+      "chosen": "B00L7QVSXE",
+      "ground_truth": "B00L7QVSXE",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 channel security camera system without hdd",
+      "chosen": "B07GSVM97D",
+      "ground_truth": "B07GSVM97D",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "protein powder without sugar",
+      "chosen": "B08H8FZHJ4",
+      "ground_truth": "B08H8FZHJ4",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "poolside storage",
+      "chosen": "B075CFV8X1",
+      "ground_truth": "B075CFV8X1",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "wyze face masks 50 count",
+      "chosen": "B086KMYNSS",
+      "ground_truth": "B086KMYNSS",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 oz tumbler without lid",
+      "chosen": "B00DHLMI9A",
+      "ground_truth": "B00UM6PK66",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 piece wingback chair cover without arms",
+      "chosen": "B08GC1MH54",
+      "ground_truth": "B08FC375BG",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "45\" burgundy curtains",
+      "chosen": "B076CG9ZRK",
+      "ground_truth": "B01MTWBZAG",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "bike crank arm",
+      "chosen": "B07593166H",
+      "ground_truth": "B07593166H",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "$1 dollar toys not fidgets",
+      "chosen": "B07PS6JW56",
+      "ground_truth": "B07PS6JW56",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "06 tailgate without clearance lights",
+      "chosen": "B07V7BF18S",
+      "ground_truth": "B07V7BF18S",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "face cream with retinol",
+      "chosen": "B01DC6XTYC",
+      "ground_truth": "B00S2G7AUC",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "alexa cube remote control",
+      "chosen": "B07FZ8S74R",
+      "ground_truth": "B07FZ8S74R",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "multivitamin without vitamin d",
+      "chosen": "B07B6KC1PQ",
+      "ground_truth": "B07B6KC1PQ",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1.50 reading glasses women's without blue light blocking",
+      "chosen": "B091Q1LL88",
+      "ground_truth": "B08RYM7LG7",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "gundry dark spot diminisher",
+      "chosen": "B01M4MCUAF",
+      "ground_truth": "B01M4MCUAF",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 magnetic eyelashes without eyeliner",
+      "chosen": "B0972WCZP2",
+      "ground_truth": "B08NSW9DR6",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "earpods",
+      "chosen": "B06X16Z7DZ",
+      "ground_truth": "B06X16Z7DZ",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "vibratng dildo",
+      "chosen": "B077TKLCMF",
+      "ground_truth": "B077TKLCMF",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "pods",
+      "chosen": "B07BBW1N7F",
+      "ground_truth": "B07BBW1N7F",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 lb aluminum pan without lid",
+      "chosen": "B0837RJ79G",
+      "ground_truth": "B0837RJ79G",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": ".25 ml syringe without needle",
+      "chosen": "B078K8SVMN",
+      "ground_truth": "B078K8SVMN",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10gal white trash can without lid",
+      "chosen": "B07NZ2NH2R",
+      "ground_truth": "B07NZ2NH2R",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "otter box i phone x",
+      "chosen": "B073R68TSH",
+      "ground_truth": "B073R68TSH",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 black small notebook without lines",
+      "chosen": "B08FYCM7ZR",
+      "ground_truth": "B07TB7H2FN",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "flush mount ceiling fan without light",
+      "chosen": "B001TM9DCE",
+      "ground_truth": "B001TM9DCE",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "0.5 cc syringe without needle",
+      "chosen": "B07PY77BHF",
+      "ground_truth": "B01JJYYWH4",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "I want a laptop that allows me to play some older games, surf the internet, and watch dvd's and blu-ray disks. ",
+      "chosen": "B07N6S4SY1",
+      "ground_truth": "B07GLV1VC7",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "no 10 nail brush",
+      "chosen": "category_54",
+      "ground_truth": "B076C88P9Q",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "infant halloween costumes 3-6 months girl",
+      "chosen": "B0742QWSKS",
+      "ground_truth": "B0742QWSKS",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1-1/4 drain lavatory lever without overflow",
+      "chosen": "B07HLPNR9Z",
+      "ground_truth": "B01CNNH47I",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "frames long and narrow",
+      "chosen": "B00J7RNYPU",
+      "ground_truth": "B00J7RNYPU",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "curved syringe without needle",
+      "chosen": "B078K8SVMN",
+      "ground_truth": "B078K8SVMN",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 1/2 sink without overflo pop up",
+      "chosen": "B07V5VTZSS",
+      "ground_truth": "B0781XJDLF",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 m syringe for liquid without needle",
+      "chosen": "category_60",
+      "ground_truth": "B08R6HB6YZ",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 in. mens western belts leather without buckle",
+      "chosen": "category_63",
+      "ground_truth": "B01N56K44G",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 tsp of grenetine without sweetener",
+      "chosen": "B000121A7O",
+      "ground_truth": "B000121A7O",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "keyboard",
+      "chosen": "B01AJJIQQQ",
+      "ground_truth": "B01AJJIQQQ",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "sold by amazon.com",
+      "chosen": "B01B8R6PF2",
+      "ground_truth": "B01M1NQ1CE",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "kcogear",
+      "chosen": "B07RP44QPT",
+      "ground_truth": "B07RP44QPT",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 inch wooden beads for crafts without holes",
+      "chosen": "B08BL5JNTT",
+      "ground_truth": "B08BL5JNTT",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 1/8 skinny leather belts without buckles",
+      "chosen": "B07RVD6ZN4",
+      "ground_truth": "B00LNKAOJI",
+      "correct": false,
+      "confidence": 0.9,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "pillow without stuffing",
+      "chosen": "B00EINBSEW",
+      "ground_truth": "B00EINBSEW",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "lucca tent",
+      "chosen": "B016N7DFMI",
+      "ground_truth": "B016N7DFMI",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "navigatir",
+      "chosen": "B00JH98GR4",
+      "ground_truth": "B00JH98GR4",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "anker iphone chargeer",
+      "chosen": "B07WRKXQ8W",
+      "ground_truth": "B07WRKXQ8W",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 year without sex chip",
+      "chosen": "B01M748NRN",
+      "ground_truth": "B01M748NRN",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "100mm scooter wheels without bearings earrings",
+      "chosen": "B07HF2MD6X",
+      "ground_truth": "B07HF2MD6X",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "airpods pro",
+      "chosen": "B06X16Z7DZ",
+      "ground_truth": "B06X16Z7DZ",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "elpitcal",
+      "chosen": "B00224BE8O",
+      "ground_truth": "B0090OKG38",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "&a pedicure spa parts, pop-up drain plug without strainer",
+      "chosen": "B07WDTYDSX",
+      "ground_truth": "B07WDTYDSX",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 nation design t shirts we are not descended",
+      "chosen": "B00OSRS4PY",
+      "ground_truth": "B00OSRS4PY",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "toys for 11 year old boys best sellers",
+      "chosen": "B00IUAAK2A",
+      "ground_truth": "B07GWPVCZK",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10x8 shadow box without glass",
+      "chosen": "B07VQZSLDW",
+      "ground_truth": "B07VQZSLDW",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "instant pot air fryer",
+      "chosen": "B07VM28XTR",
+      "ground_truth": "B07RX9JQGN",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    }
+  ]
+}

@@ -1,0 +1,921 @@
+{
+  "run_id": "1a812e0d-9db3-44e3-b8f7-f0eedf00c235",
+  "config": {
+    "pipeline": "streaming",
+    "fault_type": "latency",
+    "severity": "severe",
+    "task": "retrieval",
+    "replication": 1,
+    "injector_params": {
+      "spike_ms": 3000
+    },
+    "dataset": "ecommerce_esci",
+    "model": "claude-haiku-4-5",
+    "temperature": 0.2,
+    "n_queries": 100,
+    "seed": 70101,
+    "sample_seed": 10001,
+    "emit_record_age": false,
+    "run_id": "1a812e0d-9db3-44e3-b8f7-f0eedf00c235"
+  },
+  "started_at": "2026-07-31T13:35:45.245813+00:00",
+  "finished_at": "2026-07-31T13:39:10.198818+00:00",
+  "metrics": {
+    "accuracy": 0.8350515463917526,
+    "f1": 0.9101123595505618,
+    "auc_roc": 0.8742283950617284,
+    "n": 97,
+    "parse_failures": 1,
+    "abstention_rate": 0.10309278350515463,
+    "silent_failure_rate": 0.05154639175257732,
+    "llm_latency_ms_p50": 1683.5052496753633
+  },
+  "airs": {
+    "freshness": 100.0,
+    "latency": 16.666666666666668,
+    "consistency": 99.84886649874055,
+    "semantic": 100.0,
+    "total": 79.1288832913518
+  },
+  "usage": {
+    "calls": 97,
+    "input_tokens": 132516,
+    "output_tokens": 9515,
+    "cost_usd": 0.180091
+  },
+  "decisions": [
+    {
+      "query": "hose extension female to female",
+      "chosen": "B07NKPWNCH",
+      "ground_truth": "B07NKPWNCH",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 yr without dad",
+      "chosen": "B07BG4YWCF",
+      "ground_truth": "B07BG4YWCF",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "roses without chemicals",
+      "chosen": null,
+      "ground_truth": "B07B1QHGWK",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": false,
+      "abstained": true
+    },
+    {
+      "query": "1 foot long hinge without holes",
+      "chosen": "B08KP39G2L",
+      "ground_truth": "B08KP39G2L",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 visa gift card",
+      "chosen": "B07GHDHKPN",
+      "ground_truth": "B07GHDHKPN",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "02 gmc denali headlight mounting bracket",
+      "chosen": "B009DK84GK",
+      "ground_truth": "B009DK84GK",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "samsung tv wall mount kit",
+      "chosen": "B00NKYYMAW",
+      "ground_truth": "B00NKYYMAW",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1-2-3 blocks without holes",
+      "chosen": "B08KZF733S",
+      "ground_truth": "B07ZPB382G",
+      "correct": false,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 knife block without knives",
+      "chosen": "B085474M7L",
+      "ground_truth": "B085474M7L",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "plastic wine glasses without stem",
+      "chosen": "B07KWG5MBW",
+      "ground_truth": "B07KWG5MBW",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "airsoft electric rifles",
+      "chosen": "B079VLFD7D",
+      "ground_truth": "B079VLFD7D",
+      "correct": true,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "juice jug with dispenser",
+      "chosen": "B001JA5CSK",
+      "ground_truth": "B001JA5CSK",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "nonstick 11 inch frying pans",
+      "chosen": "B073WF2JMD",
+      "ground_truth": "B073WF2JMD",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 generation ipad air keyboard case without an apple penicil",
+      "chosen": null,
+      "ground_truth": "B07RYM8DM2",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": false,
+      "abstained": true
+    },
+    {
+      "query": "beauty products for women",
+      "chosen": "B01MFGN8S5",
+      "ground_truth": "B01MFGN8S5",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 cup measuring cup without handle",
+      "chosen": "B08SSPDDZX",
+      "ground_truth": "B08SSPDDZX",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "100 percent cotton workout towels 27 inches",
+      "chosen": "B07NP6H74Q",
+      "ground_truth": "B07NP6H74Q",
+      "correct": true,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "brushed nickel kitchen faucet",
+      "chosen": "B07D8F5NCW",
+      "ground_truth": "B07D8F5NCW",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "rf wireless headphones",
+      "chosen": "B00SLUI5SA",
+      "ground_truth": "B00SLUI5SA",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "toys for 13 year old boys",
+      "chosen": "B07CK4V7BV",
+      "ground_truth": "B07CK4V7BV",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "solarium kit",
+      "chosen": "B00BFCNFRM",
+      "ground_truth": "B00BFCNFRM",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "8th inch aux cable 12 ft extender",
+      "chosen": "B01CNAV2YW",
+      "ground_truth": "B01CNAV2YW",
+      "correct": true,
+      "confidence": 0.7,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "piano accessories",
+      "chosen": "B01N6ZJH96",
+      "ground_truth": "B01N6ZJH96",
+      "correct": true,
+      "confidence": 0.7,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "xr",
+      "chosen": "B07GHMQDCJ",
+      "ground_truth": "B07GHMQDCJ",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 w light bulbs",
+      "chosen": null,
+      "ground_truth": "B07RLBDR77",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": true,
+      "abstained": false
+    },
+    {
+      "query": "jump rope without the rope",
+      "chosen": "B089VTJWHR",
+      "ground_truth": "B089VTJWHR",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "100 feet led strip lights",
+      "chosen": "B08F9BW59B",
+      "ground_truth": "B08F9BW59B",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "serta perfect embrace mini crib mattress",
+      "chosen": "B00Q7FTN14",
+      "ground_truth": "B00Q7FTN14",
+      "correct": true,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "&a pedicure spa parts, pop-up drain plug without strainer",
+      "chosen": "B07WDTYDSX",
+      "ground_truth": "B07WDTYDSX",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1.00 rimless without nose reading glass for men",
+      "chosen": "B08TBVJS58",
+      "ground_truth": "B08TBVJS58",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "hair loss products",
+      "chosen": "B00IOZWC2M",
+      "ground_truth": "B00IOZWC2M",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 galaxy s9 plus phone cover not bulcky",
+      "chosen": "B08PYYF1ZW",
+      "ground_truth": "B08PYYF1ZW",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "$1 million that look real but that is not it",
+      "chosen": "B00FGXSE36",
+      "ground_truth": "B00FGXSE36",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "$40 bean bag chair for adults with bean not included",
+      "chosen": null,
+      "ground_truth": "B08DP3RQ3T",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": false,
+      "abstained": true
+    },
+    {
+      "query": "1 oz plastic shot glasses without lids",
+      "chosen": "B07SR2V82W",
+      "ground_truth": "B07SR2V82W",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "0-1 yrs without hole",
+      "chosen": "B078WM314M",
+      "ground_truth": "B08B3BP6D5",
+      "correct": false,
+      "confidence": 0.7,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": ".25 ml syringe without needle",
+      "chosen": null,
+      "ground_truth": "B078K8SVMN",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": false,
+      "abstained": true
+    },
+    {
+      "query": "100ft air hose reel retractable without hose",
+      "chosen": "B002JGQWFU",
+      "ground_truth": "B002JGQWFU",
+      "correct": true,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "adam and eve toys for women",
+      "chosen": null,
+      "ground_truth": "B07JHJLG65",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": false,
+      "abstained": true
+    },
+    {
+      "query": "1/2 whip without wires",
+      "chosen": "B07QNZMBYX",
+      "ground_truth": "B07QNZMBYX",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 3/4'' center pop up drain without overflow",
+      "chosen": "B07V5VTZSS",
+      "ground_truth": "B07V5VTZSS",
+      "correct": true,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "hand soap subscribe and save",
+      "chosen": "B0020VJTDG",
+      "ground_truth": "B0020VJTDG",
+      "correct": true,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "$25 apple gift card not email",
+      "chosen": "B08B3NYGBF",
+      "ground_truth": "B08B3NYGBF",
+      "correct": true,
+      "confidence": 0.7,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "yas-875ex",
+      "chosen": "B07C1X5HZJ",
+      "ground_truth": "B07C1X5HZJ",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": ".comarl necklaces fake not noticable",
+      "chosen": "B06ZYHXXVF",
+      "ground_truth": "B06ZYHXXVF",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "stockings without feet",
+      "chosen": "B0138IS4CG",
+      "ground_truth": "B07S534JNX",
+      "correct": false,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "baby girl bundle",
+      "chosen": "B01N63SQ7W",
+      "ground_truth": "B01N63SQ7W",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": ".22 pellets not lead",
+      "chosen": "B007UOOXB6",
+      "ground_truth": "B007UOOXB6",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "trim panel retainer ford",
+      "chosen": "B0017UBHQS",
+      "ground_truth": "B0017UBHQS",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "2.5 vacuum hose",
+      "chosen": "B019C23JLI",
+      "ground_truth": "B019C23JLI",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "I want a lightweight, portable laptop that fits in with my other electrical products.",
+      "chosen": "B07N6S4SY1",
+      "ground_truth": "B07N6S4SY1",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "butt scrubber",
+      "chosen": "B07D1M6PGR",
+      "ground_truth": "B07D1M6PGR",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "succionador de cltoris",
+      "chosen": null,
+      "ground_truth": "B014GMBDQ2",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": false,
+      "abstained": true
+    },
+    {
+      "query": "iphone charging cable 10 feet braided 2 pack",
+      "chosen": "B07ZFMHZ4H",
+      "ground_truth": "B07ZFMHZ4H",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "baby thermometer metene",
+      "chosen": "B075QQ8VZW",
+      "ground_truth": "B075QQ8VZW",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "5\u201dpan fry pan",
+      "chosen": "B015Y20MVK",
+      "ground_truth": "B015Y20MVK",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "honda sterringwheelcovers",
+      "chosen": "B0885S1B1V",
+      "ground_truth": "B0885S1B1V",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "03 dodge ram visor",
+      "chosen": "B078NDD5K3",
+      "ground_truth": "B078NDD5K3",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "what works with amazon echo",
+      "chosen": "B01K1JVZOE",
+      "ground_truth": "B01K1JVZOE",
+      "correct": true,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "nerf ultra blaster",
+      "chosen": "B00U5UE146",
+      "ground_truth": "B00U5UE146",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "ninja af100 air fryer accessories",
+      "chosen": "B07PHGNY8C",
+      "ground_truth": "B07PHGNY8C",
+      "correct": true,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1.77 inch chrome drain without overflow",
+      "chosen": "B00KCGPL56",
+      "ground_truth": "B00KCGPL56",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "12 x 12 mat board custom",
+      "chosen": null,
+      "ground_truth": "B0777K9RGX",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": false,
+      "abstained": true
+    },
+    {
+      "query": "A windows laptop which has a webcam, access to microsoft office and a decent graphics card. A laptop which runs very quickly and efficiently",
+      "chosen": "B07781S5L5",
+      "ground_truth": "B07781S5L5",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "tree watering can",
+      "chosen": "B07MFZYM6N",
+      "ground_truth": "B07MFZYM6N",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "best iron supplements for women",
+      "chosen": "B07JMDYMLS",
+      "ground_truth": "B07JMDYMLS",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "crayola metallic markers",
+      "chosen": "B07VKZ1C4S",
+      "ground_truth": "B07VKZ1C4S",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10oz mason jars without lid with handle",
+      "chosen": null,
+      "ground_truth": "B06XR6P5YK",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": false,
+      "abstained": true
+    },
+    {
+      "query": "refrigerator without water dispenser",
+      "chosen": "B08SBWXTMK",
+      "ground_truth": "B08SBWXTMK",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "$4 worthy items not books",
+      "chosen": "B00K282KY4",
+      "ground_truth": "B00K282KY4",
+      "correct": true,
+      "confidence": 0.7,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10lb fire extinguisher",
+      "chosen": "B01LXT9I5B",
+      "ground_truth": "B01LXT9I5B",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "skinny trash can kitchen",
+      "chosen": "B004L9L42O",
+      "ground_truth": "B004L9L42O",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 pack of 8 dividers with pockets",
+      "chosen": "B00006IBYA",
+      "ground_truth": "B00006IBYA",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "06 mini cooper not turbo air intake hose",
+      "chosen": "B0769QGPDP",
+      "ground_truth": "B0769QGPDP",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 key calculator without tape",
+      "chosen": "B003822IRA",
+      "ground_truth": "B003822IRA",
+      "correct": true,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "polish",
+      "chosen": "B074QMHPPC",
+      "ground_truth": "B074QMHPPC",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 foot curtain rods",
+      "chosen": "B01N1O0MRB",
+      "ground_truth": "B01N1O0MRB",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "cotton king sheet sets stripe",
+      "chosen": "B084TKH517",
+      "ground_truth": "B084TKH517",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "isolyze protein",
+      "chosen": "B00G6QHYZ6",
+      "ground_truth": "B00G6QHYZ6",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "ring without doorbell wiring",
+      "chosen": "B083GKZWVX",
+      "ground_truth": "B083GKZWVX",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 ml 28 gauge 1/2 inch attached needle without safety",
+      "chosen": "B07HYG6M4Y",
+      "ground_truth": "B07P11F21N",
+      "correct": false,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "electrolyte powder without stevia",
+      "chosen": "B07NR8FBMT",
+      "ground_truth": "B07NR8FBMT",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 hour pads without wings",
+      "chosen": "B01KL1DOTG",
+      "ground_truth": "B01KL1DOTG",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "laser copy paper for infusible ink",
+      "chosen": null,
+      "ground_truth": "B0090YJBYS",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": false,
+      "abstained": true
+    },
+    {
+      "query": "#2 dixon oriole pencils not sharpened",
+      "chosen": "B075DTDGSS",
+      "ground_truth": "B075DTDGSS",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "20 gall fish tank",
+      "chosen": "B00GOFSB6U",
+      "ground_truth": "B01N53XPQ8",
+      "correct": false,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 3/4 inch tooled belt strap without belt buckle",
+      "chosen": "B07G3GKGHS",
+      "ground_truth": "B07G3GKGHS",
+      "correct": true,
+      "confidence": 0.6,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "car seat covers tan",
+      "chosen": "B07RHTRYWD",
+      "ground_truth": "B07RHTRYWD",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "0.5cc syringe without needle",
+      "chosen": "B07P26ZY8C",
+      "ground_truth": "B07P26ZY8C",
+      "correct": true,
+      "confidence": 0.85,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "#pinkandproud not sorry glitter lipstick",
+      "chosen": "B07R7V7XLN",
+      "ground_truth": "B07R7V7XLN",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1.5 inch carabiner clip",
+      "chosen": "B083ZV5T2R",
+      "ground_truth": "B083ZV5T2R",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "frame 11x14 without mat",
+      "chosen": "B07PRQLMY2",
+      "ground_truth": "B07PRQLMY2",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "aquarium empty 10 gallon",
+      "chosen": "B0173I55JM",
+      "ground_truth": "B0173I55JM",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 curtain rings without clips",
+      "chosen": null,
+      "ground_truth": "B093CYB994",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": false,
+      "abstained": true
+    },
+    {
+      "query": "bluetooth headphones iphone",
+      "chosen": "B07HBTYBMB",
+      "ground_truth": "B07HBTYBMB",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "bronze bathroom trash can",
+      "chosen": "B000NOPL48",
+      "ground_truth": "B000NOPL48",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "101 exercises without equipment",
+      "chosen": "B087R6P2XZ",
+      "ground_truth": "B087R6P2XZ",
+      "correct": true,
+      "confidence": 0.95,
+      "parse_failed": false,
+      "abstained": false
+    }
+  ]
+}

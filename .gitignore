@@ -10,4 +10,13 @@ dist/
 data/
 logs/
 .DS_Store
-results/
+# results/ IS committed — the run artifacts are the evidence behind every
+# number in docs/, and every analysis re-runs from them for free.
+
+# Node deps for the demo and the slide generator
+node_modules/
+# Office lock files
+~$*
+.~lock.*#
+# Generated slide/PDF renders
+presentation/*.pdf

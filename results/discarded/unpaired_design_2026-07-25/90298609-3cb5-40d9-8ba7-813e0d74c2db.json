@@ -1,0 +1,164 @@
+{
+  "run_id": "90298609-3cb5-40d9-8ba7-813e0d74c2db",
+  "config": {
+    "pipeline": "streaming",
+    "fault_type": "freshness",
+    "severity": "severe",
+    "task": "retrieval",
+    "replication": 1,
+    "injector_params": {
+      "delay_seconds": 5.0
+    },
+    "dataset": "ecommerce_esci",
+    "model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "n_queries": 15,
+    "seed": 9005,
+    "run_id": "90298609-3cb5-40d9-8ba7-813e0d74c2db"
+  },
+  "started_at": "2026-07-24T22:57:45.062872+00:00",
+  "finished_at": "2026-07-24T22:57:59.433285+00:00",
+  "metrics": {
+    "accuracy": 0.6666666666666666,
+    "f1": 0.8,
+    "auc_roc": 0.6,
+    "n": 15,
+    "parse_failures": 0,
+    "llm_latency_ms_p50": 810.4676250368357
+  },
+  "airs": {
+    "freshness": 9.950248803429337,
+    "latency": 100.0,
+    "consistency": 100.0,
+    "semantic": 100.0,
+    "total": 77.48756220085734
+  },
+  "usage": {
+    "calls": 15,
+    "input_tokens": 16299,
+    "output_tokens": 335,
+    "cost_usd": 0.002646
+  },
+  "decisions": [
+    {
+      "query": "0-1 yrs without hole",
+      "chosen": "B078WM314M",
+      "ground_truth": "B078WM314M",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "cuadricular notebook",
+      "chosen": "B07BGHG4B9",
+      "ground_truth": "B07BGHG4B9",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "apple with pencil",
+      "chosen": "B016NY7784",
+      "ground_truth": "B016NY7784",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "$2 pop tube not a pack",
+      "chosen": "B07QMQ8QP6",
+      "ground_truth": "B07QMQ8QP6",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "hair loss products",
+      "chosen": "B07BHCB9Y2",
+      "ground_truth": "B00IOZWC2M",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": ".05 pen not gel",
+      "chosen": "B001B0BE76",
+      "ground_truth": "B00LPMGULU",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "organic multivitamin without biotin",
+      "chosen": "B00VFYYAC4",
+      "ground_truth": "B00VFYYAC4",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "1/2 irrigation tubing without holes",
+      "chosen": "B087VSGF6X",
+      "ground_truth": "B0759M2HSM",
+      "correct": false,
+      "confidence": 0.9,
+      "parse_failed": false
+    },
+    {
+      "query": "up book",
+      "chosen": "B0745DTWMW",
+      "ground_truth": "B07H3NKLBP",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "100 human hair without the track",
+      "chosen": "B08D3HZR6R",
+      "ground_truth": "B08D3HZR6R",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "toys for 8 year old girls",
+      "chosen": "B0084JUNVU",
+      "ground_truth": "B07RRYMWNB",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "liquid probiotic for women",
+      "chosen": "B079H53D2B",
+      "ground_truth": "B079H53D2B",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "big water bottle without straw",
+      "chosen": "B07X1M4WTC",
+      "ground_truth": "B07X1M4WTC",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "birthday gifts for pre-teens",
+      "chosen": "B01N22CM3F",
+      "ground_truth": "B01N22CM3F",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    },
+    {
+      "query": "gfuel without caffeine",
+      "chosen": "B07RP44QPT",
+      "ground_truth": "B07RP44QPT",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false
+    }
+  ]
+}

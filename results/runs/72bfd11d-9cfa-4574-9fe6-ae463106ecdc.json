@@ -1,0 +1,579 @@
+{
+  "run_id": "72bfd11d-9cfa-4574-9fe6-ae463106ecdc",
+  "config": {
+    "pipeline": "streaming",
+    "fault_type": "freshness",
+    "severity": "sweep_3s",
+    "task": "retrieval",
+    "replication": 2,
+    "injector_params": {
+      "delay_seconds": 3.0
+    },
+    "dataset": "ecommerce_esci",
+    "model": "gpt-4o-mini",
+    "temperature": 0.2,
+    "n_queries": 60,
+    "seed": 50202,
+    "sample_seed": 10002,
+    "emit_record_age": false,
+    "run_id": "72bfd11d-9cfa-4574-9fe6-ae463106ecdc"
+  },
+  "started_at": "2026-07-30T20:10:07.977217+00:00",
+  "finished_at": "2026-07-30T20:11:20.255216+00:00",
+  "metrics": {
+    "accuracy": 0.7966101694915254,
+    "f1": 0.8867924528301886,
+    "auc_roc": 0.5416666666666666,
+    "n": 59,
+    "parse_failures": 0,
+    "abstention_rate": 0.01694915254237288,
+    "silent_failure_rate": 0.1864406779661017,
+    "llm_latency_ms_p50": 1064.2964160069823
+  },
+  "airs": {
+    "freshness": 32.786885758491984,
+    "latency": 100.0,
+    "consistency": 100.0,
+    "semantic": 100.0,
+    "total": 83.19672143962299
+  },
+  "usage": {
+    "calls": 59,
+    "input_tokens": 67705,
+    "output_tokens": 1862,
+    "cost_usd": 0.011273
+  },
+  "decisions": [
+    {
+      "query": "aquarium lid",
+      "chosen": "B00474BN1K",
+      "ground_truth": "B00474BN1K",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "05 gsxr 600 light bulb",
+      "chosen": "B07DWD9D53",
+      "ground_truth": "B07DWD9D53",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 pcs cooking pots and pans without handle",
+      "chosen": "B07J5WXXQR",
+      "ground_truth": "B07J5WXXQR",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "kids 24 volt motorcycle",
+      "chosen": "B07P9KDVPG",
+      "ground_truth": "B07P9KDVPG",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "wax",
+      "chosen": "B0030ZRS9I",
+      "ground_truth": "B0030ZRS9I",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": ".5mm derma rollers not china",
+      "chosen": "B07PXV8NKG",
+      "ground_truth": "B07PXV8NKG",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 set plastic 5 tab dividers without pockets",
+      "chosen": "B07QN85ZVC",
+      "ground_truth": "B07QN85ZVC",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "bundt pans for baking nonstick",
+      "chosen": "B003JHTCKU",
+      "ground_truth": "B00004RFPY",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "green juice",
+      "chosen": "B00U47FDP6",
+      "ground_truth": "B00U47FDP6",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "tony ferguson shirt",
+      "chosen": "B076FTC6FQ",
+      "ground_truth": "B076FTC6FQ",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "overgrown pool",
+      "chosen": "B08P51LSNL",
+      "ground_truth": "B08P51LSNL",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "I want the new laptop to have a replaceable battery and to be solid state and ruggedized to deal with bumps and scrapes.",
+      "chosen": "B07GM2J11Q",
+      "ground_truth": "B07GM2J11Q",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "outdoor ceiling fan without lights",
+      "chosen": "B07DK4XR2J",
+      "ground_truth": "B07DK4XR2J",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "womens leather belts for jeans without buckle",
+      "chosen": "B085B6P9WP",
+      "ground_truth": "B085B6P9WP",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 ft. x 10 ft. heavy duty tarp",
+      "chosen": "B08RLTWXP6",
+      "ground_truth": "B08RLTWXP6",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "glow in the dark",
+      "chosen": "B07VCBFV67",
+      "ground_truth": "B07VCBFV67",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "3-5 gal open top trash can",
+      "chosen": "B01H6CCEUI",
+      "ground_truth": "B01H6CCEUI",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "impact bit set metric",
+      "chosen": "B07VH7ZQGC",
+      "ground_truth": "B07VH7ZQGC",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "0 dollar toys for big girl not for baby",
+      "chosen": "B06WLQG5CP",
+      "ground_truth": "B06WLQG5CP",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "18v inflator",
+      "chosen": "B0821S1TZG",
+      "ground_truth": "B0821S1TZG",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "04 gmc yukon rear ac blower not working",
+      "chosen": "B08BC568Z7",
+      "ground_truth": "B07K79MHHS",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "chase the dream not the fame nike shirt",
+      "chosen": "B0162A4HGY",
+      "ground_truth": "B0162A4HGY",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 oz mason jars without lids with handle",
+      "chosen": "B08WLZCMDN",
+      "ground_truth": "B08WLZCMDN",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "trim panel retainer ford",
+      "chosen": "B0017UBHQS",
+      "ground_truth": "B0017UBHQS",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "multivitamin without vitamin e",
+      "chosen": "B001BOLVGQ",
+      "ground_truth": "B001BOLVGQ",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 in curtain rod black without brackets",
+      "chosen": "B076CG9ZRK",
+      "ground_truth": "B073V44H23",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "#1 best and not expensive bath back brush cream color",
+      "chosen": "B07PRN6DCY",
+      "ground_truth": "B07PRN6DCY",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "maxi pads without wings",
+      "chosen": "B01IAI6SD6",
+      "ground_truth": "B000FFFGX6",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "12x10 gazebo",
+      "chosen": "B07SGVNNS5",
+      "ground_truth": "B08BX9MJ93",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "#20 paper bags without handle",
+      "chosen": "B08PL5Y4NJ",
+      "ground_truth": "B01BZ0MR54",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1/2 copper coupling without stop",
+      "chosen": "B008J1OLB6",
+      "ground_truth": "B008J1OLB6",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "black fan without light",
+      "chosen": "B01CDGCVBE",
+      "ground_truth": "B01CDGCVBE",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "simply better tea",
+      "chosen": "B00MPQ5ZOS",
+      "ground_truth": "B00MPQ5ZOS",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1.5 stainless steel pot without long handle",
+      "chosen": "B00JAPX3CS",
+      "ground_truth": "B00JAPX3CS",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "cordless phone without answering machine 3 handsets",
+      "chosen": "B00N22M0XS",
+      "ground_truth": "B00N22M0XS",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "fire extinguisher brackets 10lb",
+      "chosen": "B002RY6IBM",
+      "ground_truth": "B002RY6IBM",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "0-3 month swimsuit boy",
+      "chosen": "B08F31D14Z",
+      "ground_truth": "B089STT34R",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 liter water bottles without time mark",
+      "chosen": "B00U05U154",
+      "ground_truth": "B00U05U154",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "0.35hppump without pre-filter",
+      "chosen": "B000X05G1A",
+      "ground_truth": "B01MQR1W51",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "50 psn card digital code ps4",
+      "chosen": "B004RMK4P8",
+      "ground_truth": "B004RMK4P8",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "siringes medical without needle large",
+      "chosen": "B07MHMN3Y8",
+      "ground_truth": "B07MHMN3Y8",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "bulk food",
+      "chosen": "B0721LFDFK",
+      "ground_truth": "B0721LFDFK",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "dude wipes for men",
+      "chosen": "B00IXDS4EU",
+      "ground_truth": "B00IXDS4EU",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "micro sd cards for cell phones",
+      "chosen": "B073JYVKNX",
+      "ground_truth": "B073JYVKNX",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 2 without both battery switch",
+      "chosen": "B08QC3B7CB",
+      "ground_truth": "B08QC3B7CB",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "brown matte lipstick",
+      "chosen": "B07R8TJ7WV",
+      "ground_truth": "B07R8TJ7WV",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 frame medium hive box without frames",
+      "chosen": "B08MWD8GND",
+      "ground_truth": "B095SBKYC9",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "$10 magnetic eyelashes without eyeliner",
+      "chosen": "B094D5NQ35",
+      "ground_truth": "B094D5NQ35",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "vacuum without roller brush",
+      "chosen": "B01MTFTTQ2",
+      "ground_truth": "B01MTFTTQ2",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "amara beauty",
+      "chosen": "B00G2TQNZ4",
+      "ground_truth": "B00G2TQNZ4",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "drywall anchors",
+      "chosen": null,
+      "ground_truth": "B07VS5QKBC",
+      "correct": false,
+      "confidence": 0.0,
+      "parse_failed": false,
+      "abstained": true
+    },
+    {
+      "query": "100\u201d cutain rod without center support",
+      "chosen": "B00FB6MHHW",
+      "ground_truth": "B0792MXSQT",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "cream wax kit",
+      "chosen": "B000AA5VE0",
+      "ground_truth": "B000AA5VE0",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "10 magnetic eyelashes without eyeliner",
+      "chosen": "B08NSW9DR6",
+      "ground_truth": "B08NSW9DR6",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "1 piece wingback chair cover without arms",
+      "chosen": "B08FC375BG",
+      "ground_truth": "B08FC375BG",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "horny pills for men",
+      "chosen": "B07W8Y9GKF",
+      "ground_truth": "B082WKB1FC",
+      "correct": false,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "from hdmi to screen display port bidirectional",
+      "chosen": "B017Q8ZVWK",
+      "ground_truth": "B017Q8ZVWK",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "blocking light",
+      "chosen": "B00BQ7KBV4",
+      "ground_truth": "B00BQ7KBV4",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    },
+    {
+      "query": "crayola metallic markers",
+      "chosen": "B07VKZ1C4S",
+      "ground_truth": "B07VKZ1C4S",
+      "correct": true,
+      "confidence": 1.0,
+      "parse_failed": false,
+      "abstained": false
+    }
+  ]
+}
