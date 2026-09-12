@@ -13,6 +13,8 @@ the experiment. Read §"Invariants" before touching `runner/` or `agentic_faults
 ```bash
 make test            # pytest (must stay green)
 make ci              # clean-venv install from pyproject + lint + tests
+make lock            # re-pin requirements-lock.txt from the results environment
+make figures         # regenerate the Chapter 4 figures into docs/figures/
 make lint            # ruff
 make grid            # inspect the factorial, no execution, no cost
 make up / make down  # original Kafka+Airflow+Postgres+Prometheus stack — infra_unused/, used by no result

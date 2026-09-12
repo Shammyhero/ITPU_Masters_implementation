@@ -110,10 +110,24 @@ Worked examples: [`examples/probe/`](examples/probe/) · [`examples/gate/`](exam
 
 ```bash
 make setup          # venv + dev install
-make test           # 350 tests, including injector verification
+make test           # full test suite, including injector verification
 make lint
 make grid           # inspect the factorial — no execution, no cost
+make ci             # clean-venv install from pyproject.toml + lint + tests
+make figures        # regenerate the Chapter 4 figures into docs/figures/
 ```
+
+To reproduce with **the exact package versions that produced the published
+results**, install from the lockfile instead (Python 3.13):
+
+```bash
+python3.13 -m venv .venv
+.venv/bin/pip install -r requirements-lock.txt
+.venv/bin/pip install -e . --no-deps
+```
+
+`requirements-lock.txt` is verified by installing it into a clean environment
+and running the full suite; `make lock` regenerates it.
 
 Every analysis below reads the committed run artifacts in `results/runs/` and
 costs **nothing** — no API key required:

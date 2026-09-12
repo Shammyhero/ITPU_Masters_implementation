@@ -31,13 +31,13 @@ Implementation **freezes Fri 06 Nov**. November is writing. December is defence.
 | Stage | Weeks | Hours | API cost |
 |---|---|---|---|
 | Survival fixes | W1 | 20 | $0 |
-| Evidence & figures | W2 | 20 | $0 |
+| Evidence, figures & power | W2 | 21 | $0 |
 | The product | W3–W5 | 60 | $0 |
 | Refetch arm | W6–W7 | 40 | ~$1.50 |
 | Integration & freeze | W8 | 20 | ~$0.20 |
 | Thesis document | W9–W12 | 80 | $0 |
 | Defence | W13–W14 | 20 | $0 |
-| **Total** | | **260** | **~$1.70** |
+| **Total** | | **261** | **~$1.70** |
 
 ---
 
@@ -55,7 +55,9 @@ Implementation **freezes Fri 06 Nov**. November is writing. December is defence.
 > canonical, not Postgres); Chapter 3 now describes the archetypes as
 > simulated and no longer claims CI or containers. Silent failure unified to one
 > threshold-free definition, and the 0.5–0.9 sensitivity check the methodology
-> promised — but never ran — implemented. Remaining this week: lockfile.
+> promised — but never ran — implemented. Lockfile pinned (`make lock`, 99
+> packages) and verified in a clean environment: `pip check` clean, versions
+> identical to the results environment, 382 tests green. **W1 complete.**
 
 Nothing else starts until this lands. These remove two of the three defence
 questions currently unanswerable (`REVIEW.md` Phase 2, Q1 and Q2).
@@ -74,12 +76,13 @@ questions currently unanswerable (`REVIEW.md` Phase 2, Q1 and Q2).
 **Gate — Fri 18 Sep:** all eight done. If not, W2 does not start; finish these
 first. They are survival, not enhancement.
 
-## W2 · Mon 21 – Fri 25 Sep · Evidence & figures · 20 h · $0
+## W2 · Mon 21 – Fri 25 Sep · Evidence, figures & power · 21 h · $0
 
 | Task | h | Output |
 |---|---|---|
 | **Query-level fragility** — module + tests + write-up. Different faults fail the *same* queries (2.0–4.4× chance overlap); 30–48% of fault-induced silent failures were already silent at baseline | 10 | `analysis/fragility.py`, `docs/fragility_findings.md` + **Fig. 4.8** |
-| `make figures` target + the remaining Chapter 4 set | 10 | **Figs. 4.1–4.5** |
+| Remaining Chapter 4 figures — 4.6 and 4.7 were built in W1 | 6 | **Figs. 4.1–4.5** |
+| **Simulation-based power analysis** (REVIEW F-C6) — clustering-adjusted minimum detectable effect per RQ, from the intraclass correlation observed in the existing runs. RQs v2 §6 requires it before the results chapter; added 2026-09-13 using W1's slack | 5 | `analysis/power.py`, Ch. 3 table, RQs v2 §6 rewritten |
 
 **The Chapter 4 figure set, complete by Fri 25 Sep:**
 
@@ -96,7 +99,7 @@ first. They are survival, not enhancement.
 | 4.9 | *(reserved for the refetch arm, W7)* | W7 |
 
 **Gate — Fri 25 Sep:** every figure above exists and regenerates with
-`make figures`. **If missed, cut the refetch arm now** — not in October.
+`make figures`, and the power analysis reports a minimum detectable effect per RQ. **If missed, cut the refetch arm now** — not in October.
 
 ## W3 · Mon 28 Sep – Fri 02 Oct · Product: backend + Mode A core · 20 h · $0
 
@@ -242,7 +245,7 @@ short conclusion** — a complete document beats a deep one.
 | Date | Gate | If missed |
 |---|---|---|
 | Fri 18 Sep | W1 survival fixes complete | Stop; nothing else starts |
-| Fri 25 Sep | Figs. 4.1–4.8 exist, `make figures` works | Cut the refetch arm now |
+| Fri 25 Sep | Figs. 4.1–4.8 exist, `make figures` works, power analysis done | Cut the refetch arm now |
 | Fri 09 Oct | Mode A works on a stranger's JSONL | Mode B becomes a static explainer |
 | **Fri 16 Oct** | **M1 — product runs, results collected** | Non-negotiable |
 | Fri 30 Oct | Refetch runs executed | **Hard cut the arm** |

@@ -296,7 +296,7 @@ most classification silent failures disappear, because the model reports 0.8–0
 by habit — which is the strongest argument that no threshold belongs in the
 definition. **Invariant 8** now pins it.
 
-**F-C6 (serious — OPEN) — the "analysis notebook" the methodology cites does not
+**F-C6 (serious — SCHEDULED for W2 by author decision, 2026-09-13) — the "analysis notebook" the methodology cites does not
 exist, and the power analysis it requires was never run.**
 `research_questions_v2.md` attributes three things to "the analysis notebook":
 the collinearity VIF table, the silent-failure threshold sensitivity, and a
@@ -413,7 +413,10 @@ rather than `analysis`, and `streamlit` was still declared for a demo rebuilt in
 Next.js six weeks earlier. This is exactly the class of defect that makes an
 artifact irreproducible a year later, and it was invisible to `make test`.
 
-**F-E3 (serious) — no lockfile.** Add `requirements-lock.txt` from the working
+**F-E3 (serious — RESOLVED 2026-09-13) — no lockfile.** `requirements-lock.txt`
+now pins the 99 packages of the environment that produced the results
+(`make lock`), verified by a clean install: `pip check` clean, key versions
+identical, full suite green. Original finding: Add `requirements-lock.txt` from the working
 venv. **Effort: 1 h.** Without it the artifact is not reproducible and an
 artifact-evaluation reviewer fails it on that alone.
 
