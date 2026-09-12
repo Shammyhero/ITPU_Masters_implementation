@@ -57,7 +57,7 @@ questions currently unanswerable (`REVIEW.md` Phase 2, Q1 and Q2).
 | Fix `README.md` ("half-run") and `campaign_status.md` | 1 | — |
 | **Infrastructure honesty** — move `docker/`, `pipelines/streaming.py`, `airflow_dags/` to `infra_unused/` with a README | 3 | quarantine + README |
 | Rewrite `CLAUDE.md` invariant 7 (Postgres is *not* canonical; JSON artifacts are) and rename the pipeline factor in docs | 3 | — |
-| Lockfile, GitHub Actions billing, remove `streamlit`/`langgraph` from `pyproject.toml` | 2 | `requirements-lock.txt`, green CI |
+| Lockfile; `make ci` clean-install verification; fix under-declared deps (`langchain-anthropic` was missing entirely) | 2 | `requirements-lock.txt`, `make ci` green |
 
 **Gate — Fri 18 Sep:** all eight done. If not, W2 does not start; finish these
 first. They are survival, not enhancement.

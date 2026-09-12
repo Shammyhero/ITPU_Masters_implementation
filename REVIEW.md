@@ -338,12 +338,33 @@ observed vs additive prediction; (7) the F-B1 sensitivity table as a tornado
 plot. **Effort: 12 h** including a `make figures` target. Do this early — building figures is also the most reliable way to surface
 errors in one's own results.
 
-**F-E2 (serious) — the repo documents a CI that has never run.** `CLAUDE.md`:
-*"must stay green — CI runs it on every commit."* Reality: the workflow has
-executed **once**, on `a20f6b2`, and failed in 3 s with *"the job was not started
-because your account is locked due to a billing issue."* The public repo shows a
-red X. Fix the billing or delete the claim; leaving both is the worst option.
-**Effort: 0.5 h.**
+**F-E2 (resolved 2026-09-13) — the documented CI had never run, and was wrong
+anyway.** `CLAUDE.md` claimed *"must stay green — CI runs it on every commit"*.
+The workflow had executed **once**, on `a20f6b2`, failing in 3 s to an
+account-level billing lock. That failure masked a second defect: the job
+installed `.[dev]` (pytest + ruff only) while `tests/test_airs_calibration.py`
+imports numpy at module scope, so collection would have died before a single
+test ran. The workflow had therefore never been capable of passing.
+
+**Reassessed:** filing this under must-have was an aesthetic judgement — a red
+badge looks bad — presented as a rigour one. With a single developer, no pull
+requests, and 350 local tests in 22 s, the only thing CI offered that local
+testing cannot is proof the project installs and passes on a machine that is
+not the author's. That benefit is obtainable without GitHub.
+
+**Resolved by** deleting `.github/workflows/` and adding `make ci`, which builds
+a throwaway venv, installs only what `pyproject.toml` declares, and runs lint
+plus the full suite. It immediately earned its keep — see F-E6.
+
+**F-E6 (serious, found and fixed by `make ci` on 2026-09-13) — the package
+under-declared its own dependencies.** `agents/llm.py` imports
+`langchain_anthropic` for every `claude-*` model, and **no extra declared it**:
+the Haiku cross-model arm could not be reproduced from a clean install. Seven
+tests failed on a clean venv while passing in the developer's. Also corrected:
+`langgraph` was declared and never imported, `scikit-learn` sat in `agents`
+rather than `analysis`, and `streamlit` was still declared for a demo rebuilt in
+Next.js six weeks earlier. This is exactly the class of defect that makes an
+artifact irreproducible a year later, and it was invisible to `make test`.
 
 **F-E3 (serious) — no lockfile.** Add `requirements-lock.txt` from the working
 venv. **Effort: 1 h.** Without it the artifact is not reproducible and an
@@ -461,8 +482,9 @@ rather than improvising.
 2026-09-10*, once written up: sub-additive, 5 of 8 pairs, latency control
 ψ = 0.00.
 
-**11. "The CI badge is red."** — *Cannot answer today.* Billing lock (F-E2).
-Avoidable in 30 minutes.
+**11. "Could someone else install and run this?"** — *Can answer as of
+2026-09-13.* `make ci` verifies a clean-venv install from the declared extras.
+It found that `langchain-anthropic` was never declared (F-E6).
 
 **12. "Could I reproduce this next year?"** — *Half.* Artifacts and analyses
 yes; environment no (F-E3).

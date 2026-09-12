@@ -11,7 +11,8 @@ the experiment. Read §"Invariants" before touching `runner/` or `agentic_faults
 ## Commands
 
 ```bash
-make test            # pytest (must stay green — CI runs it on every commit)
+make test            # pytest (must stay green)
+make ci              # clean-venv install from pyproject + lint + tests
 make lint            # ruff
 make grid            # inspect the factorial, no execution, no cost
 make up / make down  # Kafka (KRaft) + Airflow + Postgres + Prometheus

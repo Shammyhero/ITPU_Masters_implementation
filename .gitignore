@@ -20,3 +20,4 @@ node_modules/
 .~lock.*#
 # Generated slide/PDF renders
 presentation/*.pdf
+.ci-venv/
