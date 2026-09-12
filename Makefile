@@ -16,10 +16,10 @@ grid:
 	$(PY) -m airsbench.runner.run --grid --dry-run
 
 up:
-	docker compose up -d
+	docker compose -f infra_unused/docker-compose.yml up -d
 
 down:
-	docker compose down
+	docker compose -f infra_unused/docker-compose.yml down
 
 demo:
 	npm --prefix demo run dev

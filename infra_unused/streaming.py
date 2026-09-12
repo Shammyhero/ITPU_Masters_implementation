@@ -1,6 +1,6 @@
 """Kafka streaming pipeline wrappers (thin by design).
 
-Single-broker KRaft cluster (docker-compose.yml), two topics per task:
+Single-broker KRaft cluster (infra_unused/docker-compose.yml), two topics per task:
 ``<dataset>.baseline`` and ``<dataset>.faulted``. Latency is measured
 between produce and consumer handoff — this feeds the AIRS latency
 dimension. confluent-kafka is imported lazily so the core package and

@@ -50,7 +50,10 @@ Implementation **freezes Fri 06 Nov**. November is writing. December is defence.
 > `make ci`, which found an undeclared `langchain-anthropic` dependency.
 > RQ6 written up (`interaction_findings.md`, Fig. 4.6): faults saturate, never
 > compound — 5 of 8 pairs sub-additive. README and arm status corrected.
-> Remaining this week: infrastructure quarantine, lockfile.
+> Infrastructure quarantined to `infra_unused/` with a README; compose
+> validated from its new location; invariant 7 rewritten (JSON artifacts are
+> canonical, not Postgres). Remaining this week: lockfile, and Chapter 3's
+> description of the pipeline archetypes as simulated.
 
 Nothing else starts until this lands. These remove two of the three defence
 questions currently unanswerable (`REVIEW.md` Phase 2, Q1 and Q2).

@@ -1,3 +1,6 @@
+# QUARANTINED 2026-09-13 — see infra_unused/README.md. No result in this thesis
+# depends on any service below. Run from the repository root with:
+#   docker compose -f infra_unused/docker-compose.yml up -d
 # AIRS-Bench experimental environment (research plan §6.8).
 # One command brings up both pipeline archetypes + storage + observability:
 #   docker compose up -d
@@ -37,7 +40,7 @@ services:
       POSTGRES_DB: airs
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./src/airsbench/runner/schema.sql:/docker-entrypoint-initdb.d/00_schema.sql:ro
+      - ../src/airsbench/runner/schema.sql:/docker-entrypoint-initdb.d/00_schema.sql:ro
       - ./docker/postgres/01_airflow_db.sql:/docker-entrypoint-initdb.d/01_airflow_db.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U airs -d airs"]
@@ -56,7 +59,7 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airs:airs@postgres:5432/airflow
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
     volumes:
-      - ./src/airsbench/pipelines/airflow_dags:/opt/airflow/dags:ro
+      - ./airflow_dags:/opt/airflow/dags:ro
     depends_on:
       postgres:
         condition: service_healthy

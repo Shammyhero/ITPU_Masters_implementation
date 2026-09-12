@@ -15,7 +15,7 @@ make test            # pytest (must stay green)
 make ci              # clean-venv install from pyproject + lint + tests
 make lint            # ruff
 make grid            # inspect the factorial, no execution, no cost
-make up / make down  # Kafka (KRaft) + Airflow + Postgres + Prometheus
+make up / make down  # original Kafka+Airflow+Postgres+Prometheus stack — infra_unused/, used by no result
 make demo            # AIST Streamlit app
 
 # Campaign — ALWAYS --dry-run first to see the cost estimate
@@ -78,8 +78,12 @@ wrong, not the test.
    refusing or emitting garbage under degraded data is the phenomenon being
    measured. Only transport errors (network, rate limit) are retried.
 
-7. **Postgres `benchmark_runs` is the canonical dataset.** Prometheus is for the
-   live demo only and must never be a results source.
+7. **The JSON run artifacts in `results/runs/` are the canonical dataset.**
+   Every published number is derived from them, and they are committed.
+   Postgres `benchmark_runs` was the original plan and nothing has ever written
+   to it; `runner/schema.sql` survives only because its `fault_type` CHECK is
+   the interaction arm's quarantine, pinned by a test. Prometheus was
+   live-demo observability and was never a results source.
 
 ## Known traps
 
@@ -115,10 +119,11 @@ grey literature — never in the peer-reviewed literature review.
 src/agentic_faults/      four record-level injectors + verification (stdlib only)
 src/airsbench/airs/      AIRS operational definitions + calculator
 src/airsbench/agents/    LLM client, prompts, retrieval + classification agents
-src/airsbench/pipelines/ Kafka wrappers, Airflow DAG, catalog time machine
+src/airsbench/pipelines/ catalog time machine + record builders (loader.py)
 src/airsbench/gate/      admission control: Policy, Controller, offline policy replay
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema
 src/airsbench/dataprep/  dataset prep (ESCI, BTS) + free sensitivity check
+infra_unused/            original Kafka/Airflow/Postgres stack — quarantined, no result depends on it
 docs/                    literature review, related-work positioning, RQs v2,
                          Chapter 3 methodology
 results/discarded/       runs from superseded designs — evidence, not data

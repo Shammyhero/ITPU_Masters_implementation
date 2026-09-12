@@ -145,13 +145,14 @@ make data-ecommerce && make data-airline
 src/agentic_faults/      four record-level fault injectors + verification (stdlib only)
 src/airsbench/airs/      AIRS operational definitions, calculator, calibrated weights
 src/airsbench/agents/    LLM client, prompts, retrieval + classification agents
-src/airsbench/pipelines/ Kafka wrappers, Airflow DAG, catalog time machine
+src/airsbench/pipelines/ catalog time machine + record builders (loader.py)
 src/airsbench/gate/      admission control: Policy, Controller, offline policy replay
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema
 src/airsbench/analysis/  one module per research question — all free to re-run
 src/airsbench/dataprep/  dataset preparation + free sensitivity check
 demo/                    AIST demo (Next.js, static export, pre-baked data)
 docs/                    research plan, methodology, literature, findings
+infra_unused/            original Kafka/Airflow/Postgres stack — quarantined, used by no result
 results/runs/            302 run artifacts — the evidence behind every number
 results/discarded/       runs from superseded designs — evidence, not data
 ```

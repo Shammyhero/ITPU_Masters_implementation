@@ -16,6 +16,8 @@ dependencies = []
 
 [project.optional-dependencies]
 data = ["pandas>=2.0", "pyarrow>=15", "datasets>=2.19", "requests>=2.31"]
+# Serves only infra_unused/ (quarantined 2026-09-13). No experiment, analysis
+# or test imports these; results are simulated archetypes, see infra_unused/README.md.
 pipelines = ["confluent-kafka>=2.3", "psycopg2-binary>=2.9", "prometheus-client>=0.20"]
 agents = ["langchain>=0.2", "langchain-openai>=0.1", "langchain-anthropic>=0.1"]
 analysis = [

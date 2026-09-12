@@ -295,7 +295,9 @@ Ranked by evidence gained per hour:
    established as inverting.
 3. Fifth model — **not worth it.** Diminishing returns; four are already run.
 
-**F-D1 (FATAL, and it is a framing problem not a science problem) — "pipeline
+**F-D1 (FATAL framing problem — QUARANTINED 2026-09-13: Kafka/Airflow/Postgres
+moved to `infra_unused/` with a README explaining why no result uses them;
+invariant 7 now names the JSON artifacts as canonical) — "pipeline
 architecture" is two constants.** `runner/execute.py:67-68`:
 
 ```python

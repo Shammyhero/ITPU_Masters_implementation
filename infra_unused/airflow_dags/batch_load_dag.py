@@ -7,7 +7,7 @@ consumer end = read_time − record event_time, which grows between runs —
 exactly the staleness profile batch pipelines exhibit in production.
 
 This file runs INSIDE the Airflow container (mounted via
-docker-compose.yml); it is not imported by the airsbench package.
+infra_unused/docker-compose.yml); it is not imported by the airsbench package.
 """
 
 from __future__ import annotations

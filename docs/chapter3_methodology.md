@@ -2,7 +2,7 @@
 
 **Draft 1.** Written against the implementation as it stands; every mechanism
 described here exists in the repository and is covered by the test suite
-(64 tests, run in CI on every commit). Section numbers are provisional.
+(its test suite is verified against a clean install by `make ci`). Section numbers are provisional.
 
 ---
 
@@ -192,7 +192,8 @@ tolerance of its setting; severity settings must produce field-alteration and
 context-removal rates matching their configured probabilities within binomial
 margins.
 
-These routines run in continuous integration on every commit. Their outputs are
+These routines are part of the test suite, which `make ci` runs against a
+clean installation of the package. Their outputs are
 reported in an appendix, so the claim that the manipulation was applied as
 specified is evidenced rather than asserted.
 
@@ -356,10 +357,22 @@ now separated in `build_event_ts` and the identity is pinned by test.
 
 | Factor | Levels |
 |---|---|
-| Pipeline architecture | Batch (Airflow) · Streaming (Kafka) |
+| Pipeline archetype *(simulated)* | Batch · Streaming |
 | Fault type | None (baseline) · Freshness · Latency · Consistency (schema drift) · Semantic completeness |
 | Severity | Mild · Severe |
 | Agentic task | Retrieval · Classification |
+
+**The two pipeline archetypes are simulated, not run.** Each is represented by
+its inherent-staleness signature — 3.0 s for batch, 0.05 s for streaming
+(`runner/execute.py`) — applied by the loader, which serves values as they stood
+that long before query time. No message broker or scheduler sits between the
+loader and the agent. This is deliberate: the flip-partition analysis (§3.8.1)
+shows that staleness of the served values is the only pipeline property that
+reaches the agent's decision, and a live broker would add timing noise without
+adding any variable the agent can respond to. The Kafka and Airflow environment
+specified in the original research plan was built and is retained, unused, in
+`infra_unused/`; no result depends on it. Validity consequences are discussed in
+§3.11.
 
 Severity presets: freshness 1.5 s / 5.0 s; latency 500 ms / 3000 ms; schema
 drift 5% / 25% of fields; semantic stripping 30% / 80% of context.
@@ -499,9 +512,11 @@ abstained), *wrong*, and reported at confidence ≥ 0.7. The threshold is
 reported in the methodology and its sensitivity is checked across 0.5–0.9 in
 the analysis.
 
-The results table in PostgreSQL is the canonical dataset. Prometheus
-instrumentation exists for the live demonstration tool but is never the source
-of truth for results — a scrape gap must not be able to lose experimental data.
+The canonical dataset is the set of structured JSON run artifacts in
+`results/runs/`, committed to the repository; every reported number is derived
+from them. A PostgreSQL results schema was designed for the original plan and is
+retained, but nothing writes to it. Prometheus instrumentation was built for live
+demonstration only and is never a source of results.
 
 ---
 
@@ -577,15 +592,21 @@ full.
 
 ## 3.10 Reproducibility
 
-All components are containerised and orchestrated through a single Compose
-manifest: Kafka in single-broker KRaft mode, Airflow, PostgreSQL with the
-results schema applied at initialisation, and Prometheus. The environment has
-been verified to start from a clean state and pass health checks on both the
-development machine and a cloud instance.
+Every experiment runs as a single Python process with no external services: the
+loader, fault injectors, agent and scorer execute in one runtime, and the only
+network dependency is the model API. Reproduction therefore requires a Python
+environment and the prepared datasets, not a container stack. The Compose
+manifest for the originally planned Kafka/Airflow/PostgreSQL/Prometheus
+environment is retained in `infra_unused/` and validates, but no experiment
+uses it.
 
-The codebase is public under an MIT licence. Continuous integration runs linting,
-the full test suite including the injector verification routines, and Compose
-validation on every commit. Every run configuration and result is written as
+The codebase is public under an MIT licence. `make ci` verifies the artifact from
+a clean environment: it creates a fresh virtual environment, installs only the
+dependencies the package declares, and runs linting and the full test suite,
+including the injector verification routines. The check exists because a
+developer's own environment masks undeclared dependencies — it found one, the
+Anthropic client library, whose absence made the cross-model arm irreproducible
+from the package metadata. Every run configuration and result is written as
 structured JSON.
 
 On completion, the benchmark dataset — every run's configuration, raw agent
