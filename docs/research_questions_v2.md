@@ -118,14 +118,19 @@ argument changes.
 | `accuracy` | run | Proportion of decisions matching ground truth |
 | `f1_score`, `auc_roc` | run | Standard binary metrics; AUC uses reported confidence |
 | **`abstention_rate`** | run | Proportion of decisions where the agent declined |
-| **`silent_failure_rate`** | run | Proportion of decisions that were **committed, wrong, and reported at confidence ≥ 0.7** |
+| **`silent_failure_rate`** | run | Proportion of decisions that were **committed, parseable and wrong** — no confidence threshold |
 | `parse_failures` | run | Unusable outputs (counted as failures, never retried) |
 | `airs_*` | run | Four dimension scores plus composite |
 | `correct`, `confidence`, `abstained` | **decision** | Per-decision record — the unit for the primary models |
 
-The `HIGH_CONFIDENCE = 0.7` threshold for silent failure is reported in the
-methodology, and its sensitivity is checked across 0.5/0.6/0.7/0.8/0.9 in the
-analysis notebook.
+**Revised 2026-09-13.** Silent failure originally carried a `HIGH_CONFIDENCE =
+0.7` threshold, and this section promised a sensitivity check across
+0.5/0.6/0.7/0.8/0.9 that was never run — while the analyses applied no threshold
+at all. The definition is now threshold-free everywhere
+(`runner/scoring.py::is_silent_failure`), and the promised check exists:
+`analysis/silent_definition.py`, reported in `silent_definition_findings.md`.
+It shows the threshold was inert at 0.7 for the primary model but not robust
+across the range: at 0.9 it would erase most classification silent failures.
 
 ---
 
@@ -149,7 +154,7 @@ dimensions move together, their coefficients cannot be attributed separately.
 This is enforced in the instrument (semantic stripping records its opacity
 mapping so the consistency measure can reverse it) and verified by
 `tests/test_dimension_independence.py`. Observed collinearity is additionally
-reported as a VIF table in the analysis notebook.
+reported as a VIF table by `analysis/airs_calibration.py` (every VIF 1.1–1.2).
 
 ---
 

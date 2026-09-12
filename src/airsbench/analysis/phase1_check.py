@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any
 
 from ..runner.config import run_arm
+from ..runner.scoring import failure_modes
 
 # A faulted condition scoring this far ABOVE its own baseline is not
 # noise — it indicates the comparison is not controlled.
@@ -59,7 +60,9 @@ def load_runs(
                 "n": met["n"],
                 "accuracy": met["accuracy"],
                 "abstention": met.get("abstention_rate", 0.0),
-                "silent": met.get("silent_failure_rate", 0.0),
+                # Recomputed, not read from met["silent_failure_rate"]: artifacts before
+                # 2026-09-13 recorded the retired 0.7-threshold definition.
+                "silent": failure_modes(data.get("decisions", []))[1],
                 "parse_failures": met["parse_failures"],
                 "airs": data["airs"]["total"],
                 "cost": data["usage"]["cost_usd"],

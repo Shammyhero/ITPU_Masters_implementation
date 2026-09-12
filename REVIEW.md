@@ -277,6 +277,40 @@ fixable within budget. Handle it in threats-to-validity, not by running more.
 pairs. Report Holm-adjusted intervals or state explicitly that the analysis is
 exploratory. 1 h.
 
+**F-C5 (serious — found and RESOLVED 2026-09-13) — silent failure had two
+definitions under one name, and a promised robustness check never existed.**
+Chapter 3, `research_questions_v2.md` and `runner/scoring.py::failure_modes`
+defined silent failure as committed, wrong and confidence ≥ 0.7; the nine
+analysis modules behind every reported silent-failure result applied no
+threshold. Both documents also claimed the threshold's sensitivity was checked
+across 0.5–0.9; nothing implemented it. Found while correcting Chapter 3 for the
+infrastructure quarantine.
+
+**Resolved** by making the definition threshold-free everywhere
+(`is_silent_failure`, pinned against the analyses' inline formula by a test) and
+by implementing the check (`analysis/silent_definition.py`,
+`docs/silent_definition_findings.md`). For gpt-4o-mini the two definitions give
+identical rates in every arm, so no primary result moved; cross-model shifts are
+at most 2.2 pp. The check also showed the threshold was never robust — at 0.9
+most classification silent failures disappear, because the model reports 0.8–0.9
+by habit — which is the strongest argument that no threshold belongs in the
+definition. **Invariant 8** now pins it.
+
+**F-C6 (serious — OPEN) — the "analysis notebook" the methodology cites does not
+exist, and the power analysis it requires was never run.**
+`research_questions_v2.md` attributes three things to "the analysis notebook":
+the collinearity VIF table, the silent-failure threshold sensitivity, and a
+simulation-based power analysis. `notebooks/` contains only a README. The VIF
+table does exist, in `analysis/airs_calibration.py` (pointer corrected
+2026-09-13); the threshold check now exists (F-C5). **The power analysis does
+not.** §6 marks it *"required before the results chapter"*, because its
+closed-form minimum detectable effect (8–10 pp at 320 decisions per condition)
+ignores run-level clustering and the intraclass correlation is unknown. §6's
+design counts are also stale: 198 runs and 18 cross-model runs, against 302 and
+54 actually run. **Effort: ~5 h, $0** — a simulation using the ICC observed in the
+existing artifacts. Until it exists, "was the design adequately powered?" has no
+evidenced answer.
+
 ## D. Generalization
 
 Better than the brief assumes: **four models already run** — gpt-4o-mini,

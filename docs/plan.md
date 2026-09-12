@@ -52,8 +52,10 @@ Implementation **freezes Fri 06 Nov**. November is writing. December is defence.
 > compound — 5 of 8 pairs sub-additive. README and arm status corrected.
 > Infrastructure quarantined to `infra_unused/` with a README; compose
 > validated from its new location; invariant 7 rewritten (JSON artifacts are
-> canonical, not Postgres). Remaining this week: lockfile, and Chapter 3's
-> description of the pipeline archetypes as simulated.
+> canonical, not Postgres); Chapter 3 now describes the archetypes as
+> simulated and no longer claims CI or containers. Silent failure unified to one
+> threshold-free definition, and the 0.5–0.9 sensitivity check the methodology
+> promised — but never ran — implemented. Remaining this week: lockfile.
 
 Nothing else starts until this lands. These remove two of the three defence
 questions currently unanswerable (`REVIEW.md` Phase 2, Q1 and Q2).

@@ -508,9 +508,16 @@ the composite.
 correctness, reported confidence, abstention flag and parse status.
 
 **Silent failure** is defined as a decision that was *committed* (not
-abstained), *wrong*, and reported at confidence ≥ 0.7. The threshold is
-reported in the methodology and its sensitivity is checked across 0.5–0.9 in
-the analysis.
+abstained), *parseable*, and *wrong* — with no confidence threshold. A parse
+failure is counted as a failure and never retried, but it is not a *silent*
+failure, because unusable output is visible. No confidence threshold is applied,
+for two reasons. A threshold would define the outcome partly by the agent's own
+confidence, which is the signal RQ4 compares AIRS against. And a threshold's
+placement is arbitrary with respect to how a model reports confidence: the
+primary model reports between 0.8 and 0.9 on most classification silent
+failures, so a 0.9 threshold would remove most of them while a 0.7 threshold
+removes none. The rate under every threshold from 0.5 to 0.9 is reported in
+`docs/silent_definition_findings.md`.
 
 The canonical dataset is the set of structured JSON run artifacts in
 `results/runs/`, committed to the repository; every reported number is derived
@@ -647,7 +654,7 @@ distribution but cannot establish performance on naturally occurring faults.
 AIRS is therefore presented as a methodology practitioners recalibrate on their
 own systems, not as a set of universal coefficients.
 
-**Limited task and model coverage.** Two task families and three models do not
+**Limited task and model coverage.** Two task families and four models do not
 exhaust the space. Long-running multi-step orchestration and multi-agent
 coordination are outside scope. The cross-model arm compares primarily
 small-to-mid-capability models; whether frontier-scale models resist degraded
@@ -657,8 +664,25 @@ data better is left open and is the most valuable single extension.
 staleness confounds the other three faults, which is why primary effects are
 reported on the streaming arm.
 
-**Single hardware environment.** All runs execute in equivalent containerised
-environments; generalisation to other hardware classes is not investigated.
+**Single execution environment.** All runs execute as the same Python process
+on one development machine, calling hosted models over their APIs and local
+models through Ollama; generalisation to other hardware classes is not
+investigated. Hosted-model behaviour may also change on the provider's side
+without notice, which no local control can prevent.
+
+**A reconciled construct definition, disclosed.** Until September 2026 the
+thesis carried two definitions of silent failure under one name. The
+methodology and the per-run metric applied a confidence threshold of 0.7; the
+analysis modules that produce every reported silent-failure result applied none.
+The methodology also stated that the threshold's sensitivity had been checked
+across 0.5–0.9, and no such check existed. The definition is now threshold-free
+throughout, the check has been implemented, and the two are held in agreement
+by a test. For the primary model the definitions coincide in every arm, so no
+primary result changed; on the cross-model arm a 0.7 threshold would lower
+silent-failure rates by at most 2.2 percentage points. The check also shows why
+no threshold is defensible: raising it from 0.7 to 0.9 would erase most
+classification silent failures, because the primary model habitually reports a
+confidence between 0.8 and 0.9.
 
 **A corrected instrument defect, disclosed.** The freshness accounting
 double-counted the injected delay during phase 1 and the first 30 runs of phase

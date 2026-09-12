@@ -71,7 +71,10 @@ Start here if you are reviewing the research rather than the code.
 [AIRS calibration](docs/airs_calibration_findings.md) ·
 [cross-model](docs/cross_model_findings.md) ·
 [detectability](docs/detectability_findings.md) ·
-[the gate](docs/gate_findings.md)
+[the gate](docs/gate_findings.md) ·
+[fault interaction](docs/interaction_findings.md) ·
+[AIRS curve sensitivity](docs/sensitivity_findings.md) ·
+[silent-failure definition](docs/silent_definition_findings.md)
 
 ---
 

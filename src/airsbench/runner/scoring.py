@@ -9,10 +9,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# A decision counts as "confident" above this reported confidence. Used to
-# separate silent failure (wrong, but asserted confidently) from honest
-# uncertainty. The value is reported in the methodology; sensitivity to it
-# is checked in the analysis notebook.
+# Silent failure is defined WITHOUT a confidence threshold: a decision that was
+# committed (not abstained), parseable, and wrong. Two reasons.
+#
+# First, a threshold defines the outcome partly by the agent's own confidence --
+# the very signal RQ4 tests AIRS against. Asking whether confidence predicts a
+# label built from confidence is circular in principle.
+#
+# Second, it was never one construct. Chapter 3 and RQs v2 specified a 0.7
+# threshold, and this function applied it, but nine analysis modules computed
+# silent failure with no threshold -- so one name covered two definitions. For
+# gpt-4o-mini they coincide in every arm (it never commits a wrong answer below
+# 0.7), so no headline number depended on the difference; they diverge by up to
+# a few points on the cross-model arm.
+#
+# HIGH_CONFIDENCE survives only as the reference value for the robustness check
+# the methodology promised and never ran: analysis/silent_definition.py.
 HIGH_CONFIDENCE = 0.7
 
 
@@ -27,7 +39,25 @@ class RunMetrics:
     silent_failure_rate: float = 0.0
 
 
-def failure_modes(decisions: list[dict]) -> tuple[float, float]:
+def is_silent_failure(decision: dict, min_confidence: float | None = None) -> bool:
+    """THE definition of silent failure. Every analysis must agree with this.
+
+    Committed (not abstained), parseable, and wrong. A parse failure is a
+    failure (invariant 6) but not a *silent* one: unusable output is visible.
+
+    `min_confidence` exists only for the robustness check. Left as None it
+    applies no threshold, which is the definition the thesis uses.
+    """
+    if decision.get("abstained") or decision.get("parse_failed") or decision.get("correct"):
+        return False
+    if min_confidence is None:
+        return True
+    return float(decision.get("confidence") or 0.0) >= min_confidence
+
+
+def failure_modes(
+    decisions: list[dict], min_confidence: float | None = None
+) -> tuple[float, float]:
     """Split failures into abstention vs. silent failure.
 
     The distinctive claim this study can make (docs/literature_review.md
@@ -39,13 +69,7 @@ def failure_modes(decisions: list[dict]) -> tuple[float, float]:
     if not decisions:
         return 0.0, 0.0
     abstained = sum(1 for d in decisions if d.get("abstained"))
-    silent = sum(
-        1
-        for d in decisions
-        if not d.get("abstained")
-        and not d.get("correct")
-        and float(d.get("confidence") or 0.0) >= HIGH_CONFIDENCE
-    )
+    silent = sum(1 for d in decisions if is_silent_failure(d, min_confidence))
     n = len(decisions)
     return abstained / n, silent / n
 

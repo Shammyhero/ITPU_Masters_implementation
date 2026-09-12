@@ -84,6 +84,14 @@ wrong, not the test.
    to it; `runner/schema.sql` survives only because its `fault_type` CHECK is
    the interaction arm's quarantine, pinned by a test. Prometheus was
    live-demo observability and was never a results source.
+8. **Silent failure has exactly one definition:** committed (not abstained),
+   parseable, and wrong — with **no confidence threshold**.
+   `runner/scoring.py::is_silent_failure` is the reference and every analysis
+   must agree with it (→ `tests/test_failure_modes.py`). A threshold would define
+   the outcome partly by confidence, the signal AIRS is compared against in RQ4.
+   Until 2026-09-13 the docs and `failure_modes` used a 0.7 threshold that nine
+   analyses never applied; it survives only as the robustness check in
+   `analysis/silent_definition.py`.
 
 ## Known traps
 
