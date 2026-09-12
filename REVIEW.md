@@ -62,16 +62,17 @@ half-run.
 on four hand-picked constants (1B) and is described with infrastructure language
 the code does not implement (Phase 1 finding F-2).
 
-## If you defended tomorrow with exactly this
+## If this were defended tomorrow, exactly as it stands
 
-You would pass, and you would take two clean hits you currently cannot parry.
-The empirical work is well above MSc bar — paired design, run-level held-out
+It would pass, and it would take two clean hits that cannot currently be
+parried. The empirical work is well above MSc bar — paired design, run-level held-out
 validation, negative results reported, six traps caught and pinned by tests. But
 the metrics skeptic asks "where does `DEFAULT_FRESHNESS_TARGET_S = 1.0` come
-from?" and there is no answer; and the EPAM examiner opens `docker-compose.yml`,
-sees Kafka and Airflow, greps the experiment path, finds neither, and concludes
-the pipeline is a 3.0-versus-0.05-second constant with a data-engineering costume
-on. Both hits are survivable. Both are avoidable with ~14 h of work.
+from?" and the repository contains no answer; and an industry examiner opens
+`docker-compose.yml`, sees Kafka and Airflow, greps the experiment path, finds
+neither, and concludes that the pipeline factor is a 3.0-versus-0.05-second
+constant presented as infrastructure. Both hits are survivable, and both are
+avoidable with roughly 14 h of work.
 
 ---
 
@@ -90,7 +91,7 @@ it names ReliabilityBench (Gupta 2026) as the nearest competitor, has an
 explicit *"where they beat us"* section, cites Shisher & Sun's non-monotonicity
 warning and **changed RQ1's design because of it**, and states plainly that the
 four dimensions descend from Wang & Strong (1996) rather than claiming them as
-novel. That honesty is worth defending.
+novel. That honesty is worth preserving.
 
 **F-A1 (serious) — two bodies of work an industry examiner will name are absent.**
 `grep -ic "ISO.{0,6}25012|data contract|AgentBench|tau-bench|WebArena|data-centric"`
@@ -101,22 +102,22 @@ returns **0** across both `docs/literature_review.md` and
   onto its characteristics. Without a paragraph saying how AIRS differs
   (25012 grades data *in the abstract*; AIRS grades it *against a named
   consumer's decision quality*, with weights fitted to that consumer), "this is
-  ISO 25012 with new names" is a hit you cannot return.
+  ISO 25012 with new names" is a hit with no available reply.
 - **Data contracts** are what `airs gate` implements. Not citing the practice
-  makes the gate look invented rather than formalised — and the gate is your
-  best practitioner artifact.
+  makes the gate look invented rather than formalised — and the gate is the
+  strongest practitioner artifact here.
 - AgentBench / tau-bench / WebArena matter as *benchmark-design precedent*:
-  they stress the agent and hold data constant, which is the inverse of your
-  design. That is a one-sentence differentiation and it strengthens you.
+  they stress the agent and hold data constant, which is the inverse of this
+  design. A one-sentence differentiation, and it strengthens the positioning.
 
 **Effort: 4 h.** Highest credibility-per-hour in the entire review.
 
 **F-A2 (serious) — the four load-bearing papers are self-declared unread.**
 `docs/literature_review.md:§9` — `[ ] Full-text deep read of the four
-load-bearing papers (Shisher & Sun; Gupta; Rumiantsau & Fokeev; Advani)`. You
-wrote that box yourself. If the examiner asks a method-level question about
-ReliabilityBench's reliability surface *R(k,ε,λ)* and you answer from the
-abstract, the panel will know. **Effort: 8 h.** Non-negotiable before defence.
+load-bearing papers (Shisher & Sun; Gupta; Rumiantsau & Fokeev; Advani)`. The
+box is unchecked in the author's own tracking. A method-level question about
+ReliabilityBench's reliability surface *R(k,ε,λ)* cannot be answered from an
+abstract, and a panel will hear the difference. **Effort: 8 h.** Non-negotiable before defence.
 
 ## B. Construct validity of AIRS — the metrics skeptic's section
 
@@ -145,10 +146,11 @@ Three unjustified choices, none of which appears in any doc:
 
 The docstring's defence — *"weights are estimated, never assumed — this is a
 core methodological commitment"* — is **true about the weights and silent about
-the transforms the weights are fitted on top of.** That is the specific
-self-deception in this thesis: you correctly refused to hand-pick the weights,
-and then hand-picked the coordinate system they live in, and told yourself the
-metric was therefore empirical.
+the transforms the weights are fitted on top of.** The commitment is honoured one
+level up and skipped one level down: the weights were correctly refused as
+hand-picked parameters, while the coordinate system those weights live in was
+hand-picked and never revisited. The result is a metric that is empirical in its
+coefficients and arbitrary in its units.
 
 **I measured the damage.** Refitting the RQ4 weights under seven variants
 (scratchpad only, repo untouched), target = total error, gpt-4o-mini:
@@ -225,7 +227,7 @@ claims. Add two sentences.
 
 Strong, and stronger than the brief assumes.
 
-**Genuine strengths** — say these out loud at the defence: paired design with
+**Genuine strengths** — these deserve to be stated explicitly at the defence: paired design with
 `sample_seed = f(task, replication)` only (`runner/config.py`); run-level 80/20
 split, not decision-level (`analysis/airs_calibration.py:99-113`); cluster-robust
 SEs by `run_id` throughout; DeLong for correlated ROCs; VIF checked (1.1–1.2);
@@ -278,9 +280,9 @@ Ranked by evidence gained per hour:
    This is the answer to "in what sense is this agentic?" See Phase 4; it is a
    *should-have*, not a must-have, and it is the first thing to cut if week-4
    checkpoint slips.
-2. Third task family — **not worth it.** ~25 h for a third point on a line you
-   have already established inverts.
-3. Fifth model — **not worth it.** Diminishing; you have 4.
+2. Third task family — **not worth it.** ~25 h for a third point on a line already
+   established as inverting.
+3. Fifth model — **not worth it.** Diminishing returns; four are already run.
 
 **F-D1 (FATAL, and it is a framing problem not a science problem) — "pipeline
 architecture" is two constants.** `runner/execute.py:67-68`:
@@ -290,16 +292,16 @@ BATCH_INHERENT_STALENESS_S     = 3.0
 STREAMING_INHERENT_STALENESS_S = 0.05
 ```
 
-That is the entire difference between your "batch pipeline" and your "streaming
+That is the entire difference between the "batch pipeline" and the "streaming
 pipeline." Meanwhile the repo ships a 6-service `docker-compose.yml`, a Kafka
 setup, `pipelines/streaming.py` (imported by nothing), and
 `pipelines/airflow_dags/batch_load_dag.py` (executed by nothing).
 
-As *science* this is defensible and arguably correct: you isolated the one
+As *science* this is defensible and arguably correct: it isolates the one
 variable that reaches the agent, and a real Kafka would add noise without
-adding signal. **As presentation it is a trap.** An EPAM examiner greps for
-`kafka` in the experiment path, gets zero hits, and the credibility of every
-other number drops. Compounding it, `CLAUDE.md` invariant 7 says *"Postgres
+adding signal. **As presentation it is a trap.** An examiner who greps for
+`kafka` in the experiment path gets zero hits, and the credibility of every
+other number drops with it. Compounding it, `CLAUDE.md` invariant 7 says *"Postgres
 `benchmark_runs` is the canonical dataset"* — **nothing in the repo ever writes
 to Postgres.** The canonical dataset is 302 JSON files.
 
@@ -327,15 +329,14 @@ in any result; and rewrite invariant 7 to say JSON artifacts are canonical.
 
 **F-E1 (serious) — there are zero figures in the entire repository.**
 `find` for `*.png|*.pdf|*.svg` returns nothing; `grep` for `matplotlib|savefig|plt.`
-returns nothing. Every result is an ASCII table in terminal output. **You cannot
-write Chapter 4 without figures** and you cannot defend without them on a
-projector. Minimum viable set: (1) freshness sweep — exposure × conditional
+returns nothing. Every result is an ASCII table in terminal output. **Chapter 4 cannot be written without figures**, and they are equally required
+on a projector at the defence. Minimum viable set: (1) freshness sweep — exposure × conditional
 rate; (2) flip partition — raw vs residual by fault; (3) AIRS vs silent-failure
 rate at run level with the held-out ρ; (4) ROC: AIRS vs agent confidence, the
 0.501 slide; (5) gate coverage/residual trade-off curve; (6) interaction —
 observed vs additive prediction; (7) the F-B1 sensitivity table as a tornado
-plot. **Effort: 12 h** including a `make figures` target. Do this early — it is
-also how you find errors in your own results.
+plot. **Effort: 12 h** including a `make figures` target. Do this early — building figures is also the most reliable way to surface
+errors in one's own results.
 
 **F-E2 (serious) — the repo documents a CI that has never run.** `CLAUDE.md`:
 *"must stay green — CI runs it on every commit."* Reality: the workflow has
@@ -370,7 +371,7 @@ publishes the numbers); `test_interaction_analysis.py::test_estimator_recovers_a
 (a real positive control for the statistic).
 
 **Busywork** — `test_policy_round_trips`, most of `test_policy_rejects_nonsense`.
-Harmless, but do not cite them as evidence of rigour.
+Harmless, but they are not evidence of rigour and should not be cited as such.
 
 **F-F1 (serious) — no test pins the AIRS scoring curves.** The most
 consequence-bearing constants in the thesis (`DEFAULT_FRESHNESS_TARGET_S`,
@@ -381,7 +382,7 @@ stay green. **Effort: 1 h**, and it pairs with F-B1.
 **F-F2 (polish)** — no type checking (`mypy`/`pyright` absent). Not worth hours
 before a defence.
 
-## G. Threats to validity — the section you should write
+## G. Threats to validity — the section the thesis needs
 
 **Construct.** (i) The AIRS composite is one parameterisation among many; weights
 are fitted *conditional on* hand-chosen sub-score transforms whose sensitivity is
@@ -431,8 +432,8 @@ under `infra_unused/`."*
 
 **3. "In what sense is this agentic? It's one API call."** — *Partially.* Today:
 *"The pipeline is the subject, the agent the instrument, held constant by
-invariant 1."* That is honest and it is a dodge. Only a multi-step arm makes it
-an answer.
+invariant 1."* — is honest, and it is also a deflection. Only a multi-step arm
+converts it into an answer.
 
 **4. "How is AIRS different from ISO/IEC 25012?"** — *Cannot answer today.*
 Needs F-A1. 4 h fixes it permanently.
@@ -442,16 +443,17 @@ Needs F-A1. 4 h fixes it permanently.
 
 **6. "Is AIRS predictive out of sample?"** — *Can answer well.* Run-level
 held-out ρ −0.75 to −0.88, split by run not decision, DeLong vs confidence.
-One of your strongest moments.
+One of the strongest points available.
 
 **7. "You conclude enforcement works. What does it cost?"** — *Can answer
 unusually well.* 7–21 correct answers per silent failure prevented; ~75%
-agent-intrinsic. This is the answer that makes you look like an engineer rather
-than a student.
+agent-intrinsic. An engineering answer rather than a student one, and the
+repository already supports it in full.
 
 **8. "Why should I believe staleness doesn't hurt, when accuracy clearly drops?"**
-— *Can answer.* The flip partition, three independent ways. Rehearse this; it
-is your best material and it is subtle enough to lose if you improvise.
+— *Can answer.* The flip partition, three independent ways. This is the
+strongest material in the thesis and also the subtlest; it needs rehearsing
+rather than improvising.
 
 **9. "Show me the results."** — *Cannot answer today.* No figures exist (F-E1).
 
@@ -459,8 +461,8 @@ is your best material and it is subtle enough to lose if you improvise.
 2026-09-10*, once written up: sub-additive, 5 of 8 pairs, latency control
 ψ = 0.00.
 
-**11. "Your CI badge is red."** — *Cannot answer today.* Billing lock (F-E2).
-Embarrassing, 30 minutes.
+**11. "The CI badge is red."** — *Cannot answer today.* Billing lock (F-E2).
+Avoidable in 30 minutes.
 
 **12. "Could I reproduce this next year?"** — *Half.* Artifacts and analyses
 yes; environment no (F-E3).
@@ -502,10 +504,10 @@ then `airs serve` opens `localhost:8000`.**
 - **Why Next.js and not Streamlit:** 833 LOC already exist and build; Streamlit
   cannot express the trace view or the report; and Streamlit's re-run model
   fights the live stream. Rewriting is ~20 h to go backwards.
-- **Why not a hosted SaaS:** you would have to handle other people's production
-  data. Out of scope for a thesis and a liability.
+- **Why not a hosted SaaS:** it would mean handling other people's production
+  data. Out of scope for a thesis, and a liability.
 
-**Defence path:** the same `airs serve` on your laptop. Plus a static export on
+**Defence path:** the same `airs serve` running locally. Plus a static export on
 a USB stick and a Vercel URL for Mode B only, and a 3-minute recording. Four
 independent paths, none of which is the product's primary mode.
 
@@ -628,7 +630,7 @@ done.
 ## Stage 1 — Survival (wk 1: Sep 14–18, 20 h)
 
 Nothing else starts until these land. They remove two of the three kill
-questions you cannot currently answer.
+questions that are currently unanswerable.
 
 | Item | h |
 |---|---|
@@ -670,7 +672,7 @@ as a **refetch arm**, which answers three things at once:
 - It directly extends the detectability null, which is currently a dead end in
   the narrative. Metadata didn't work; does an action?
 - It gives the **gate a third verdict — refuse / refetch / admit** — and each has
-  its own exchange rate. Your 7–21 number becomes a menu, which is exactly what
+  its own exchange rate. The 7–21 figure becomes a menu, which is exactly what
   the product needs.
 - It reuses the existing task, data, scoring and agent scaffolding.
 
@@ -709,13 +711,14 @@ Written together. Real budget, as requested:
 
 **Buffer: Dec 7 onward** — defence rehearsal, slides, the product demo run cold.
 
-## Cut list — and why you are attached to each
+## Cut list — and why each is hard to let go
 
-- **A real Kafka/Airflow pipeline.** 40 h, zero new science. You want it because
-  the unused `docker-compose.yml` feels like proof you are a data engineer. It
-  currently proves the opposite. Quarantine it (Stage 1) and let it go.
+- **A real Kafka/Airflow pipeline.** 40 h, zero new science. The unused
+  `docker-compose.yml` looks like proof of data-engineering depth and currently
+  demonstrates the opposite, because nothing executes it. Quarantine it
+  (Stage 1).
 - **The leading-indicator / AIRS-drift arm.** 20 h, needs a time-series design
-  you do not have, answers a question your RQs never asked. **Cut.**
+  that does not exist here, and answers a question the RQs never asked. **Cut.**
 - **A third task domain or fifth model.** 25 h for a third point on an
   established line. **Cut.**
 - **`airs lint`.** "First to cut" for two months. **Formally cut** so it stops
@@ -723,7 +726,7 @@ Written together. Real budget, as requested:
 - **A generic multi-step agent.** Superseded by the refetch arm, which costs the
   same and answers more.
 - **Rewriting the demo in Streamlit.** 20 h to go backwards.
-- **Hosting the product as a SaaS.** You would be handling other people's
+- **Hosting the product as a SaaS.** It would mean handling other people's
   production data. Out of scope, and a liability.
 
 ## Checkpoints
