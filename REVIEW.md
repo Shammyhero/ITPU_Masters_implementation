@@ -124,8 +124,13 @@ abstract, and a panel will hear the difference. **Effort: 8 h.** Non-negotiable 
 This is the most attackable part of the thesis and the audit found it worse than
 the docs admit, then found the damage is partly containable.
 
-**F-B1 (FATAL) — the sub-score curves are hand-picked, undocumented, and every
-fitted weight is conditional on them.**
+**F-B1 (FATAL — ANALYSIS DELIVERED 2026-09-13, claims corrected) — the sub-score
+curves are hand-picked, undocumented, and every fitted weight is conditional on
+them.** Measured in `docs/sensitivity_findings.md`; figure at
+`docs/figures/fig4_7_curve_sensitivity.png`. The constants remain underived —
+that is a limitation the thesis must state — but what depends on them is now
+quantified, and the affected claims in `airs_calibration_findings.md` and
+`gate_findings.md` have been rewritten to report ranges instead of point values.
 
 `src/airsbench/airs/calculator.py:38-52`:
 
@@ -201,7 +206,13 @@ sensitivity analysis converts the thesis's largest vulnerability into a
 methodological strength, and it needs no new data and no API spend.
 **Effort: 6 h** (module + tests + findings doc + a paragraph in Ch. 3).
 
-**F-B2 (serious) — latency's zero weight is estimated from a two-level binary.**
+**F-B2 (serious — PARTLY RESOLVED 2026-09-13) — latency's zero weight is
+estimated from a two-level binary.** The 250 ms parameterisation separates the
+three conditions properly (100 / 50.0 / 8.3) and the fitted weight is still
+exactly 0.0%, so the null survives a specification under which latency *can*
+earn weight. The overclaim has been removed from `gate_findings.md` and
+`airs_calibration_findings.md`: these are not independent routes to one
+conclusion, because analytic-mode latency shares a single cause.
 Across the whole campaign the latency dimension takes exactly **two** values:
 `16.7` and `100.0`. Freshness takes 9, consistency 28, semantic 29. A
 two-level factor with both levels fixed by an arbitrary 500 ms constant cannot

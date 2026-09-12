@@ -45,6 +45,10 @@ Implementation **freezes Fri 06 Nov**. November is writing. December is defence.
 
 ## W1 · Mon 14 – Fri 18 Sep · Survival fixes · 20 h · $0
 
+> **Progress 13 Sep:** sensitivity analysis, its test suite, its figure and the
+> downstream claim corrections are done (rows 1–3). CI removed in favour of
+> `make ci`, which found an undeclared `langchain-anthropic` dependency.
+
 Nothing else starts until this lands. These remove two of the three defence
 questions currently unanswerable (`REVIEW.md` Phase 2, Q1 and Q2).
 

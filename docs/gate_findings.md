@@ -110,16 +110,24 @@ the fault-free rate gives the price a gate really pays:
 Three things fall out of these two tables.
 
 **The retrieval ranking matches the calibrated weights exactly.** The fault
-worth gating on first (schema drift, 7.0) is the one carrying 70% of the weight;
+worth gating on first (schema drift, 7.0) is the one carrying ~70% of the
+weight (61–72% across parameterisations, `sensitivity_findings.md`);
 the fault worth gating on last (latency) carries 0%. The RQ4 calibration was fit
 to predict failure; it turns out to also rank *interventions*, which is a
 stronger claim than it was asked to support.
 
-**Latency is "never" on both tasks — a fifth independent route to the null.**
-Refusing a batch for slow delivery prevents no excess silent failure whatsoever,
-so it is pure loss at any threshold. Latency now has zero weight from the GLM,
-no effect in the flip partition, no decision-level odds ratio, no accuracy
-effect in the main factorial, and no gateable harm here.
+**Latency is "never" on both tasks.** Refusing a batch for slow delivery
+prevents no excess silent failure whatsoever, so it is pure loss at any
+threshold. Latency has zero weight from the GLM, no effect in the flip
+partition, no decision-level odds ratio, no accuracy effect in the main
+factorial, and no gateable harm here — and `sensitivity_findings.md` §3 shows
+the zero weight survives every reparameterisation of the scoring curve,
+including one under which latency stops being a two-level factor.
+
+These are **not five independent routes to one conclusion.** Latency runs in
+analytic mode and cannot change what the agent reads, so every route shares a
+single cause. The defensible statement is that the null is robust to
+parameterisation, not that it has been independently replicated.
 
 **Classification's divergence is H3, not a contradiction.** Semantic stripping
 carries 53% of classification weight but ranks second-worst as a gate. The

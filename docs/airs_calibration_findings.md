@@ -35,17 +35,26 @@ designed for this; see invariant 5).
 | dimension | retrieval | classification | | retrieval | classification |
 |---|---|---|---|---|---|
 | | *(silent failure)* | *(silent failure)* | | *(total error)* | *(total error)* |
-| freshness | 11.9% | **42.8%** | | 12.9% | 21.2% |
+| freshness | 11.9% | **42.8%** | | 12.9% *(10.7–22.8)* | 21.2% *(16.4–44.7)* |
 | latency | **0.0%** | **0.0%** | | 0.0% | 0.0% |
-| consistency | **70.5%** | 37.5% | | 70.2% | 25.4% |
-| semantic | 17.6% | 19.7% | | 16.9% | **53.4%** |
+| consistency | **70.5%** | 37.5% | | **70.2%** *(61.2–72.2)* | 25.4% *(22.6–29.9)* |
+| semantic | 17.6% | 19.7% | | 16.9% *(16.0–17.1)* | **53.4%** *(32.2–61.0)* |
 
-**Latency receives zero weight on every target and both tasks.** Its
+Parenthesised ranges are the total-error weights across the seven scoring-curve
+parameterisations in `sensitivity_findings.md`. **Freshness cannot be quoted to
+one significant figure**, and classification's dominant dimension flips from
+semantic to freshness under a 5 s freshness target. Consistency's dominance on
+retrieval and latency's zero weight hold under all seven.
+
+**Latency receives zero weight on every target and both tasks** — and on every
+scoring-curve parameterisation tested (`sensitivity_findings.md` §3), including
+one under which latency separates into three levels rather than two. Its
 coefficient is positive (i.e. non-protective) and it is clamped to zero rather
 than allowed to go negative — a negative weight in a readiness score would mean
 "degrade this to score better". This is the correct answer for a synchronous
-agent with no deadline, and it is the fourth independent route to that
-conclusion in this study.
+agent with no deadline, and it is the fourth view of that conclusion in
+this study — though all four share one cause, since analytic-mode latency cannot
+change what the agent reads.
 
 **The weights invert across tasks**, exactly as RQ5 predicted. Consistency
 dominates retrieval (70%); semantic completeness dominates classification total
@@ -142,6 +151,10 @@ there; it is what a rank correlation against noise looks like.
   significance at that n, but their intervals are wide.
 - **One split.** A repeated or nested cross-validation would give a stabler
   weight estimate; the split is seeded and the sensitivity is untested.
+- **The weights are fitted on top of undocumented transforms.** The freshness
+  and latency dimensions pass through a hyperbola with hand-chosen targets
+  (1.0 s, 500 ms) that no document derives. `sensitivity_findings.md` measures
+  what depends on them: the rankings largely survive, the magnitudes do not.
 - **In-distribution.** The weights are fitted and validated on the same family
   of synthetic faults. AIRS is a method to recalibrate per deployment, not a
   universal coefficient vector — §3.11's existing caveat stands.

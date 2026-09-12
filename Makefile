@@ -45,3 +45,11 @@ ci:
 	@.ci-venv/bin/python -m pytest -q
 	@rm -rf .ci-venv
 	@echo "clean-install verification passed"
+
+# Regenerate every figure the thesis uses. Chapter 4 is written against these,
+# so they are built as each analysis lands rather than at the end (docs/plan.md).
+figures:
+	@mkdir -p docs/figures
+	@.venv/bin/python -m airsbench.analysis.curve_sensitivity \
+		--figure docs/figures/fig4_7_curve_sensitivity.png >/dev/null
+	@echo "figures written to docs/figures/"
