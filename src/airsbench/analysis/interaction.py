@@ -290,12 +290,85 @@ def report(runs: list[dict[str, Any]], outcome: str) -> int:
     return 0
 
 
+def figure(runs: list[dict[str, Any]], out_path: Path, outcome: str = "silent") -> Path:
+    """Figure 4.6 — observed combined failure rate against the additive prediction.
+
+    Hollow marker: what additivity predicts, p(A)+p(B)-p(0). Filled marker: what
+    was observed with both faults applied. A filled marker LEFT of its hollow one
+    is saturation — the combination did less harm than the sum of its parts.
+    The logit-scale interval is printed on the right because that, not the
+    visual gap on the risk scale, is what governs whether the AIRS composite
+    extrapolates (see the module docstring on scale dependence).
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 3.8), sharex=True)
+    for ax, task in zip(axes, ("retrieval", "classification")):
+        labels = []
+        for row, pair in enumerate(reversed(INTERACTION_PAIRS)):
+            cells = paired_cells(runs, task, pair, outcome)
+            if any(not v for v in cells.values()):
+                continue
+            est = interaction_estimates(cells, pair)
+            add, obs = 100 * est["additive"], 100 * est["pab"]
+            lg = est["logit"]
+            departs = not (lg["lo"] <= 0 <= lg["hi"])
+            colour = "#0e6f7a" if departs else "#8a96a3"
+            ax.plot([add, obs], [row, row], color=colour, linewidth=1.4, zorder=1)
+            # The prediction ring is drawn LARGER and BENEATH the observed dot.
+            # Where the two coincide (latency+drift on classification: both
+            # 15.4%) a same-size ring would be hidden entirely and the prediction
+            # would look missing; this way it reads as a ring around the dot.
+            ax.plot(add, row, marker="o", markersize=11, markerfacecolor="white",
+                    markeredgecolor=colour, markeredgewidth=1.6, zorder=2)
+            ax.plot(obs, row, marker="o", markersize=7, color=colour, zorder=3)
+            ax.annotate(f"ψ {lg['point']:+.2f} [{lg['lo']:+.2f}, {lg['hi']:+.2f}]",
+                        xy=(1.01, row), xycoords=("axes fraction", "data"),
+                        va="center", fontsize=8, color=colour)
+            labels.append((row, "+".join(p.replace("semantic_stripping", "semantic")
+                                        .replace("schema_drift", "drift") for p in pair)))
+        ax.set_yticks([r for r, _ in labels])
+        ax.set_yticklabels([name for _, name in labels], fontsize=9)
+        ax.set_title(task, fontsize=11)
+        ax.set_xlabel(f"{'silent failure' if outcome == 'silent' else 'total error'} rate (%)")
+        ax.grid(axis="x", color="#e3eaee", linewidth=0.8)
+        ax.set_axisbelow(True)
+        for spine in ("top", "right", "left"):
+            ax.spines[spine].set_visible(False)
+
+    handles = [
+        plt.Line2D([], [], marker="o", markersize=11, markerfacecolor="white",
+                   markeredgecolor="#5a6675", linestyle="none", label="additive prediction"),
+        plt.Line2D([], [], marker="o", markersize=7, color="#5a6675",
+                   linestyle="none", label="observed, both faults"),
+        plt.Line2D([], [], color="#0e6f7a", linewidth=2,
+                   label="departs from additivity (logit CI excludes 0)"),
+    ]
+    fig.legend(handles=handles, frameon=False, fontsize=9, ncols=3,
+               loc="lower center", bbox_to_anchor=(0.5, -0.10))
+    fig.suptitle("Two faults never significantly compound — five of eight pairs saturate",
+                 fontsize=12, y=1.04)
+    fig.tight_layout(rect=(0, 0, 0.92, 1))
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    return out_path
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--results", type=Path, default=Path("results/runs"))
     parser.add_argument("--outcome", default="silent", choices=("silent", "error"))
+    parser.add_argument("--figure", type=Path, default=None,
+                        help="also write Figure 4.6 here")
     args = parser.parse_args(argv)
-    return report(load_arm(args.results), args.outcome)
+    runs = load_arm(args.results)
+    status = report(runs, args.outcome)
+    if args.figure is not None:
+        print(f"\n  figure: {figure(runs, args.figure, args.outcome)}")
+    return status
 
 
 if __name__ == "__main__":

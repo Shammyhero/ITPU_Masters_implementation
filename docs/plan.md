@@ -48,6 +48,9 @@ Implementation **freezes Fri 06 Nov**. November is writing. December is defence.
 > **Progress 13 Sep:** sensitivity analysis, its test suite, its figure and the
 > downstream claim corrections are done (rows 1–3). CI removed in favour of
 > `make ci`, which found an undeclared `langchain-anthropic` dependency.
+> RQ6 written up (`interaction_findings.md`, Fig. 4.6): faults saturate, never
+> compound — 5 of 8 pairs sub-additive. README and arm status corrected.
+> Remaining this week: infrastructure quarantine, lockfile.
 
 Nothing else starts until this lands. These remove two of the three defence
 questions currently unanswerable (`REVIEW.md` Phase 2, Q1 and Q2).

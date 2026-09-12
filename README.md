@@ -9,10 +9,9 @@ claim. The agent is the *measurement instrument*; the infrastructure is the
 subject. Model, prompt, temperature, dataset, scoring and hardware are held
 constant — only infrastructure conditions vary.
 
-**Status:** all five research questions answered. 302 benchmark runs, 24 270
-agent decisions, 4 models, $5.15 of API spend, 350 tests green. One provisional
-arm is mid-flight (see [Status](#status) below). Remaining work is the thesis
-write-up, not measurement.
+**Status:** six research questions answered. 302 benchmark runs, 24 270 agent
+decisions, 4 models, $5.15 of API spend, 373 tests green. Current work follows
+the week-by-week plan in [`docs/plan.md`](docs/plan.md).
 
 ---
 
@@ -25,6 +24,7 @@ write-up, not measurement.
 | **RQ3** | Silent failure is driven by schema drift and semantic stripping on retrieval, freshness on classification. Abstention is driven by semantic stripping **and nothing else** (OR 51.9). |
 | **RQ4** | AIRS ranks held-out pipelines at ρ ≈ −0.8 from telemetry alone, and beats the agent's own confidence exactly where that confidence is worthless. |
 | **RQ5** | The ranking transfers **across models** but **inverts across tasks**. One pooled weighting would describe neither. |
+| **RQ6** | Two faults together **never compound — they saturate.** 5 of 8 pairs are sub-additive, none super-additive, so AIRS's linear composite errs in the safe direction on multi-fault pipelines. |
 
 Three results are worth stating on their own.
 
@@ -179,14 +179,15 @@ pinned by a test.
 
 ## Status
 
-Every experimental arm needed for the five research questions is complete and
-analysed. One **provisional** arm is mid-flight: a fault-interaction study
-testing whether two simultaneous faults compose additively, which matters
-because AIRS's composite is a weighted sum fitted on runs where only one
-dimension was ever degraded. It is quarantined by seed block and barred from the
-canonical dataset; design in [`docs/interaction_arm.md`](docs/interaction_arm.md).
-Roughly half its runs are on disk. It is not part of any current claim.
+All six research questions are answered and every arm is complete. The
+fault-interaction arm (RQ6) finished on 2026-09-10: faults saturate rather than
+compound — see [`docs/interaction_findings.md`](docs/interaction_findings.md).
 
-Remaining work is Chapters 1, 2, 4 and 5.
+The AIRS scoring curves have been tested for sensitivity to their undocumented
+constants: the rankings largely survive, the magnitudes do not —
+[`docs/sensitivity_findings.md`](docs/sensitivity_findings.md).
+
+Remaining work, week by week, is in [`docs/plan.md`](docs/plan.md): the
+installable product by mid-October, then the thesis document.
 
 License: [MIT](LICENSE)

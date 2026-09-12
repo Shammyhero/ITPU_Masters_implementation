@@ -1,6 +1,7 @@
 # Fault interaction arm — design
 
-**Status: PROVISIONAL.** Built 2026-08-05, quarantined by seed block
+**Status: COMPLETE 2026-09-10** — results in [`interaction_findings.md`](interaction_findings.md).
+Built 2026-08-05, quarantined by seed block
 (80 000–90 000) and barred from Postgres by `schema.sql`'s `fault_type` CHECK.
 Nothing outside the arm depends on it. If it is cut, delete this file, the
 `interaction` seed block, `build_interaction_arm`, `analysis/interaction.py` and
@@ -28,7 +29,7 @@ composite under-predicts risk on precisely the pipelines that are worst, and
 pipeline could clear every individual floor and still be far more dangerous than
 either fault alone.
 
-**RQ6 (provisional).** *Do two simultaneous infrastructure faults produce silent
+**RQ6.** *Do two simultaneous infrastructure faults produce silent
 failure additively, or does their combination exceed the sum of their parts?*
 
 ## Why the answer is interpretable
@@ -111,7 +112,12 @@ without contradiction:
 
 - **Logit.** What the AIRS calibration assumes — its weights come from a
   logistic GLM, so the composite extrapolates correctly to multi-fault pipelines
-  exactly if the `a:b` term is zero on this scale. Cluster-robust by run.
+  exactly if the `a:b` term is zero on this scale. Estimated in closed form as
+  ψ = logit p(AB) − logit p(A) − logit p(B) + logit p(0), with a paired
+  bootstrap. A cluster-robust GLM was the original design and had to be
+  dropped: with one run per condition per replication the interaction term is
+  confounded with cluster identity, and it reported p = 0.000 for every pair
+  including the latency control.
 - **Risk difference.** What an operator experiences, and the scale
   `gate.replay`'s prevented/forfeited accounting is denominated in.
   δ = p(AB) − p(A) − p(B) + p(0), with a bootstrap over **paired queries**.

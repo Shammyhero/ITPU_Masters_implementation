@@ -52,4 +52,6 @@ figures:
 	@mkdir -p docs/figures
 	@.venv/bin/python -m airsbench.analysis.curve_sensitivity \
 		--figure docs/figures/fig4_7_curve_sensitivity.png >/dev/null
+	@.venv/bin/python -m airsbench.analysis.interaction \
+		--figure docs/figures/fig4_6_interaction.png >/dev/null
 	@echo "figures written to docs/figures/"
