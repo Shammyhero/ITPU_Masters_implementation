@@ -296,7 +296,7 @@ most classification silent failures disappear, because the model reports 0.8–0
 by habit — which is the strongest argument that no threshold belongs in the
 definition. **Invariant 8** now pins it.
 
-**F-C6 (serious — SCHEDULED for W2 by author decision, 2026-09-13) — the "analysis notebook" the methodology cites does not
+**F-C6 (serious — RESOLVED in W2: `analysis/power.py`, `docs/power_findings.md`) — the "analysis notebook" the methodology cites does not
 exist, and the power analysis it requires was never run.**
 `research_questions_v2.md` attributes three things to "the analysis notebook":
 the collinearity VIF table, the silent-failure threshold sensitivity, and a
@@ -310,6 +310,27 @@ design counts are also stale: 198 runs and 18 cross-model runs, against 302 and
 54 actually run. **Effort: ~5 h, $0** — a simulation using the ICC observed in the
 existing artifacts. Until it exists, "was the design adequately powered?" has no
 evidenced answer.
+
+**F-C7 (serious — OPEN) — the study's cluster-robust test is anti-conservative
+for single-cell comparisons.** Found by the W2 power simulation: with four runs
+per group (eight clusters) the test rejects 11–12% of the time when there is no
+effect; pooled comparisons reach 7–8%. Three published cell-level p-values fall
+between 0.01 and 0.05 (`power_findings.md`). **Fix:** wild cluster bootstrap or
+CR2 small-sample errors for cell comparisons, ~3 h, $0; until then report those
+cells as not significant.
+
+**F-C8 (serious — found and RESOLVED in W2) — a published RQ2 table mixed two
+populations and manufactured a reordering.** `flip_partition_findings.md` §6
+paired retrieval-only residuals with a "raw drop" column copied from the phase-1
+check, which pools both tasks (−0.112 drift, −0.218 stripping, −0.116 freshness).
+On the same retrieval runs the raw drops are −0.160, −0.120 and −0.075 — §2 of
+the same document. The section's headline, that ranking on the residual
+*reverses* the raw ranking and that semantic stripping has the largest raw drop,
+was an artifact: within retrieval both rankings agree on order. The real finding
+survives and is sharper — the partition changes *magnitude*, collapsing
+freshness from −0.075 to −0.003. Caught by Figure 4.2's printed cross-check
+against published values. Chapter 3 repeated the reordering claim and is
+corrected alongside.
 
 ## D. Generalization
 

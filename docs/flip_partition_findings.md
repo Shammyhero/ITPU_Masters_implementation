@@ -116,30 +116,44 @@ few percent of traffic, undetected. The thesis's limitation note applies with
 force: a realistic 10-minute batch DAG implies ~300 s, two orders of magnitude
 worse than this arm.
 
-## 6. Finding 4 — the RQ2 damage ranking changes once arithmetic is removed
+## 6. Finding 4 — freshness's apparent damage disappears once arithmetic is removed
 
-Phase 1 ranked faults by raw accuracy drop. That ranking mixes two
-non-comparable quantities: how much a fault moves the answer key, and how much
-it impairs the agent. Ranking on the residual instead:
+> **Corrected in W2.** An earlier version of this section paired the residuals
+> below with a "raw drop" column copied from the phase-1 check, which pools
+> *both tasks* (−0.112 drift, −0.218 stripping, −0.116 freshness). The residuals
+> are retrieval only. Mixing the two populations manufactured a reordering: it
+> appeared that semantic stripping had the largest raw drop and that ranking on
+> the residual reversed the order. Within retrieval, both columns come from the
+> same runs (§2) and give the same order. Caught by Figure 4.2's cross-check.
+
+Ranking on the residual, beside the raw drop from the same retrieval runs (§2,
+pooled over both pipelines):
 
 | rank | fault (severe) | residual | raw drop | reading |
 |---|---|---|---|---|
-| 1 | schema drift | **−0.173** | −0.112 | genuinely impairs reasoning; **worse than the raw number suggests** |
-| 2 | semantic stripping | **−0.128** | −0.218 | impairs reasoning, but much of its raw damage is *abstention*, which is safe |
-| 3 | freshness | **−0.003** | −0.116 | does not impair reasoning at all; pure answer-key movement |
-| 4 | latency | 0.000 | −0.001 | no effect by construction (analytic mode) |
+| 1 | schema drift | **−0.173** | −0.160 | genuinely impairs reasoning; slightly worse than the raw drop suggests |
+| 2 | semantic stripping | **−0.128** | −0.120 | genuinely impairs reasoning; slightly worse than the raw drop suggests |
+| 3 | freshness | **−0.003** | −0.075 | does not impair reasoning at all; its whole raw drop is answer-key movement |
+| 4 | latency | 0.000 | 0.000 | no effect by construction (analytic mode) |
 
-Two corrections to the phase-1 reading:
+Within retrieval the two rankings **agree on order**. What the flip partition
+changes is **magnitude**, and for one fault decisively: freshness looks like the
+third-worst fault on raw accuracy (−0.075) and is in fact indistinguishable from
+no fault at all (−0.003).
 
-- **Semantic stripping is not the most damaging fault.** It has the largest raw
-  drop, but 18% of that is the agent *refusing to answer* — the desired
-  behaviour under unusable data. Counting a refusal as damage equal to a
-  confident wrong answer is precisely the conflation this thesis argues
-  against.
-- **Schema drift is the most damaging fault to reasoning**, and it pairs that
-  with ~1% abstention. Largest residual impairment, almost no signal. It is the
-  most dangerous fault in the study by the thesis's own detectability
-  criterion, and it was predicted "visible".
+Two readings follow:
+
+- **Semantic stripping's reputation as the most damaging fault is a cross-task
+  effect.** Pooled over both tasks — the phase-1 view — it has the largest raw
+  drop, because on classification it converts corruption into abstention, and
+  refusals count as accuracy loss. Within retrieval it ranks second on both
+  measures. Counting a refusal as damage equal to a confident wrong answer is
+  the conflation this thesis argues against (H3; `airs_calibration_findings.md`
+  §3).
+- **Schema drift is the most damaging fault to reasoning** on both measures, and
+  pairs that with ~1% abstention across both tasks. Largest impairment, almost
+  no signal. It is the most dangerous fault in the study by the thesis's own
+  detectability criterion, and it was predicted "visible".
 
 This strengthens the H3 restatement already recorded in
 `detectability_arm.md` §5: what matters is not whether corruption is visible,

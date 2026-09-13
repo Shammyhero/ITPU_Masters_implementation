@@ -160,33 +160,24 @@ reported as a VIF table by `analysis/airs_calibration.py` (every VIF 1.1–1.2).
 
 ## 6. Power analysis (supersedes §4.4)
 
-The original analysis was computed for 128 runs against a *medium* effect
-(Cohen's *d* = 0.50) with run-level accuracy as the outcome. Both the design
-and the outcome have changed.
+**Revised in W2.** This section originally gave a closed-form minimum detectable
+effect of 8–10 pp, justified it as conservative because "the mixed-effects model
+borrows strength across conditions", and required a clustering-aware simulation
+"in the analysis notebook" before the results chapter. No mixed-effects model and
+no notebook existed, and the simulation was never run. Its design counts (198
+runs, 18 cross-model) were also superseded: 302 runs were executed, 54 of them
+cross-model.
 
-**Revised design:** 144 main-factorial runs + 36 freshness-sweep runs +
-18 cross-model runs = **198 runs**, at 80–150 decisions per run.
+The simulation now exists (`analysis/power.py`, `power_findings.md`) and tests
+the model the analyses actually use — a logistic GLM with run-clustered errors:
 
-**Primary model unit:** the decision, not the run. The main factorial yields
-approximately **11,500 decisions**, with ~320 decisions per experimental
-condition (4 replications × 80 decisions).
-
-**Observed effect magnitude.** Pilot-scale runs show baseline accuracy ≈ 0.93
-falling to ≈ 0.67 under severe faults — a difference of ~26 percentage points,
-corresponding to an odds ratio of ≈ 0.15 (log-odds ≈ −1.9). This is far larger
-than the medium effect the original analysis assumed.
-
-**Minimum detectable effect.** At 320 decisions per condition, α = 0.05 and
-power = 0.80, the design detects a difference of roughly **8–10 percentage
-points** in accuracy or silent-failure rate between two conditions — well below
-the observed effects. Because the mixed-effects model borrows strength across
-conditions and the decision-level n is two orders of magnitude larger than the
-run-level n, this is a conservative bound.
-
-**Required before the results chapter:** a **simulation-based power analysis**
-that accounts for run-level clustering (the intraclass correlation is not known
-a priori and the closed-form calculation above ignores it). This runs in the
-analysis notebook against phase-1 data and costs nothing.
+- **Clustering is negligible:** ICC 0.000–0.003, design effect ≤ 1.25. The
+  closed-form 8–10 pp was approximately right.
+- **Minimum detectable effect:** ~8–10 pp for a single cell (4 v 4 runs), ~6 pp
+  pooled (16 v 8), at 80% power.
+- **The test is anti-conservative with few clusters:** empirical type-I error
+  0.11–0.12 per cell, 0.07–0.08 pooled. Cell-level p-values between 0.01 and
+  0.05 must not be reported as significant without a small-cluster correction.
 
 ---
 

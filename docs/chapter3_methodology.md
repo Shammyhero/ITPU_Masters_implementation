@@ -559,13 +559,17 @@ The partition applies to retrieval only. The aviation label is a property of the
 flight rather than of the catalog, so staleness there attenuates a feature
 rather than moving the correct answer, and there is no flip to condition on.
 
-**Consequence for the fault ranking.** Faults must be ranked on residual
+**Consequence for the fault ranking.** Faults are ranked on residual
 impairment, not on raw accuracy drop, because the raw drop mixes two
-non-comparable quantities. The two rankings disagree: measured on the raw drop,
-semantic stripping is the most damaging fault, but most of its drop is
-*abstention*, which is the desired behaviour under unusable data. Counting a
+non-comparable quantities: how far a fault moves the answer key, and how much it
+impairs the agent. Within retrieval the two rankings agree on order — schema
+drift, then semantic stripping, then freshness — but disagree sharply on
+magnitude: freshness costs 7.5 points of raw accuracy and has a residual
+impairment indistinguishable from zero. A different ordering appears only when
+the raw drop is pooled across both tasks, where semantic stripping ranks first
+because on classification it converts corruption into abstention. Counting a
 refusal as equal in cost to a confident wrong answer is precisely the conflation
-this thesis argues against.
+this thesis argues against, so that pooled ordering is not used.
 
 ---
 
@@ -574,8 +578,12 @@ this thesis argues against.
 The analysis plan is specified in full in `research_questions_v2.md` §5. In
 summary: changepoint detection with an explicit monotonicity test for
 thresholds (RQ1); two-way ANOVA with effect sizes for the ranking (RQ2);
-**mixed-effects logistic regression at the decision level** for failure modes
-(RQ3); logistic regression for AIRS weight calibration with held-out validation
+**decision-level logistic regression with standard errors clustered by run**
+for failure modes (RQ3), declared in `research_questions_v2.md` §5 as a
+substitution for the originally specified random intercept, because the only
+mixed logit available is variational-Bayes and does not report the frequentist
+standard errors the plan requires; logistic regression for AIRS weight
+calibration with held-out validation
 and a comparison against an agent-confidence baseline detector (RQ4); and rank
 correlation across tasks and models for generalisation (RQ5).
 
@@ -587,9 +595,19 @@ counts are small. Treating the arms as independent samples would discard the
 pairing the design was built to obtain.
 
 Binary outcomes are modelled at the decision level rather than as run-level
-proportions, with a run-level random effect absorbing within-run correlation.
-This uses approximately 11,500 observations rather than 144 aggregates and is
-the statistically appropriate treatment for proportions.
+proportions, with standard errors clustered by run absorbing within-run
+correlation. This uses 11,412 observations rather than 144 aggregates. The
+substitution for a random intercept is harmless in practice: the run-level
+intraclass correlation is negligible (ICC ≤ 0.003, design effect ≤ 1.25;
+`docs/power_findings.md`).
+
+Clustered errors are, however, anti-conservative with few clusters. A simulation
+of the study's own test shows that a single-cell comparison — four runs per
+group, eight clusters — rejects a true null about 12% of the time rather than 5%,
+and a pooled comparison about 7.5%. Cell-level p-values between 0.01 and 0.05 are
+therefore not reported as significant, and pooled comparisons are preferred. The
+minimum detectable effect is about 8–10 percentage points for a single cell and
+6 points pooled, at 80% power.
 
 All results are reported with 95% confidence intervals and effect sizes.
 Negative results, unsupported hypotheses and unexpected findings are reported in

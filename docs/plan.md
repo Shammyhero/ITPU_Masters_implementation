@@ -78,6 +78,15 @@ first. They are survival, not enhancement.
 
 ## W2 · Mon 21 – Fri 25 Sep · Evidence, figures & power · 21 h · $0
 
+> **Progress W2:** fragility analysis done (Fig. 4.8) — silent failure concentrates
+> 12–16× beyond the null and is near-deterministic on re-ask. Power analysis done
+> (Fig. 3.1) — clustering negligible, but the cell-level test is anti-conservative
+> (α ≈ 0.12, REVIEW F-C7). Figures 4.1–4.5 built, every published value reproduced.
+> Figure 4.2's printed cross-check exposed a published RQ2 table mixing two
+> populations (REVIEW F-C8); corrected in `flip_partition_findings.md` §6 and
+> Chapter 3, which also lost two false mixed-effects claims.
+> **W2 gate met** ahead of schedule.
+
 | Task | h | Output |
 |---|---|---|
 | **Query-level fragility** — module + tests + write-up. Different faults fail the *same* queries (2.0–4.4× chance overlap); 30–48% of fault-induced silent failures were already silent at baseline | 10 | `analysis/fragility.py`, `docs/fragility_findings.md` + **Fig. 4.8** |

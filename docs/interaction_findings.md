@@ -109,19 +109,18 @@ them, so it cannot add confident errors to a pipeline that is already producing
 them. Its total-error cost is large (p = 51.2% alone); its silent-failure cost
 does not stack.
 
-## 4. The probable mechanism: faults fail the same queries
+## 4. The mechanism: faults fail the same questions
 
-A preliminary analysis over this arm's paired design suggests why saturation
-happens. Different faults do not fail independent sets of questions — they fail
-**the same ones.** Overlap between the silent-failure sets of any two faults is
-**2.0–2.3× chance on retrieval and 3.1–4.4× on classification**, and **30%
-(retrieval) and 48% (classification) of fault-induced silent failures were
-already silent on the fault-free pipeline.**
+Formally tested in `fragility_findings.md`. Silent failure is concentrated on a
+pool of fragile questions — 11.8× (retrieval) and 16.4× (classification) the
+concentration expected under a within-run permutation null, p < 0.0005 — and
+different faults fail the same ones: Jaccard overlap between fault pairs is
+1.6–2.5× the null on retrieval and 3.6–4.0× on classification. Re-asking identical
+inputs reproduces the same silent failures almost exactly (J = 0.91 retrieval,
+1.00 classification), so fragility is a stable property of the question.
 
-If a pool of fragile queries exists, two faults compete for the same failures
-rather than creating new ones, and sub-additivity follows. This is to be
-formalised with its own tests and figure in the fragility analysis (plan W2);
-until then it is a mechanism consistent with the data, not an established one.
+Two faults therefore compete for the same fragile questions rather than creating
+new failures, and sub-additivity follows.
 
 ## 5. Consequences
 

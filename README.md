@@ -74,7 +74,9 @@ Start here if you are reviewing the research rather than the code.
 [the gate](docs/gate_findings.md) ·
 [fault interaction](docs/interaction_findings.md) ·
 [AIRS curve sensitivity](docs/sensitivity_findings.md) ·
-[silent-failure definition](docs/silent_definition_findings.md)
+[silent-failure definition](docs/silent_definition_findings.md) ·
+[query fragility](docs/fragility_findings.md) ·
+[power under clustering](docs/power_findings.md)
 
 ---
 

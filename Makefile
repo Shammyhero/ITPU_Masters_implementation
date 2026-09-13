@@ -54,6 +54,11 @@ figures:
 		--figure docs/figures/fig4_7_curve_sensitivity.png >/dev/null
 	@.venv/bin/python -m airsbench.analysis.interaction \
 		--figure docs/figures/fig4_6_interaction.png >/dev/null
+	@.venv/bin/python -m airsbench.analysis.figures >/dev/null
+	@.venv/bin/python -m airsbench.analysis.fragility \
+		--figure docs/figures/fig4_8_fragility.png >/dev/null
+	@.venv/bin/python -m airsbench.analysis.power \
+		--figure docs/figures/fig3_1_power.png >/dev/null
 	@echo "figures written to docs/figures/"
 
 # Pin the exact environment that produced the published results.

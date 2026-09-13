@@ -239,10 +239,14 @@ The finding is the other cell. On the 140 queries staleness made unanswerable:
 The agent is not making mistakes — it is reasoning correctly over corrupt input
 and reporting the result at maximal confidence. Two further consequences:
 
-- **The RQ2 damage ranking changes.** On residual (non-mechanical) impairment:
+- **The RQ2 ranking changes relative to the phase-1 table above**, which pools
+  both tasks. On residual (non-mechanical) impairment, retrieval only:
   schema drift −0.173 > semantic stripping −0.128 > freshness −0.003 ≈ latency 0.
-  Semantic stripping is *not* the most damaging fault — much of its raw drop is
-  abstention, which is the safe behaviour. Schema drift is.
+  Semantic stripping ranks first only in the pooled table, because on
+  classification much of its raw drop is abstention — the safe behaviour.
+  *Within retrieval alone the raw and residual orders agree; what the partition
+  changes there is magnitude, collapsing freshness to zero. Corrected in W2 —
+  see `flip_partition_findings.md` §6.*
 - **The batch baseline is not clean.** With no fault injected, its inherent 3 s
   staleness flips 7.1% of answers and silently fails on **100%** of them.
 
