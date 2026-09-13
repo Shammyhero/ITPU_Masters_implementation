@@ -83,7 +83,9 @@ Start here if you are reviewing the research rather than the code.
 ## The tools this produced
 
 Two are meant to outlive the thesis. Neither makes a model call, needs an API
-key, or costs anything.
+key, or costs anything. Both install as one command, `airs` — `pip install .`
+from this repository for now; it is not yet on PyPI. `airs probe` and
+`python -m airsbench.probe` are the same program with the same exit codes.
 
 **`airs probe`** — score a pipeline's readiness *before* deploying an agent on
 it. Reads a sample of records as your pipeline delivers them and applies the
@@ -92,7 +94,7 @@ weights calibrated in RQ4. A dimension it cannot measure is reported as
 failure mode that would make the tool dangerous.
 
 ```bash
-python -m airsbench.probe --records delivered.jsonl --source upstream.jsonl --task retrieval
+airs probe --records delivered.jsonl --source upstream.jsonl --task retrieval
 ```
 
 **`airs gate`** — refuse a batch that violates a declared data contract, before
@@ -101,7 +103,7 @@ and the observed value, because a refusal nobody can act on is just a slower
 failure.
 
 ```bash
-python -m airsbench.gate --records delivered.jsonl --policy examples/gate/retrieval.json
+airs gate --records delivered.jsonl --policy examples/gate/retrieval.json
 ```
 
 Worked examples: [`examples/probe/`](examples/probe/) · [`examples/gate/`](examples/gate/)

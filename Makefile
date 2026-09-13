@@ -1,6 +1,6 @@
 PY := .venv/bin/python
 
-.PHONY: setup test lint grid up down demo data-ecommerce data-airline
+.PHONY: setup test lint grid up down demo data-ecommerce data-airline ci dist-check figures lock
 
 setup:
 	python3 -m venv .venv
@@ -45,6 +45,36 @@ ci:
 	@.ci-venv/bin/python -m pytest -q
 	@rm -rf .ci-venv
 	@echo "clean-install verification passed"
+
+# Verify the WHEEL, not the source tree. `make ci` installs editable, so a file
+# missing from the built distribution is invisible to it -- which is how a wheel
+# that shipped without calibrated_weights.json went unnoticed. This builds the
+# wheel, installs it NON-editable into a throwaway venv, and runs the installed
+# `airs` command from outside the source tree against the shipped examples,
+# checking the exit codes a pipeline step relies on. It needs the network once,
+# for the build backend; the installed tool itself never does.
+DIST := .dist-check
+AIRS := cd $(DIST) && venv/bin/airs
+EX := $(CURDIR)/examples
+dist-check:
+	@rm -rf $(DIST) build
+	@python3 -m venv $(DIST)/venv
+	@$(DIST)/venv/bin/pip wheel -q --disable-pip-version-check --no-deps -w $(DIST)/wheel .
+	@rm -rf build
+	@$(DIST)/venv/bin/pip install -q --disable-pip-version-check $(DIST)/wheel/*.whl
+	@cd $(DIST) && venv/bin/python -c "import airsbench, sys; \
+		sys.exit(f'airsbench came from {airsbench.__file__}, not the wheel') \
+		if 'site-packages' not in airsbench.__file__ else None"
+	@$(AIRS) --version
+	@$(AIRS) probe --records $(EX)/probe/degraded.jsonl --source $(EX)/probe/source.jsonl \
+		--task retrieval --json >/dev/null
+	@$(AIRS) gate --records $(EX)/probe/healthy.jsonl --source $(EX)/probe/source.jsonl \
+		--policy $(EX)/gate/retrieval.json >/dev/null
+	@$(AIRS) gate --records $(EX)/probe/degraded.jsonl --source $(EX)/probe/source.jsonl \
+		--policy $(EX)/gate/retrieval.json >/dev/null; \
+		test $$? -eq 1 || { echo "dist-check: a degraded batch was not refused (exit 1)"; exit 1; }
+	@rm -rf $(DIST)
+	@echo "wheel verification passed"
 
 # Regenerate every figure the thesis uses. Chapter 4 is written against these,
 # so they are built as each analysis lands rather than at the end (docs/plan.md).

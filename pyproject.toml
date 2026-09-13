@@ -43,8 +43,18 @@ ci = [
     "langchain-anthropic>=0.1",
 ]
 
+[project.scripts]
+airs = "airsbench.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# Non-Python files the installed package reads. setuptools ships only .py files
+# unless told otherwise: a wheel built on 13 Sep installed a probe that could not
+# find its calibrated weights. `make ci` installs editable and cannot see that;
+# `make dist-check` builds the wheel and can. tests/test_cli.py pins this list.
+[tool.setuptools.package-data]
+airsbench = ["airs/*.json", "runner/*.sql"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

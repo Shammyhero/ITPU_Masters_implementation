@@ -21,3 +21,6 @@ node_modules/
 # Generated slide/PDF renders
 presentation/*.pdf
 .ci-venv/
+# `make dist-check` scratch, and setuptools' wheel build directory
+.dist-check/
+build/
