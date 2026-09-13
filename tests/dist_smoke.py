@@ -1,4 +1,4 @@
-"""Smoke-test an INSTALLED `airs serve`: start it, call the API, stop it.
+"""Smoke-test an INSTALLED `airs serve`: start it, call the API and the console, stop it.
 
 Run by `make dist-check` with the throwaway venv's interpreter, against the
 installed wheel rather than the source tree. Standard library only, and not
@@ -10,6 +10,7 @@ collected by pytest (no `test_` prefix).
 from __future__ import annotations
 
 import json
+import re
 import socket
 import subprocess
 import sys
@@ -25,9 +26,13 @@ def _free_port() -> int:
         return candidate.getsockname()[1]
 
 
-def _get_json(url: str):
+def _get(url: str) -> tuple[int, str]:
     with urllib.request.urlopen(url, timeout=10) as response:
-        return json.load(response)
+        return response.status, response.read().decode("utf-8")
+
+
+def _get_json(url: str):
+    return json.loads(_get(url)[1])
 
 
 def _post_json(url: str, body: dict):
@@ -56,6 +61,8 @@ def main(airs: str, examples: Path) -> int:
                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     try:
         meta = _wait_for(f"{base}/api/meta", process)
+
+        # ---- the API --------------------------------------------------------
         result = _post_json(f"{base}/api/score", {
             "task": "retrieval",
             "delivered": (examples / "probe" / "degraded.jsonl").read_text(encoding="utf-8"),
@@ -74,12 +81,27 @@ def main(airs: str, examples: Path) -> int:
         rate = replayed["outcome"]["exchange_rate"]
         if rate is None or replayed["corpus"]["runs"] == 0:
             raise SystemExit("/api/replay priced nothing: replay_corpus.json missing or empty")
-        with urllib.request.urlopen(f"{base}/", timeout=10) as page:
-            status = page.status
+
+        # ---- the console ----------------------------------------------------
+        if not meta["frontend_built"]:
+            raise SystemExit("the installed package has no web console: "
+                             "src/airsbench/web/ did not make it into the wheel")
+        _, home = _get(f"{base}/")
+        if "Check my pipeline" not in home:
+            raise SystemExit("/ did not serve the Mode A console")
+        _, evidence = _get(f"{base}/evidence/")
+        if "Your agent is not going to tell you" not in evidence:
+            raise SystemExit("/evidence/ did not serve the evidence page")
+        script = re.search(r'src="(/_next/static/[^"]+\.js)"', home)
+        if script is None:
+            raise SystemExit("/ references no /_next/static script")
+        script_status, _ = _get(base + script.group(1))
+
         print(f"airs serve: /api/meta v{meta['version']}, /api/score {result['band']} "
               f"{result['airs']:.1f}, /api/samples {len(samples['samples'])}, "
-              f"/api/replay {rate:.2f} over {replayed['corpus']['runs']} runs, / {status} "
-              f"(web console built: {meta['frontend_built']})")
+              f"/api/replay {rate:.2f} over {replayed['corpus']['runs']} runs; "
+              f"console / and /evidence/ served, {script.group(1).rsplit('/', 1)[-1]} "
+              f"{script_status}")
         return 0
     finally:
         process.terminate()

@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import json
 import tomllib
-from fnmatch import fnmatch
 from pathlib import Path
 
 import pytest
@@ -78,15 +77,23 @@ def test_the_airs_command_is_declared():
 def test_every_data_file_in_the_package_is_declared_as_package_data():
     """setuptools ships only .py files unless told otherwise. A wheel built without
     this declaration installed a probe that could not find its weights, and `make
-    ci` — an editable install — could not see it."""
+    ci` — an editable install — could not see it.
+
+    Patterns are expanded with Path.glob, whose ** spans zero or more directories
+    as setuptools' globs do — so web/**/* covers web/index.html, which a plain
+    fnmatch would not. Whatever `make web` built into the package is checked too."""
     patterns = _pyproject()["tool"]["setuptools"]["package-data"]["airsbench"]
     package = ROOT / "src" / "airsbench"
-    data = [
+    data = {
         path.relative_to(package).as_posix()
         for path in package.rglob("*")
         if path.is_file() and path.suffix not in (".py", ".pyc")
         and "__pycache__" not in path.parts and not path.name.startswith(".")
-    ]
+    }
+    declared = {
+        path.relative_to(package).as_posix()
+        for pattern in patterns for path in package.glob(pattern) if path.is_file()
+    }
     assert "airs/calibrated_weights.json" in data
-    undeclared = [f for f in data if not any(fnmatch(f, pattern) for pattern in patterns)]
+    undeclared = sorted(data - declared)
     assert not undeclared, f"would be missing from the wheel: {undeclared}"

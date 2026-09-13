@@ -58,7 +58,8 @@ where = ["src"]
 # find its calibrated weights. `make ci` installs editable and cannot see that;
 # `make dist-check` builds the wheel and can. tests/test_cli.py pins this list.
 [tool.setuptools.package-data]
-airsbench = ["airs/*.json", "runner/*.sql", "server/data/*.json"]
+# web/ is the static console, built into the package by `make web` (not committed).
+airsbench = ["airs/*.json", "runner/*.sql", "server/data/*.json", "web/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

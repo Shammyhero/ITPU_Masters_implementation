@@ -126,6 +126,31 @@ first. They are survival, not enhancement.
 > contract's `airs` block extended to `{score | null, detail, weight}` plus band,
 > in all modes; local files reach the tool only through
 > `airs serve --records/--source`, never an HTTP path parameter.
+>
+> **Progress 14 Sep — W3 complete, two weeks ahead of its dates.** Six steps, each
+> committed and pushed: **(1)** the `airs` console script, and a wheel that ships its
+> calibrated weights — a built wheel had not — verified from a non-editable install
+> by the new `make dist-check`; **(2)** input hardening: one validator for every
+> caller, line-numbered refusals that name the fix, ISO-8601 timestamps with a
+> timezone, millisecond and duplicate-upstream-id guards, no NaN in JSON output;
+> **(3)** `airs serve`: FastAPI `/api/{meta,samples,score,gate}`, loopback with a
+> Host-header allowlist, fastapi and uvicorn as core dependencies; **(4)**
+> `/api/replay` over a baked corpus that reproduces `gate_findings.md` (19.6% /
+> 14.2%); **(5)** Mode A in the browser — `/` scores through the API,
+> `ProbeLive.tsx`'s TypeScript scorer is deleted, `/evidence/` keeps the argument;
+> **(6)** `make web` builds the console into the wheel, `aist.json` is regenerated
+> from all 302 runs and committed, and `make dist-check` requires the installed
+> `airs serve` to serve the console. 501 tests. Found and fixed on the way: an
+> unanchored `data/` rule in `.gitignore` that kept `server/data/` and `aist.json`
+> out of git.
+> **Carried into W4:** the task-profile switch (Mode A scores retrieval unless
+> preloaded with `--task`); the predicted exchange rate must say whether it is the
+> raw sweep rate or attribution's true cost (consistency ≥ 90 on retrieval: 2.26
+> vs 7.0); the Kafka / Postgres / Parquet sample snippets from REVIEW Phase 3 are
+> not scheduled anywhere; Starlette's test client warns to move from `httpx` to
+> `httpx2`; the Browser pane cannot launch `airs serve` on this machine (macOS
+> blocks the python.org interpreter from reading `~/Documents`), so browser checks
+> need the API started from a terminal.
 
 | Task | h |
 |---|---|

@@ -10,7 +10,7 @@ subject. Model, prompt, temperature, dataset, scoring and hardware are held
 constant — only infrastructure conditions vary.
 
 **Status:** six research questions answered. 302 benchmark runs, 24 270 agent
-decisions, 4 models, $5.15 of API spend, 373 tests green. Current work follows
+decisions, 4 models, $5.15 of API spend, 501 tests green. Current work follows
 the week-by-week plan in [`docs/plan.md`](docs/plan.md).
 
 ---
@@ -62,7 +62,7 @@ Start here if you are reviewing the research rather than the code.
 | [`docs/chapter3_methodology.md`](docs/chapter3_methodology.md) | Methodology as actually implemented (Chapter 3 draft) |
 | [`docs/literature_review.md`](docs/literature_review.md) | 25+ verified sources; the gap claim as it can be defended |
 | [`docs/related_work_positioning.md`](docs/related_work_positioning.md) | Differentiation against the four nearest papers |
-| [`docs/campaign_status.md`](docs/campaign_status.md) | **Operational entry point** — current state, costs, what remains |
+| [`docs/plan.md`](docs/plan.md) | **Current state** — the week-by-week plan, with progress notes |
 
 **Findings, one per research question:**
 [flip partition](docs/flip_partition_findings.md) ·
@@ -82,10 +82,21 @@ Start here if you are reviewing the research rather than the code.
 
 ## The tools this produced
 
-Two are meant to outlive the thesis. Neither makes a model call, needs an API
-key, or costs anything. Both install as one command, `airs` — `pip install .`
-from this repository for now; it is not yet on PyPI. `airs probe` and
-`python -m airsbench.probe` are the same program with the same exit codes.
+Meant to outlive the thesis. None of them makes a model call, needs an API key,
+costs anything, or sends records off the machine. All three are one command,
+`airs`, from one install — `pip install .` from this repository for now; it is
+not yet on PyPI. From a clone, run `make web` first to build the web console
+into the package (Node is needed for that, once).
+
+**`airs serve`** — a local web console. Paste or drop a sample of records as
+your pipeline delivers them, and see each dimension's score beside its evidence
+and its calibrated weight, and how much of that weight the composite actually
+rests on. It listens on 127.0.0.1 only; the API behind it is at `/api/docs`.
+
+```bash
+airs serve                                             # opens http://127.0.0.1:8000
+airs serve --records delivered.jsonl --source upstream.jsonl
+```
 
 **`airs probe`** — score a pipeline's readiness *before* deploying an agent on
 it. Reads a sample of records as your pipeline delivers them and applies the
@@ -106,6 +117,8 @@ failure.
 airs gate --records delivered.jsonl --policy examples/gate/retrieval.json
 ```
 
+`airs probe` and `python -m airsbench.probe` are the same program with the same
+exit codes. Timestamps may be epoch seconds or ISO-8601 with a timezone.
 Worked examples: [`examples/probe/`](examples/probe/) · [`examples/gate/`](examples/gate/)
 
 ---
@@ -119,6 +132,8 @@ make lint
 make grid           # inspect the factorial — no execution, no cost
 make ci             # clean-venv install from pyproject.toml + lint + tests
 make figures        # regenerate the Chapter 4 figures into docs/figures/
+make web            # build the web console into the package (needs Node)
+make dist-check     # build the wheel, install it clean, run the installed tools
 ```
 
 To reproduce with **the exact package versions that produced the published
@@ -168,10 +183,11 @@ src/airsbench/airs/      AIRS operational definitions, calculator, calibrated we
 src/airsbench/agents/    LLM client, prompts, retrieval + classification agents
 src/airsbench/pipelines/ catalog time machine + record builders (loader.py)
 src/airsbench/gate/      admission control: Policy, Controller, offline policy replay
+src/airsbench/server/    `airs serve`: the local API, and the data baked for it
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema
 src/airsbench/analysis/  one module per research question — all free to re-run
 src/airsbench/dataprep/  dataset preparation + free sensitivity check
-demo/                    AIST demo (Next.js, static export, pre-baked data)
+demo/                    the web console's source (Next.js, static export, pre-baked evidence)
 docs/                    research plan, methodology, literature, findings
 infra_unused/            original Kafka/Airflow/Postgres stack — quarantined, used by no result
 results/runs/            302 run artifacts — the evidence behind every number

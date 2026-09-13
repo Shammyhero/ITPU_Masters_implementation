@@ -18,7 +18,10 @@ make figures         # regenerate the Chapter 4 figures into docs/figures/
 make lint            # ruff
 make grid            # inspect the factorial, no execution, no cost
 make up / make down  # original Kafka+Airflow+Postgres+Prometheus stack — infra_unused/, used by no result
-make demo            # AIST Streamlit app
+make demo            # Next.js dev server for the console on :3000 (pair with `airs serve --dev`)
+make web             # build the console into src/airsbench/web/ — required before a wheel
+make dist-check      # build the wheel, install it clean, run the installed airs + airs serve
+airs serve           # local web console + API on 127.0.0.1:8000 (probe/gate/replay, no model)
 
 # Campaign — ALWAYS --dry-run first to see the cost estimate
 python -m airsbench.runner.run --main --n-queries 80 --limit 36 --dry-run
@@ -131,8 +134,10 @@ src/airsbench/airs/      AIRS operational definitions + calculator
 src/airsbench/agents/    LLM client, prompts, retrieval + classification agents
 src/airsbench/pipelines/ catalog time machine + record builders (loader.py)
 src/airsbench/gate/      admission control: Policy, Controller, offline policy replay
+src/airsbench/server/    `airs serve`: FastAPI API (the only FastAPI importer) + baked data
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema
 src/airsbench/dataprep/  dataset prep (ESCI, BTS) + free sensitivity check
+demo/                    web console source (Next.js static export); `make web` builds it in
 infra_unused/            original Kafka/Airflow/Postgres stack — quarantined, no result depends on it
 docs/                    literature review, related-work positioning, RQs v2,
                          Chapter 3 methodology

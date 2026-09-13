@@ -27,3 +27,5 @@ presentation/*.pdf
 # `make dist-check` scratch, and setuptools' wheel build directory
 .dist-check/
 build/
+# The web console, built into the package by `make web` and shipped in the wheel
+src/airsbench/web/

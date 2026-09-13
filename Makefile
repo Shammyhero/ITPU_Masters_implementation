@@ -1,6 +1,6 @@
 PY := .venv/bin/python
 
-.PHONY: setup test lint grid up down demo data-ecommerce data-airline ci dist-check figures lock
+.PHONY: setup test lint grid up down demo data-ecommerce data-airline ci web dist-check figures lock
 
 setup:
 	python3 -m venv .venv
@@ -21,6 +21,7 @@ up:
 down:
 	docker compose -f infra_unused/docker-compose.yml down
 
+# The console's Next.js dev server on :3000. Run `airs serve --dev` beside it for the API.
 demo:
 	npm --prefix demo run dev
 
@@ -46,17 +47,39 @@ ci:
 	@rm -rf .ci-venv
 	@echo "clean-install verification passed"
 
+# Build the web console into the package, where `airs serve` finds it and the wheel
+# ships it (src/airsbench/web/, gitignored). Node is needed here, once, at build
+# time; nobody installing the wheel needs it. demo/src/data/aist.json is committed,
+# so this works from a clone without the datasets (`npm --prefix demo run data`
+# regenerates that file from results/runs/ when the evidence changes).
+# Refuses while `next dev` runs: a build then corrupts demo/.next. The [n] keeps
+# pgrep from matching this recipe's own shell.
+web:
+	@if pgrep -f "[n]ext dev" >/dev/null; then \
+		echo 'make web: stop "next dev" first -- building while it runs corrupts demo/.next'; \
+		exit 1; fi
+	@npm --prefix demo ci --no-audit --no-fund --loglevel=error
+	@rm -rf demo/.next demo/out
+	@npm --prefix demo run build
+	@rm -rf src/airsbench/web
+	@cp -R demo/out src/airsbench/web
+	@echo "web console built into src/airsbench/web/ ($$(find src/airsbench/web -type f | wc -l | tr -d ' ') files)"
+
 # Verify the WHEEL, not the source tree. `make ci` installs editable, so a file
 # missing from the built distribution is invisible to it -- which is how a wheel
 # that shipped without calibrated_weights.json went unnoticed. This builds the
 # wheel, installs it NON-editable into a throwaway venv, and runs the installed
 # `airs` command from outside the source tree against the shipped examples,
-# checking the exit codes a pipeline step relies on. It needs the network once,
-# for the build backend; the installed tool itself never does.
+# checking the exit codes a pipeline step relies on, then starts the installed
+# `airs serve` and requires the API and the real console. It needs the network
+# once, for the build backend; the installed tool itself never does.
 DIST := .dist-check
 AIRS := cd $(DIST) && venv/bin/airs
 EX := $(CURDIR)/examples
 dist-check:
+	@test -f src/airsbench/web/index.html || { \
+		echo 'dist-check: the web console is not built; run "make web" first, or the wheel ships without it'; \
+		exit 1; }
 	@rm -rf $(DIST) build
 	@python3 -m venv $(DIST)/venv
 	@$(DIST)/venv/bin/pip wheel -q --disable-pip-version-check --no-deps -w $(DIST)/wheel .

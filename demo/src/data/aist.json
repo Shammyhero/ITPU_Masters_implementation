@@ -1,0 +1,1012 @@
+{
+  "schema": "aist-demo/1",
+  "generated_from": {
+    "runs": 302,
+    "note": "Every figure is exported from run artifacts. The demo makes no model calls and needs no API key."
+  },
+  "headline": [
+    {
+      "value": "0.501",
+      "label": "Agent self-confidence, AUC",
+      "caption": "Predicting its own silent failures on retrieval. A coin flip.",
+      "source": "airs_calibration_findings.md \u00a72",
+      "emphasis": true
+    },
+    {
+      "value": "0.580",
+      "label": "AIRS, AUC",
+      "caption": "Same task, from pipeline telemetry alone \u2014 no agent involved (DeLong p = 0.0001).",
+      "source": "airs_calibration_findings.md \u00a72"
+    },
+    {
+      "value": "\u22120.003",
+      "label": "Freshness residual",
+      "caption": "Accuracy cost of staleness once answer-key movement is removed. Identical at both severities.",
+      "source": "flip_partition_findings.md \u00a73"
+    },
+    {
+      "value": "90%",
+      "label": "Silent failure when it matters",
+      "caption": "On the queries staleness made unanswerable, at mean confidence 1.00.",
+      "source": "flip_partition_findings.md \u00a74"
+    }
+  ],
+  "challenge": [
+    {
+      "query": "1 generation ipad air keyboard case without an apple penicil",
+      "candidates": [
+        {
+          "id": "B08XB3XCQ4",
+          "title": "Keyboard Case for iPad Pro 11 inch 3rd Generation 2021\u2013360\u00b0 Rotatable ",
+          "served_price": 5.19,
+          "served_stock": 9,
+          "true_price": 5.19,
+          "true_stock": 9,
+          "changed": false
+        },
+        {
+          "id": "B08QVR1YCN",
+          "title": "kenke iPad Keyboard Case for 9.7 inch iPad 6th Generation 2018 iPad 5t",
+          "served_price": 9.07,
+          "served_stock": 3,
+          "true_price": 11.44,
+          "true_stock": 3,
+          "changed": true
+        },
+        {
+          "id": "B0871WYC9Z",
+          "title": "SENGBIRCH iPad Air 4 Keyboard Case for Pro 11 inch 5th Generation 2021",
+          "served_price": 8.76,
+          "served_stock": 2,
+          "true_price": 8.76,
+          "true_stock": 2,
+          "changed": false
+        },
+        {
+          "id": "B07RYM8DM2",
+          "title": "Arteck iPad Pro 11-inch Keyboard, Ultra-Thin Bluetooth Keyboard with F",
+          "served_price": 5.48,
+          "served_stock": 2,
+          "true_price": 4.68,
+          "true_stock": 2,
+          "changed": true
+        }
+      ],
+      "agent_answer": "B08XB3XCQ4",
+      "agent_confidence": 1.0,
+      "true_answer": "B07RYM8DM2",
+      "staleness_seconds": 5.05,
+      "run_id": "1e75da50-50cf-4a5a-a74f-ce8743d8c091"
+    },
+    {
+      "query": "1 cup measuring cup without handle",
+      "candidates": [
+        {
+          "id": "B08SWGC272",
+          "title": "Glass Measuring Cup Heat-resistant Borosilicate Glass Graduated Measur",
+          "served_price": 9.38,
+          "served_stock": 15,
+          "true_price": 10.01,
+          "true_stock": 15,
+          "changed": true
+        },
+        {
+          "id": "B08SHKV2MS",
+          "title": "Newness Glass Measuring Cup with Handle, 1000 ML (1 Liter, 4 Cup) Meas",
+          "served_price": 5.02,
+          "served_stock": 4,
+          "true_price": 7.55,
+          "true_stock": 6,
+          "changed": true
+        },
+        {
+          "id": "B08SSPDDZX",
+          "title": "Terbold Plastic Measuring Cups with Long Handles, Set of Three, Clear",
+          "served_price": 5.76,
+          "served_stock": 2,
+          "true_price": 5.76,
+          "true_stock": 3,
+          "changed": true
+        },
+        {
+          "id": "B08QTP1CQR",
+          "title": "Collapsible Silicone Soft Measuring Cups and Measuring Spoons,8 pieces",
+          "served_price": 10.46,
+          "served_stock": 5,
+          "true_price": 10.46,
+          "true_stock": 5,
+          "changed": false
+        },
+        {
+          "id": "B091GK5TCW",
+          "title": "Glass Measuring Cup Heat-resistant Borosilicate Glass Graduated Measur",
+          "served_price": 14.65,
+          "served_stock": 7,
+          "true_price": 14.65,
+          "true_stock": 5,
+          "changed": true
+        },
+        {
+          "id": "B00005RKOF",
+          "title": "OXO Good Grips 1-Cup Angled Measuring Cup",
+          "served_price": 21.06,
+          "served_stock": 12,
+          "true_price": 21.06,
+          "true_stock": 12,
+          "changed": false
+        }
+      ],
+      "agent_answer": "B08SHKV2MS",
+      "agent_confidence": 1.0,
+      "true_answer": "B08SSPDDZX",
+      "staleness_seconds": 5.05,
+      "run_id": "1e75da50-50cf-4a5a-a74f-ce8743d8c091"
+    },
+    {
+      "query": "100ft air hose reel retractable without hose",
+      "candidates": [
+        {
+          "id": "B01GJ7O4NQ",
+          "title": "ReelWorks L201303A Hand Crank Air Compressor Hose Reel without Hose",
+          "served_price": 3.43,
+          "served_stock": 8,
+          "true_price": 3.99,
+          "true_stock": 13,
+          "changed": true
+        },
+        {
+          "id": "B073XC7GN1",
+          "title": "MaxWorks 80720 50ft Auto Rewind Retractable Reel with 3/8\" x 50' Air H",
+          "served_price": 3.66,
+          "served_stock": 2,
+          "true_price": 3.66,
+          "true_stock": 2,
+          "changed": false
+        },
+        {
+          "id": "B075QLQCK3",
+          "title": "Goodyear Air Hose Reel Retractable 3/8\" Inch x 100 Feet 300 Psi / 20 B",
+          "served_price": 27.91,
+          "served_stock": 4,
+          "true_price": 27.91,
+          "true_stock": 4,
+          "changed": false
+        },
+        {
+          "id": "B08C9YGBS2",
+          "title": "WYNNsky Retractable Air Compressor Hose Reel, 3/8 Inch \u00d7 50 Feet Hybri",
+          "served_price": 6.06,
+          "served_stock": 0,
+          "true_price": 6.06,
+          "true_stock": 0,
+          "changed": false
+        },
+        {
+          "id": "B08J8HSCQN",
+          "title": "Primefit HRM38100 Manual Air Hose Reel with 100ft Capacity using 3/8\" ",
+          "served_price": 3.65,
+          "served_stock": 7,
+          "true_price": 3.65,
+          "true_stock": 7,
+          "changed": false
+        },
+        {
+          "id": "B002JGQWFU",
+          "title": "Coxreels 112WL-1-100 Hand Crank Steel Welding Hose Reel, 100W Series \u2013",
+          "served_price": 4.28,
+          "served_stock": 0,
+          "true_price": 4.28,
+          "true_stock": 1,
+          "changed": true
+        }
+      ],
+      "agent_answer": "B01GJ7O4NQ",
+      "agent_confidence": 1.0,
+      "true_answer": "B08J8HSCQN",
+      "staleness_seconds": 5.05,
+      "run_id": "1e75da50-50cf-4a5a-a74f-ce8743d8c091"
+    }
+  ],
+  "legibility": {
+    "healthy": {
+      "product_id": "B07RYM8DM2",
+      "price": 4.68,
+      "stock": 2
+    },
+    "faults": [
+      {
+        "id": "freshness",
+        "name": "Stale data",
+        "record": {
+          "product_id": "B07RYM8DM2",
+          "price": 5.48,
+          "stock": 2
+        },
+        "spot_it": false,
+        "why": "Every field is well-formed and plausible. The price is simply the one from five seconds ago. Nothing in the record refers to when it was true.",
+        "abstained": 0.01
+      },
+      {
+        "id": "latency",
+        "name": "Slow delivery",
+        "record": {
+          "product_id": "B07RYM8DM2",
+          "price": 4.68,
+          "stock": 2
+        },
+        "spot_it": false,
+        "why": "The record is correct. It just arrived 3 seconds late. A synchronous agent waits and reads identical data.",
+        "abstained": 0.0
+      },
+      {
+        "id": "schema_drift",
+        "name": "Renamed field",
+        "record": {
+          "product_id": "B07RYM8DM2",
+          "price_v2": 4.68,
+          "stock": 2
+        },
+        "spot_it": false,
+        "why": "`price_v2` looks like a legitimate field from a legitimate migration. It is visible, but not legible AS corruption \u2014 which turns out to be the property that matters.",
+        "abstained": 0.01
+      },
+      {
+        "id": "semantic_stripping",
+        "name": "Stripped meaning",
+        "record": {
+          "f1": "B07RYM8DM2",
+          "f4": 4.68,
+          "f7": 2
+        },
+        "spot_it": true,
+        "why": "The values survived; the meaning did not. You cannot tell which number is the price \u2014 and neither can the agent, so it refuses instead of guessing.",
+        "abstained": 0.18
+      }
+    ],
+    "punchline": "What you can spot and what the agent declines on are the same ordering. Detectability is a property of what the pipeline delivered, not of how clever the reader is."
+  },
+  "detectability": {
+    "case": {
+      "query": "$1 million that look real but that is not it",
+      "replication": 1,
+      "decision_index": 32,
+      "true_answer": "B08JFZNKR9",
+      "served_answer": "B06XQ1V9FF",
+      "record_age_seconds": 5.05,
+      "airs_freshness": 100.0,
+      "columns": [
+        {
+          "id": "no_metadata",
+          "label": "Stale record, no metadata",
+          "shown": "price and stock only",
+          "answer": "B00FGXSE36",
+          "confidence": 1.0,
+          "abstained": false,
+          "correct": false,
+          "run_id": "e3f3bb3d-009c-486f-b86f-819c26f5d2ce"
+        },
+        {
+          "id": "age_delivered",
+          "label": "Stale record + _record_age_seconds",
+          "shown": "price, stock, and the record's true age (5.05s)",
+          "answer": "B00FGXSE36",
+          "confidence": 1.0,
+          "abstained": false,
+          "correct": false,
+          "run_id": "75b1a072-64a5-4be5-9f54-a87907e52d9b"
+        },
+        {
+          "id": "budget_enforced",
+          "label": "Age + staleness budget, enforced outside the model",
+          "shown": "request blocked before the agent saw it",
+          "answer": null,
+          "confidence": null,
+          "abstained": true,
+          "correct": null,
+          "run_id": null,
+          "note": "Not an experimental condition \u2014 the recommendation the null implies. A 1s budget rejects a 5.05s record without consulting the model."
+        }
+      ]
+    },
+    "summary": {
+      "n_flipped": 27,
+      "without": {
+        "abstained": 0.037037037037037035,
+        "silent": 0.8888888888888888,
+        "confidence_wrong": 1.0
+      },
+      "with_age": {
+        "abstained": 0.1111111111111111,
+        "silent": 0.8518518518518519,
+        "confidence_wrong": 1.0
+      },
+      "mcnemar_p": 0.5,
+      "discordant": [
+        2,
+        0
+      ],
+      "verdict": "Delivering the record's age changed neither abstention nor silent failure. Underpowered for a small effect; a large one is excluded."
+    }
+  },
+  "inversion": {
+    "note": "Odds ratio for silent failure vs each model's own baseline. The ranking transfers across models and inverts across tasks.",
+    "faults": [
+      "freshness",
+      "latency",
+      "schema_drift",
+      "semantic_stripping"
+    ],
+    "retrieval": {
+      "gpt-4o-mini": [
+        0.89,
+        0.97,
+        3.75,
+        2.91
+      ],
+      "claude-haiku-4-5": [
+        0.88,
+        0.99,
+        4.75,
+        3.75
+      ],
+      "ollama/llama3.1:8b": [
+        1.11,
+        1.26,
+        2.14,
+        2.93
+      ],
+      "ollama/qwen2.5:14b-instruct": [
+        1.33,
+        1.36,
+        2.54,
+        3.7
+      ]
+    },
+    "classification": {
+      "gpt-4o-mini": [
+        1.98,
+        1.0,
+        1.56,
+        1.43
+      ],
+      "claude-haiku-4-5": [
+        2.27,
+        1.07,
+        1.35,
+        0.8
+      ]
+    },
+    "mean_tau": 0.762,
+    "masked_by_refusal": {
+      "model": "claude-haiku-4-5",
+      "fault": "semantic_stripping",
+      "task": "classification",
+      "odds_ratio": 0.8,
+      "accuracy": 0.29,
+      "baseline_accuracy": 0.9,
+      "abstained": 0.64,
+      "note": "An OR below 1 looks harmless. Accuracy collapsed 61 points; the damage went into refusal, not into silent failure."
+    }
+  },
+  "stress": {
+    "note": "Each stop is a measured condition, not an interpolation. Streaming pipeline, gpt-4o-mini.",
+    "tasks": {
+      "retrieval": {
+        "freshness": [
+          {
+            "label": "healthy",
+            "fault": "none",
+            "severity": "none",
+            "n": 314,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 99.94,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8854,
+            "abstained": 0.0096,
+            "silent": 0.1051
+          },
+          {
+            "label": "0.55s stale",
+            "fault": "freshness",
+            "severity": "sweep_0.5s",
+            "n": 177,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8701,
+            "abstained": 0.0169,
+            "silent": 0.113
+          },
+          {
+            "label": "1.55s stale",
+            "fault": "freshness",
+            "severity": "sweep_1.5s",
+            "n": 177,
+            "dims": {
+              "freshness": 64.52,
+              "latency": 100.0,
+              "consistency": 99.92,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8249,
+            "abstained": 0.0113,
+            "silent": 0.1638
+          },
+          {
+            "label": "3.05s stale",
+            "fault": "freshness",
+            "severity": "sweep_3s",
+            "n": 177,
+            "dims": {
+              "freshness": 32.79,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8362,
+            "abstained": 0.0113,
+            "silent": 0.1525
+          },
+          {
+            "label": "5.05s stale",
+            "fault": "freshness",
+            "severity": "sweep_5s",
+            "n": 177,
+            "dims": {
+              "freshness": 19.8,
+              "latency": 100.0,
+              "consistency": 99.92,
+              "semantic": 100.0
+            },
+            "accuracy": 0.791,
+            "abstained": 0.0282,
+            "silent": 0.1808
+          },
+          {
+            "label": "8.05s stale",
+            "fault": "freshness",
+            "severity": "sweep_8s",
+            "n": 177,
+            "dims": {
+              "freshness": 12.42,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.7571,
+            "abstained": 0.0113,
+            "silent": 0.2316
+          },
+          {
+            "label": "12.05s stale",
+            "fault": "freshness",
+            "severity": "sweep_12s",
+            "n": 177,
+            "dims": {
+              "freshness": 8.3,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.7232,
+            "abstained": 0.0339,
+            "silent": 0.2429
+          }
+        ],
+        "latency": [
+          {
+            "label": "healthy",
+            "fault": "none",
+            "severity": "none",
+            "n": 314,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 99.94,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8854,
+            "abstained": 0.0096,
+            "silent": 0.1051
+          },
+          {
+            "label": "500ms spike",
+            "fault": "latency",
+            "severity": "mild",
+            "n": 314,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 99.94,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8822,
+            "abstained": 0.0127,
+            "silent": 0.1051
+          },
+          {
+            "label": "3000ms spike",
+            "fault": "latency",
+            "severity": "severe",
+            "n": 314,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 16.67,
+              "consistency": 99.88,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8885,
+            "abstained": 0.0096,
+            "silent": 0.1019
+          }
+        ],
+        "schema_drift": [
+          {
+            "label": "healthy",
+            "fault": "none",
+            "severity": "none",
+            "n": 314,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 99.94,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8854,
+            "abstained": 0.0096,
+            "silent": 0.1051
+          },
+          {
+            "label": "5% of fields",
+            "fault": "schema_drift",
+            "severity": "mild",
+            "n": 314,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 95.05,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8217,
+            "abstained": 0.0096,
+            "silent": 0.1688
+          },
+          {
+            "label": "25% of fields",
+            "fault": "schema_drift",
+            "severity": "severe",
+            "n": 314,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 74.16,
+              "semantic": 100.0
+            },
+            "accuracy": 0.6879,
+            "abstained": 0.0064,
+            "silent": 0.3057
+          }
+        ],
+        "semantic_stripping": [
+          {
+            "label": "healthy",
+            "fault": "none",
+            "severity": "none",
+            "n": 314,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 99.94,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8854,
+            "abstained": 0.0096,
+            "silent": 0.1051
+          },
+          {
+            "label": "30% stripped",
+            "fault": "semantic_stripping",
+            "severity": "mild",
+            "n": 314,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 99.94,
+              "semantic": 68.26
+            },
+            "accuracy": 0.8057,
+            "abstained": 0.0064,
+            "silent": 0.1879
+          },
+          {
+            "label": "80% stripped",
+            "fault": "semantic_stripping",
+            "severity": "severe",
+            "n": 314,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 99.88,
+              "semantic": 18.44
+            },
+            "accuracy": 0.742,
+            "abstained": 0.0032,
+            "silent": 0.2548
+          }
+        ]
+      },
+      "classification": {
+        "freshness": [
+          {
+            "label": "healthy",
+            "fault": "none",
+            "severity": "none",
+            "n": 320,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8781,
+            "abstained": 0.0,
+            "silent": 0.1219
+          },
+          {
+            "label": "0.55s stale",
+            "fault": "freshness",
+            "severity": "sweep_0.5s",
+            "n": 180,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.9111,
+            "abstained": 0.0,
+            "silent": 0.0889
+          },
+          {
+            "label": "1.55s stale",
+            "fault": "freshness",
+            "severity": "sweep_1.5s",
+            "n": 180,
+            "dims": {
+              "freshness": 64.52,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.9,
+            "abstained": 0.0,
+            "silent": 0.1
+          },
+          {
+            "label": "3.05s stale",
+            "fault": "freshness",
+            "severity": "sweep_3s",
+            "n": 180,
+            "dims": {
+              "freshness": 32.79,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8722,
+            "abstained": 0.0,
+            "silent": 0.1278
+          },
+          {
+            "label": "5.05s stale",
+            "fault": "freshness",
+            "severity": "sweep_5s",
+            "n": 180,
+            "dims": {
+              "freshness": 19.8,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8056,
+            "abstained": 0.0,
+            "silent": 0.1944
+          },
+          {
+            "label": "8.05s stale",
+            "fault": "freshness",
+            "severity": "sweep_8s",
+            "n": 180,
+            "dims": {
+              "freshness": 12.42,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.6167,
+            "abstained": 0.0,
+            "silent": 0.3833
+          },
+          {
+            "label": "12.05s stale",
+            "fault": "freshness",
+            "severity": "sweep_12s",
+            "n": 180,
+            "dims": {
+              "freshness": 8.3,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.4889,
+            "abstained": 0.0,
+            "silent": 0.5111
+          }
+        ],
+        "latency": [
+          {
+            "label": "healthy",
+            "fault": "none",
+            "severity": "none",
+            "n": 320,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8781,
+            "abstained": 0.0,
+            "silent": 0.1219
+          },
+          {
+            "label": "500ms spike",
+            "fault": "latency",
+            "severity": "mild",
+            "n": 320,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8781,
+            "abstained": 0.0,
+            "silent": 0.1219
+          },
+          {
+            "label": "3000ms spike",
+            "fault": "latency",
+            "severity": "severe",
+            "n": 320,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 16.67,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8781,
+            "abstained": 0.0,
+            "silent": 0.1219
+          }
+        ],
+        "schema_drift": [
+          {
+            "label": "healthy",
+            "fault": "none",
+            "severity": "none",
+            "n": 320,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8781,
+            "abstained": 0.0,
+            "silent": 0.1219
+          },
+          {
+            "label": "5% of fields",
+            "fault": "schema_drift",
+            "severity": "mild",
+            "n": 320,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 95.51,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8562,
+            "abstained": 0.0,
+            "silent": 0.1437
+          },
+          {
+            "label": "25% of fields",
+            "fault": "schema_drift",
+            "severity": "severe",
+            "n": 320,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 74.18,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8031,
+            "abstained": 0.0187,
+            "silent": 0.1781
+          }
+        ],
+        "semantic_stripping": [
+          {
+            "label": "healthy",
+            "fault": "none",
+            "severity": "none",
+            "n": 320,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 100.0
+            },
+            "accuracy": 0.8781,
+            "abstained": 0.0,
+            "silent": 0.1219
+          },
+          {
+            "label": "30% stripped",
+            "fault": "semantic_stripping",
+            "severity": "mild",
+            "n": 320,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 67.19
+            },
+            "accuracy": 0.7406,
+            "abstained": 0.1,
+            "silent": 0.1594
+          },
+          {
+            "label": "80% stripped",
+            "fault": "semantic_stripping",
+            "severity": "severe",
+            "n": 320,
+            "dims": {
+              "freshness": 100.0,
+              "latency": 100.0,
+              "consistency": 100.0,
+              "semantic": 20.31
+            },
+            "accuracy": 0.4875,
+            "abstained": 0.3469,
+            "silent": 0.1656
+          }
+        ]
+      }
+    }
+  },
+  "probe": {
+    "weights": {
+      "freshness": 0.1294,
+      "latency": 0.0,
+      "consistency": 0.702,
+      "semantic": 0.1686
+    },
+    "calibrated_at": "2026-08-01",
+    "target": "wrong",
+    "samples": [
+      {
+        "id": "healthy",
+        "label": "healthy",
+        "n_records": 60,
+        "dimensions": {
+          "freshness": {
+            "score": 100.0,
+            "detail": "mean age 0.40s over 60 of 60 records"
+          },
+          "latency": {
+            "score": 100.0,
+            "detail": "mean 45ms over 60 of 60 records"
+          },
+          "consistency": {
+            "score": 100.0,
+            "detail": "60 of 60 records matched by id"
+          },
+          "semantic": {
+            "score": 100.0,
+            "detail": "context present on 60 of 60 records"
+          }
+        },
+        "airs": 99.99999999999999,
+        "weight_covered": 1.0,
+        "band": "READY"
+      },
+      {
+        "id": "healthy_no_source",
+        "label": "healthy (no --source)",
+        "n_records": 60,
+        "dimensions": {
+          "freshness": {
+            "score": 100.0,
+            "detail": "mean age 0.40s over 60 of 60 records"
+          },
+          "latency": {
+            "score": 100.0,
+            "detail": "mean 45ms over 60 of 60 records"
+          },
+          "consistency": {
+            "score": null,
+            "detail": "no --source sample given; nothing to compare against"
+          },
+          "semantic": {
+            "score": 100.0,
+            "detail": "context present on 60 of 60 records"
+          }
+        },
+        "airs": 100.0,
+        "weight_covered": 0.298,
+        "band": "READY"
+      },
+      {
+        "id": "degraded",
+        "label": "degraded",
+        "n_records": 60,
+        "dimensions": {
+          "freshness": {
+            "score": 15.384615384615385,
+            "detail": "mean age 6.50s over 60 of 60 records"
+          },
+          "latency": {
+            "score": 27.77777777777778,
+            "detail": "mean 1800ms over 60 of 60 records"
+          },
+          "consistency": {
+            "score": 23.214285714285715,
+            "detail": "60 of 60 records matched by id"
+          },
+          "semantic": {
+            "score": 20.416666666666668,
+            "detail": "context present on 36 of 60 records"
+          }
+        },
+        "airs": 21.7294478021978,
+        "weight_covered": 1.0,
+        "band": "AT RISK"
+      },
+      {
+        "id": "degraded_no_source",
+        "label": "degraded (no --source)",
+        "n_records": 60,
+        "dimensions": {
+          "freshness": {
+            "score": 15.384615384615385,
+            "detail": "mean age 6.50s over 60 of 60 records"
+          },
+          "latency": {
+            "score": 27.77777777777778,
+            "detail": "mean 1800ms over 60 of 60 records"
+          },
+          "consistency": {
+            "score": null,
+            "detail": "no --source sample given; nothing to compare against"
+          },
+          "semantic": {
+            "score": 20.416666666666668,
+            "detail": "context present on 36 of 60 records"
+          }
+        },
+        "airs": 18.23160815694373,
+        "weight_covered": 0.298,
+        "band": "AT RISK"
+      }
+    ]
+  }
+}
