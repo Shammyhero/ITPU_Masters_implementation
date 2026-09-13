@@ -602,12 +602,19 @@ intraclass correlation is negligible (ICC ≤ 0.003, design effect ≤ 1.25;
 `docs/power_findings.md`).
 
 Clustered errors are, however, anti-conservative with few clusters. A simulation
-of the study's own test shows that a single-cell comparison — four runs per
+of the study's original test shows that a single-cell comparison — four runs per
 group, eight clusters — rejects a true null about 12% of the time rather than 5%,
-and a pooled comparison about 7.5%. Cell-level p-values between 0.01 and 0.05 are
-therefore not reported as significant, and pooled comparisons are preferred. The
-minimum detectable effect is about 8–10 percentage points for a single cell and
-6 points pooled, at 80% power.
+and a pooled comparison about 7.5%. Cell and pooled comparisons therefore use
+CR2 standard errors with Bell–McCaffrey degrees of freedom, chosen on simulated
+size before being applied to any observed cell; on the same simulated studies
+their type-I error is 4.5–5.8%. At that size the minimum detectable effect is
+about 10–12 percentage points for a single cell and 6 points pooled, at 80%
+power. The decision-level models keep their cluster-robust logistic fits, but
+each condition coefficient rests on eight or sixteen runs per group and its
+empirical type-I error reaches 10%, so every p-value is also calibrated against
+2,000 studies simulated under that coefficient's null. Every coefficient
+reported as significant remains significant after calibration
+(`docs/power_findings.md`).
 
 All results are reported with 95% confidence intervals and effect sizes.
 Negative results, unsupported hypotheses and unexpected findings are reported in

@@ -2,6 +2,16 @@
 
 **Run:** 2026-07-28 · 11 412 decisions from 144 main-factorial runs · **$0**
 
+> **Corrected 13 Sep 2026 (REVIEW F-C7).** The cluster-robust p-values below come
+> from a test whose per-coefficient type-I error reaches 0.10 rather than 0.05,
+> because each condition rests on eight or sixteen runs per group.
+> `analysis/pvalue_calibration.py` calibrates every one by simulation. **Every
+> result this document reports as significant survives**; the narrowest are
+> retrieval schema drift mild (p 0.0005 → calibrated 0.008) and classification
+> schema drift severe (0.0074 → 0.022). No non-significant result becomes
+> significant. Odds ratios are unchanged; their intervals are somewhat too
+> narrow for the same reason. See `power_findings.md` § Decision models.
+
 ```bash
 python -m airsbench.analysis.decision_models
 ```

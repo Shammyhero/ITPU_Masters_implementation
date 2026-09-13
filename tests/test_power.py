@@ -1,23 +1,27 @@
 """Tests for the clustered power analysis.
 
-`test_closed_form_matches_statsmodels_at_decision_level` is the load-bearing
-one. The simulation fits tens of thousands of studies using a closed-form
-logistic MLE and sandwich instead of calling statsmodels. That is only a
-simulation of THE STUDY'S test if the closed form reproduces what statsmodels
-returns for `y ~ treat`, cluster-robust by run, on decision-level data — with
-unequal run sizes, and the default small-sample correction.
+`test_closed_form_matches_statsmodels_at_decision_level` and
+`test_cr2_closed_form_matches_the_matrix_definition` are the load-bearing ones.
+The simulation fits tens of thousands of studies using closed forms instead of
+fitting models. That is only a simulation of THE STUDY'S tests if the closed
+forms reproduce the real estimators — statsmodels' cluster-robust logistic fit
+for the uncorrected test, and CR2 with Bell–McCaffrey degrees of freedom, built
+from their matrix definitions, for the corrected one — with unequal run sizes.
 """
 
 from __future__ import annotations
 
 import numpy as np
 import pytest
+from scipy import stats
 
 from airsbench.analysis.power import (
     RunCount,
     _run_rates,
+    bell_mccaffrey_df,
     closed_form_mde,
     cluster_pvalues,
+    cr2_pvalues,
     design_effect,
     icc_anova,
     mde_from_curve,
@@ -64,6 +68,80 @@ def test_closed_form_matches_statsmodels_at_decision_level():
 
     closed = cluster_pvalues(kt[None], nt[None], kc[None], nc[None])[0]
     assert closed == pytest.approx(float(fitted.pvalues["treat"]), rel=1e-6)
+
+
+def _cr2_reference(kt, nt, kc, nc):
+    """CR2 and Bell–McCaffrey df from their matrix definitions, at decision level.
+
+    Slow and obviously correct: the linear probability model `y ~ treat`,
+    adjustment A_g = (I − H_gg)^(−1/2) per run, and Satterthwaite's df over the
+    eigenvalues of PᵀP with P_g = (I − H)_{·g} A_g X_g (XᵀX)⁻¹ c.
+    """
+    y, treat, cluster = [], [], []
+    for offset, (ks, ns, flag) in enumerate(((kt, nt, 1), (kc, nc, 0))):
+        for g, (k, n) in enumerate(zip(ks, ns)):
+            y += [1.0] * int(k) + [0.0] * int(n - k)
+            treat += [flag] * int(n)
+            cluster += [f"{offset}-{g}"] * int(n)
+    y, cluster = np.array(y), np.array(cluster)
+    X = np.column_stack([np.ones(len(y)), treat])
+    bread = np.linalg.inv(X.T @ X)
+    residual_maker = np.eye(len(y)) - X @ bread @ X.T
+    residuals = residual_maker @ y
+    contrast = np.array([0.0, 1.0])
+    variance, columns = 0.0, []
+    for g in np.unique(cluster):
+        idx = cluster == g
+        values, vectors = np.linalg.eigh(residual_maker[np.ix_(idx, idx)])
+        adjust = vectors @ np.diag(values ** -0.5) @ vectors.T
+        weights = contrast @ bread @ X[idx].T @ adjust
+        variance += float(weights @ residuals[idx]) ** 2
+        columns.append(residual_maker[:, idx] @ adjust @ X[idx] @ bread @ contrast)
+    P = np.column_stack(columns)
+    eigenvalues = np.linalg.eigvalsh(P.T @ P)
+    df = eigenvalues.sum() ** 2 / (eigenvalues ** 2).sum()
+    coefficient = (bread @ X.T @ y)[1]
+    return coefficient, variance, df
+
+
+@pytest.mark.parametrize("runs_treat,runs_control", [(4, 4), (5, 3)])
+def test_cr2_closed_form_matches_the_matrix_definition(runs_treat, runs_control):
+    rng = np.random.default_rng(5 + runs_treat)
+    nt, nc = rng.integers(70, 81, runs_treat), rng.integers(70, 81, runs_control)
+    kt, kc = rng.binomial(nt, 0.18), rng.binomial(nc, 0.11)
+
+    coefficient, variance, df = _cr2_reference(kt, nt, kc, nc)
+    expected = 2 * stats.t.sf(abs(coefficient) / np.sqrt(variance), df)
+
+    assert bell_mccaffrey_df(nt[None], nc[None])[0] == pytest.approx(df, rel=1e-9)
+    assert cr2_pvalues(kt[None], nt[None], kc[None], nc[None])[0] == pytest.approx(
+        expected, rel=1e-9)
+
+
+def test_bell_mccaffrey_df_depends_on_the_design_not_the_outcomes():
+    """Equal run sizes reduce it to Welch–Satterthwaite on 1/N per group."""
+    assert bell_mccaffrey_df(np.full((1, 4), 80), np.full((1, 4), 80))[0] == pytest.approx(6.0)
+    assert bell_mccaffrey_df(np.full((1, 16), 80), np.full((1, 8), 80))[0] == pytest.approx(
+        14.10, abs=0.01)
+
+
+def test_the_corrected_test_holds_nominal_size_where_the_study_test_did_not():
+    """REVIEW F-C7: with eight clusters the cluster-robust logistic test rejected a
+    true null ~12% of the time. The correction must bring that to ≤ 5% plus
+    simulation noise, on the same simulated studies."""
+    design = dict(p0=0.105, icc=0.0, m=80, runs_treat=4, runs_control=4,
+                  deltas=(0.0,), sims=2000, seed=11)
+    corrected = simulate_power(**design)[0.0]
+    uncorrected = simulate_power(**design, test=cluster_pvalues)[0.0]
+    assert corrected <= 0.065
+    assert uncorrected >= 0.09
+
+
+def test_no_within_group_variation_is_not_evidence():
+    """Identical runs give a zero variance; that must read p = 1, not p = 0."""
+    runs = np.full((1, 4), 80)
+    assert cr2_pvalues(np.full((1, 4), 8), runs, np.full((1, 4), 8), runs)[0] == 1.0
+    assert cr2_pvalues(np.full((1, 4), 16), runs, np.full((1, 4), 8), runs)[0] == 1.0
 
 
 def test_power_is_low_without_an_effect_and_near_one_with_a_large_one():

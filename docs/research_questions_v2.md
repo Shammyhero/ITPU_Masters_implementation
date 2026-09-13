@@ -173,11 +173,15 @@ the model the analyses actually use — a logistic GLM with run-clustered errors
 
 - **Clustering is negligible:** ICC 0.000–0.003, design effect ≤ 1.25. The
   closed-form 8–10 pp was approximately right.
-- **Minimum detectable effect:** ~8–10 pp for a single cell (4 v 4 runs), ~6 pp
-  pooled (16 v 8), at 80% power.
-- **The test is anti-conservative with few clusters:** empirical type-I error
-  0.11–0.12 per cell, 0.07–0.08 pooled. Cell-level p-values between 0.01 and
-  0.05 must not be reported as significant without a small-cluster correction.
+- **The original test was anti-conservative with few clusters:** empirical
+  type-I error 0.11–0.12 per cell, 0.07–0.08 pooled (REVIEW F-C7).
+- **Corrected 13 Sep:** cell and pooled comparisons use CR2 errors with
+  Bell–McCaffrey degrees of freedom (type-I error 0.045–0.058); three cell
+  results lose significance. The decision-level models' p-values are calibrated
+  by simulation (per-coefficient type-I error up to 0.10), and every published
+  significant coefficient survives.
+- **Minimum detectable effect, at nominal size:** ~10–12 pp for a single cell
+  (4 v 4 runs), ~6 pp pooled (16 v 8), at 80% power.
 
 ---
 

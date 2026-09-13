@@ -27,7 +27,13 @@ Per task and outcome (total error, silent failure), on the main factorial:
 The simulation also measures the test's EMPIRICAL type-I error. A single cell
 comparison has four runs per group — eight clusters — and cluster-robust
 standard errors are anti-conservative with few clusters, so the nominal 0.05 is
-checked rather than assumed.
+checked rather than assumed. It was not achieved (REVIEW F-C7): the cluster-
+robust logistic test rejected a true null 11–12% of the time per cell. Cell and
+pooled comparisons therefore use CR2 errors with Bell–McCaffrey degrees of
+freedom, chosen because they held nominal size in simulation BEFORE they were
+applied to any observed cell. The uncorrected test is still simulated on the
+same datasets and reported beside it, so the size of the correction stays
+visible.
 
     python -m airsbench.analysis.power
     python -m airsbench.analysis.power --figure docs/figures/fig3_1_power.png
@@ -165,8 +171,9 @@ def closed_form_mde(p0: float, n_treat: float, n_control: float,
 def cluster_pvalues(k_treat, n_treat, k_control, n_control) -> np.ndarray:
     """Two-sided p for `treat` in `y ~ treat`, logistic, cluster-robust by run.
 
-    Arrays are (studies, runs). This is the model every analysis in the study
-    fits, including statsmodels' default small-sample correction
+    The UNCORRECTED test — what the study used before REVIEW F-C7, kept so its
+    empirical size can be reported beside the corrected one. Arrays are
+    (studies, runs). It reproduces statsmodels' default small-sample correction
     G/(G-1) · (N-1)/(N-K) applied at DECISION level. With one binary covariate
     both the MLE and the sandwich have closed forms, which is what makes
     thousands of simulated studies cheap. `tests/test_power.py` pins this
@@ -192,24 +199,91 @@ def cluster_pvalues(k_treat, n_treat, k_control, n_control) -> np.ndarray:
     return np.where(valid & np.isfinite(p) & (variance > 0), p, 1.0)
 
 
-def _run_rates(rng: np.random.Generator, p: float, icc: float, shape) -> np.ndarray:
-    """Per-run success probabilities with the given mean and ICC (beta-binomial)."""
+def bell_mccaffrey_df(n_treat, n_control) -> np.ndarray:
+    """Bell–McCaffrey degrees of freedom for `treat` in `y ~ treat`, CR2 by run.
+
+    Satterthwaite's (Σλ)² / Σλ² over the eigenvalues of the CR2 variance's
+    quadratic form, under a homoskedastic working model. It depends on the
+    design alone — how many runs, of what size — never on the outcomes. The two
+    groups do not interact, so each contributes a block with trace 1/N and
+    entries (δ·n_g − n_g·n_h/N) / (N² · √((1 − n_g/N)(1 − n_h/N))). With equal
+    run sizes this is Welch–Satterthwaite applied to 1/N per group: 6 for 4 v 4
+    runs, 14.1 for 16 v 8.
+    """
+    def block(n: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        N = n.sum(axis=-1, keepdims=True)
+        a = 1.0 - n / N
+        diagonal = np.eye(n.shape[-1]) * n[..., :, None]
+        outer = n[..., :, None] * n[..., None, :] / N[..., None]
+        B = (diagonal - outer) / (N[..., None] ** 2 * np.sqrt(a[..., :, None] * a[..., None, :]))
+        return 1.0 / N[..., 0], (B ** 2).sum(axis=(-2, -1))
+
+    trace_t, square_t = block(np.atleast_2d(np.asarray(n_treat, dtype=float)))
+    trace_c, square_c = block(np.atleast_2d(np.asarray(n_control, dtype=float)))
+    return (trace_t + trace_c) ** 2 / (square_t + square_c)
+
+
+def cr2_pvalues(k_treat, n_treat, k_control, n_control) -> np.ndarray:
+    """Two-sided p for a difference in proportions: CR2 errors, Bell–McCaffrey df.
+
+    The study's cell and pooled test since REVIEW F-C7. The linear probability
+    model `y ~ treat` at decision level, clustered by run. With a binary
+    covariate the design is constant within a run, so CR2's bias-reduced
+    linearisation collapses to one term per run, (k − n·p)² / (1 − n/N), and
+    the reference distribution is t with `bell_mccaffrey_df`.
+
+    The scale is the risk difference, not the log-odds: CR2 is defined for the
+    linear model, and the cell comparisons report percentage-point effects.
+    `tests/test_power.py` pins both closed forms against the matrix definitions.
+    A comparison with no within-group variation has no estimable variance and
+    returns p = 1, never a spurious 0.
+    """
+    from scipy.stats import t as student_t
+
+    kt = np.atleast_2d(np.asarray(k_treat, dtype=float))
+    kc = np.atleast_2d(np.asarray(k_control, dtype=float))
+    nt = np.broadcast_to(np.asarray(n_treat, dtype=float), kt.shape)
+    nc = np.broadcast_to(np.asarray(n_control, dtype=float), kc.shape)
+    Nt, Nc = nt.sum(axis=1), nc.sum(axis=1)
+    pt, pc = kt.sum(axis=1) / Nt, kc.sum(axis=1) / Nc
+    with np.errstate(divide="ignore", invalid="ignore"):
+        var_t = (((kt - nt * pt[:, None]) ** 2) / (1 - nt / Nt[:, None])).sum(axis=1) / Nt ** 2
+        var_c = (((kc - nc * pc[:, None]) ** 2) / (1 - nc / Nc[:, None])).sum(axis=1) / Nc ** 2
+        variance = var_t + var_c
+        df = bell_mccaffrey_df(nt, nc)
+        p = 2 * student_t.sf(np.abs((pt - pc) / np.sqrt(variance)), df)
+    return np.where(np.isfinite(p) & (variance > 0), p, 1.0)
+
+
+def _run_rates(rng: np.random.Generator, p, icc: float, shape) -> np.ndarray:
+    """Per-run success probabilities with the given mean and ICC (beta-binomial).
+
+    `p` may be a scalar or an array broadcastable to `shape`.
+    """
     if icc <= 1e-9:
-        return np.full(shape, p)
-    a = p * (1 - icc) / icc
-    b = (1 - p) * (1 - icc) / icc
+        return np.broadcast_to(np.asarray(p, dtype=float), shape).copy()
+    a = np.asarray(p, dtype=float) * (1 - icc) / icc
+    b = (1 - np.asarray(p, dtype=float)) * (1 - icc) / icc
     return rng.beta(a, b, size=shape)
 
 
 def simulate_power(p0: float, icc: float, m: int, runs_treat: int, runs_control: int,
-                   deltas=DELTAS, sims: int = SIMS, seed: int = SEED) -> dict[float, float]:
+                   deltas=DELTAS, sims: int = SIMS, seed: int = SEED,
+                   test=None) -> dict[float, float]:
+    """Rejection rate at α for each true effect.
+
+    `test` defaults to the corrected CR2 test. The simulated datasets depend on
+    the seed only, so two tests run with one seed see identical studies — which
+    is what makes their sizes directly comparable.
+    """
+    test = test or cr2_pvalues
     rng = np.random.default_rng(seed)
     curve = {}
     for delta in deltas:
         p1 = min(p0 + delta, 0.999)
         kt = rng.binomial(m, _run_rates(rng, p1, icc, (sims, runs_treat)))
         kc = rng.binomial(m, _run_rates(rng, p0, icc, (sims, runs_control)))
-        curve[delta] = float((cluster_pvalues(kt, m, kc, m) < ALPHA).mean())
+        curve[delta] = float((test(kt, m, kc, m) < ALPHA).mean())
     return curve
 
 
@@ -222,7 +296,7 @@ def mde_from_curve(curve: dict[float, float], target: float = TARGET_POWER) -> f
 
 def observed_cells(counts: list[RunCount]) -> list[dict[str, Any]]:
     """Each streaming fault x severity cell against the streaming baseline, as the
-    study's own clustered test sees it."""
+    study's corrected test sees it — with the uncorrected p kept beside it."""
     base = [rc for rc in counts if rc.condition == BASELINE]
     kc = np.array([[rc.k for rc in base]])
     nc = np.array([[rc.n for rc in base]])
@@ -235,7 +309,8 @@ def observed_cells(counts: list[RunCount]) -> list[dict[str, Any]]:
         nt = np.array([[rc.n for rc in treat]])
         rows.append({"condition": condition,
                      "effect": float(kt.sum() / nt.sum() - kc.sum() / nc.sum()),
-                     "p": float(cluster_pvalues(kt, nt, kc, nc)[0])})
+                     "p": float(cr2_pvalues(kt, nt, kc, nc)[0]),
+                     "p_uncorrected": float(cluster_pvalues(kt, nt, kc, nc)[0])})
     return rows
 
 
@@ -256,13 +331,20 @@ def analyse(runs: list[dict[str, Any]], sims: int = SIMS, seed: int = SEED) -> d
             designs = {}
             for name, (runs_treat, runs_control) in DESIGNS.items():
                 offset += 1
-                curve = simulate_power(p0, icc, m, runs_treat, runs_control,
-                                       sims=sims, seed=seed + 97 * offset)
+                args = (p0, icc, m, runs_treat, runs_control)
+                curve = simulate_power(*args, sims=sims, seed=seed + 97 * offset)
+                uncorrected = simulate_power(*args, sims=sims, seed=seed + 97 * offset,
+                                             test=cluster_pvalues)
                 designs[name] = {
                     "runs": (runs_treat, runs_control),
+                    "df": float(bell_mccaffrey_df(np.full(runs_treat, m),
+                                                  np.full(runs_control, m))[0]),
                     "naive": closed_form_mde(p0, runs_treat * m, runs_control * m),
                     "adjusted": closed_form_mde(p0, runs_treat * m / de, runs_control * m / de),
                     "curve": curve, "mde": mde_from_curve(curve), "alpha": curve[0.0],
+                    "curve_uncorrected": uncorrected,
+                    "mde_uncorrected": mde_from_curve(uncorrected),
+                    "alpha_uncorrected": uncorrected[0.0],
                 }
             results[(task, outcome)] = {
                 "p0": p0, "m": m, "icc": icc, "icc_ci": icc_interval(counts, rng),
@@ -280,19 +362,23 @@ def report(results: dict) -> int:
     print(f"Power under run-level clustering — {MODEL}, main factorial\n")
     print("naive     = closed form ignoring clustering (what RQs v2 §6 computed)")
     print("clustered = closed form with the design effect 1 + (m-1)·ICC")
-    print("simulated = the study's own design and test (cluster-robust logistic GLM),")
-    print("            smallest effect on a 2 pp grid reaching 80% power")
-    print("α emp.    = how often that test rejects when there is no effect\n")
+    print("simulated = the study's own design and test, smallest effect on a 2 pp grid")
+    print("            reaching 80% power — CR2 errors, Bell–McCaffrey df (REVIEW F-C7)")
+    print("α CR2     = how often that test rejects when there is no effect")
+    print("α CR1     = the same for the uncorrected cluster-robust logistic test, on the")
+    print("            same simulated studies — why the correction was needed\n")
     for (task, outcome), r in results.items():
         lo, hi = r["icc_ci"]
         print(f"  {task} · {OUTCOME_LABEL[outcome]}   baseline {r['p0']:.1%}   "
               f"{r['m']} decisions/run   ICC {r['icc']:.3f} [{lo:.3f}, {hi:.3f}]   "
               f"design effect {r['design_effect']:.2f}")
-        print(f"    {'design':<22}{'naive':>10}{'clustered':>12}{'simulated':>12}{'α emp.':>9}")
+        print(f"    {'design':<22}{'naive':>10}{'clustered':>12}{'simulated':>12}"
+              f"{'df':>6}{'α CR2':>8}{'α CR1':>8}")
         for name, d in r["designs"].items():
             label = f"{name} ({d['runs'][0]} v {d['runs'][1]} runs)"
             print(f"    {label:<22}{_pp(d['naive']):>10}{_pp(d['adjusted']):>12}"
-                  f"{_pp(d['mde']):>12}{d['alpha']:>9.3f}")
+                  f"{_pp(d['mde']):>12}{d['df']:>6.1f}{d['alpha']:>8.3f}"
+                  f"{d['alpha_uncorrected']:>8.3f}")
         cell_mde = r["designs"]["cell"]["mde"]
         print("    observed streaming cells against the streaming baseline:")
         for row in r["cells"]:
@@ -301,7 +387,7 @@ def report(results: dict) -> int:
             verdict = ("above the simulated MDE" if cell_mde is not None and size >= cell_mde
                        else "below the simulated MDE")
             print(f"      {fault + '/' + severity:<30}{100 * row['effect']:>+7.1f} pp   "
-                  f"p {row['p']:.3f}   {verdict}")
+                  f"p {row['p']:.3f}   (uncorrected {row['p_uncorrected']:.3f})   {verdict}")
         print()
     return 0
 
@@ -310,6 +396,7 @@ def figure(results: dict, out_path: Path) -> Path:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
 
     fig, axes = plt.subplots(len(TASKS), len(OUTCOMES), figsize=(10.5, 6.8),
                              sharex=True, sharey=True)
@@ -323,8 +410,10 @@ def figure(results: dict, out_path: Path) -> Path:
                 continue
             for name, d in r["designs"].items():
                 xs = [100 * x for x in sorted(d["curve"])]
-                ys = [d["curve"][x] for x in sorted(d["curve"])]
-                ax.plot(xs, ys, marker="o", markersize=3.5, linewidth=1.6, color=colours[name],
+                ax.plot(xs, [d["curve_uncorrected"][x] for x in sorted(d["curve"])],
+                        linewidth=1.0, linestyle="--", alpha=0.45, color=colours[name])
+                ax.plot(xs, [d["curve"][x] for x in sorted(d["curve"])],
+                        marker="o", markersize=3.5, linewidth=1.6, color=colours[name],
                         label=f"{name} ({d['runs'][0]} v {d['runs'][1]} runs)")
                 if d["mde"] is not None:
                     ax.axvline(100 * d["mde"], color=colours[name], linewidth=0.7, linestyle=":")
@@ -340,10 +429,12 @@ def figure(results: dict, out_path: Path) -> Path:
             if j == 0:
                 ax.set_ylabel("power")
     handles, labels = axes[0][0].get_legend_handles_labels()
-    fig.legend(handles, labels, frameon=False, fontsize=9, ncols=2,
+    handles.append(Line2D([], [], color="#5a6675", linewidth=1.0, linestyle="--", alpha=0.6))
+    labels.append("uncorrected CR1 test (anti-conservative)")
+    fig.legend(handles, labels, frameon=False, fontsize=9, ncols=3,
                loc="lower center", bbox_to_anchor=(0.5, -0.04))
-    fig.suptitle("Power of the study's clustered test, simulated from the observed ICC",
-                 fontsize=12, y=1.01)
+    fig.suptitle("Power of the study's clustered test with the small-cluster correction "
+                 "(CR2, Bell–McCaffrey df)", fontsize=12, y=1.01)
     fig.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=200, bbox_inches="tight")

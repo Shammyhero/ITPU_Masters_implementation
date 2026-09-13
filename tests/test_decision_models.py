@@ -116,6 +116,18 @@ def test_inference_is_clustered_by_run_not_by_decision(frame):
 
 
 @needs_runs
+def test_model_populations_match_the_published_counts(frame):
+    """`statistical_analysis_findings.md` reports these n. `select` is what both
+    `report` and the p-value calibration fit on, so it must reproduce them."""
+    from airsbench.analysis.decision_models import select
+
+    assert len(select(frame, "all")) == 11_412
+    assert len(select(frame, "answerable")) == 11_076
+    assert len(select(frame, "retrieval_answerable")) == 5_316
+    assert len(select(frame, "classification")) == 5_760
+
+
+@needs_runs
 def test_latency_is_an_estimated_null_not_an_omitted_term(frame):
     """Analytic latency cannot change what the agent reads, so its odds ratio
     should sit on 1.0. If it drifts, the harness is leaking a difference."""

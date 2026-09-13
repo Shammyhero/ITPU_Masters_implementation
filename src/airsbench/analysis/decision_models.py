@@ -195,6 +195,35 @@ def run_level_anova(frame) -> None:
         print(f"    {fault:<34}{d:>8.2f}{size:>14}")
 
 
+POOLED = "C(condition) + C(task) + C(pipeline)"
+PER_TASK = "C(condition) + C(pipeline)"
+
+
+def select(frame, population: str):
+    """The decision populations the published models are fitted on."""
+    if population == "all":
+        return frame
+    answerable = frame[~frame["flipped"]]
+    if population == "answerable":
+        return answerable
+    if population == "retrieval_answerable":
+        return answerable[answerable["task"] == "retrieval"]
+    if population == "classification":
+        return frame[frame["task"] == "classification"]
+    raise ValueError(f"unknown population {population!r}")
+
+
+# Every model `report` fits: (key, outcome, formula, population). Re-analyses
+# such as `pvalue_calibration` take them from here so they refit exactly these.
+MODELS = (
+    ("silent_primary", "silent", POOLED, "answerable"),
+    ("silent_pooled", "silent", POOLED, "all"),
+    ("silent_retrieval", "silent", PER_TASK, "retrieval_answerable"),
+    ("silent_classification", "silent", PER_TASK, "classification"),
+    ("abstained", "abstained", POOLED, "all"),
+)
+
+
 def report(frame) -> int:
     n_runs = frame["run_id"].nunique()
     print(f"Decision-level models — {len(frame):,} decisions from {n_runs} "
@@ -206,11 +235,11 @@ def report(frame) -> int:
     print("\n" + "=" * 84)
     print("RQ3 — SILENT FAILURE")
 
-    formula = "C(condition) + C(task) + C(pipeline)"
+    formula = POOLED
 
     # The primary model: mechanically-unanswerable decisions removed, so the
     # coefficients describe impairment rather than answer-key movement.
-    answerable = frame[~frame["flipped"]]
+    answerable = select(frame, "answerable")
     odds_table(
         fit_logit(answerable, "silent", formula),
         f"PRIMARY — answerable decisions only (n = {len(answerable):,}); "
@@ -228,15 +257,15 @@ def report(frame) -> int:
     # A pooled coefficient averages a null and a real effect into a misleading
     # middle. Split.
     print("\n  BY TASK — freshness damages the two tasks by different mechanisms")
-    per_task = "C(condition) + C(pipeline)"
-    retrieval = answerable[answerable["task"] == "retrieval"]
+    per_task = PER_TASK
+    retrieval = select(frame, "retrieval_answerable")
     odds_table(
         fit_logit(retrieval, "silent", per_task),
         f"retrieval, answerable only (n = {len(retrieval):,}) — staleness moves the "
         "answer key,\n           and that component has been removed, so freshness "
         "should read ~1.0",
     )
-    classification = frame[frame["task"] == "classification"]
+    classification = select(frame, "classification")
     odds_table(
         fit_logit(classification, "silent", per_task),
         f"classification (n = {len(classification):,}) — staleness attenuates the "

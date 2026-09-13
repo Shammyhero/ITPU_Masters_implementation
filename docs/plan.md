@@ -81,7 +81,7 @@ first. They are survival, not enhancement.
 > **Progress W2:** fragility analysis done (Fig. 4.8) — silent failure concentrates
 > 12–16× beyond the null and is near-deterministic on re-ask. Power analysis done
 > (Fig. 3.1) — clustering negligible, but the cell-level test is anti-conservative
-> (α ≈ 0.12, REVIEW F-C7). Figures 4.1–4.5 built, every published value reproduced.
+> (α ≈ 0.12, REVIEW F-C7 — resolved 13 Sep, see W3). Figures 4.1–4.5 built, every published value reproduced.
 > Figure 4.2's printed cross-check exposed a published RQ2 table mixing two
 > populations (REVIEW F-C8); corrected in `flip_partition_findings.md` §6 and
 > Chapter 3, which also lost two false mixed-effects claims.
@@ -111,6 +111,21 @@ first. They are survival, not enhancement.
 `make figures`, and the power analysis reports a minimum detectable effect per RQ. **If missed, cut the refetch arm now** — not in October.
 
 ## W3 · Mon 28 Sep – Fri 02 Oct · Product: backend + Mode A core · 20 h · $0
+
+> **Pre-work 13 Sep (W2's slack, ~3.5 h, $0): REVIEW F-C7 resolved.** Cell and
+> pooled comparisons now use CR2 errors with Bell–McCaffrey df (α 0.045–0.058,
+> was 0.11–0.12); three cell results lose significance and cell MDEs rise to
+> 10–12 pp. Decision-model p-values are calibrated by simulation
+> (`analysis/pvalue_calibration.py`); every published significant coefficient
+> survives. Fig. 3.1 regenerated.
+> **Product design approved 13 Sep:** FastAPI `/api/{meta,samples,score,gate,replay}`
+> (`/api/recommend` in W4); `airs` console script (`serve`, `probe`, `gate`);
+> the static Next.js export built into package data by `make web`, verified from
+> a non-editable wheel by a new `make dist-check`; fastapi and uvicorn as core
+> dependencies, with `probe` and `gate` import-isolated from them; the Tick
+> contract's `airs` block extended to `{score | null, detail, weight}` plus band,
+> in all modes; local files reach the tool only through
+> `airs serve --records/--source`, never an HTTP path parameter.
 
 | Task | h |
 |---|---|

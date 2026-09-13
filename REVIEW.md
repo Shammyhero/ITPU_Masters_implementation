@@ -311,13 +311,26 @@ design counts are also stale: 198 runs and 18 cross-model runs, against 302 and
 existing artifacts. Until it exists, "was the design adequately powered?" has no
 evidenced answer.
 
-**F-C7 (serious — OPEN) — the study's cluster-robust test is anti-conservative
-for single-cell comparisons.** Found by the W2 power simulation: with four runs
+**F-C7 (serious — RESOLVED 13 Sep, before W3: `analysis/power.py`,
+`analysis/pvalue_calibration.py`) — the study's cluster-robust test is
+anti-conservative for single-cell comparisons.** Found by the W2 power simulation: with four runs
 per group (eight clusters) the test rejects 11–12% of the time when there is no
 effect; pooled comparisons reach 7–8%. Three published cell-level p-values fall
 between 0.01 and 0.05 (`power_findings.md`). **Fix:** wild cluster bootstrap or
 CR2 small-sample errors for cell comparisons, ~3 h, $0; until then report those
 cells as not significant.
+**Resolution.** CR2 errors with Bell–McCaffrey degrees of freedom replace the
+test for cell and pooled comparisons — chosen over a wild cluster bootstrap
+(Webb weights) and a t(G−1) reference on simulated size, before being applied
+to the data: empirical α 0.045–0.058. The three cells lose significance
+(0.031 → 0.074, 0.019 → 0.059, 0.049 → 0.094) and cell MDEs rise to 10–12 pp.
+The same problem was then measured in the decision-level GLMs, where each
+coefficient rests on 8–16 runs per group: per-coefficient α 0.06–0.10.
+Simulation-calibrated p-values leave every published significant coefficient
+significant (narrowest: classification schema drift severe, 0.0074 → 0.022);
+one unpublished pooled-model coefficient does not survive. Also withdrawn:
+`power_findings.md` placed retrieval freshness severe "well above every MDE",
+true only under the uncorrected test.
 
 **F-C8 (serious — found and RESOLVED in W2) — a published RQ2 table mixed two
 populations and manufactured a reordering.** `flip_partition_findings.md` §6
