@@ -168,6 +168,73 @@ def test_raise_for_status_carries_the_verdict():
     assert excinfo.value.verdict is verdict
 
 
+# ---- what the gate accepts and emits ----------------------------------------
+
+def _jsonl(path, entries):
+    path.write_text("".join(json.dumps(e) + "\n" for e in entries))
+    return path
+
+
+def test_gate_json_stays_valid_json_when_a_rule_could_not_be_measured(tmp_path, capsys):
+    """An unmeasured rule has no observed value. Python would print NaN, which
+    is not JSON — and the verdict refused for an unmeasured rule is exactly the
+    one another tool most needs to read."""
+    from airsbench.gate.__main__ import main
+
+    _, delivered = records(age_s=1.0)
+    batch = _jsonl(tmp_path / "batch.jsonl", delivered)
+    policy = tmp_path / "policy.json"
+    policy.write_text(json.dumps({"min_dimension": {"consistency": 90.0}}))
+
+    assert main(["--records", str(batch), "--policy", str(policy), "--json"]) == 1
+
+    def no_constants(token):
+        raise AssertionError(f"{token} in gate JSON output")
+
+    verdict = json.loads(capsys.readouterr().out, parse_constant=no_constants)
+    assert verdict["violations"][0]["observed"] is None
+    assert verdict["dimensions"]["consistency"]["score"] is None
+
+
+def test_gate_bad_input_exits_2_with_a_message_not_a_traceback(tmp_path, capsys):
+    """The duplicate is found while measuring, inside the controller — that
+    path must be guarded as well as the file loading."""
+    from airsbench.gate.__main__ import main
+
+    source, delivered = records(age_s=1.0)
+    upstream = _jsonl(tmp_path / "source.jsonl", source + source[:1])
+    batch = _jsonl(tmp_path / "batch.jsonl", delivered)
+    policy = tmp_path / "policy.json"
+    policy.write_text(json.dumps({"max_record_age_seconds": 3.0}))
+
+    assert main(["--records", str(batch), "--source", str(upstream),
+                 "--policy", str(policy)]) == 2
+    assert "appears on lines 1 and 5" in capsys.readouterr().err
+
+
+def test_the_age_budget_reads_iso_timestamps_as_the_probe_does():
+    _, delivered = records(age_s=5.0)
+    for record in delivered:
+        record["event_timestamp"] = "2026-09-13T10:00:00Z"
+        record["read_timestamp"] = "2026-09-13T10:00:05+00:00"
+    verdict = Controller(Policy(max_record_age_seconds=3.0), WEIGHTS).evaluate(delivered)
+    assert not verdict.admitted
+    assert "5.00s old, budget is 3.00s" in verdict.reason
+    assert verdict.record_age_seconds == pytest.approx(5.0)
+
+
+@pytest.mark.parametrize("data, message", [
+    ([], "must be a JSON object"),
+    ({"min_airs": "80"}, "must be a number"),
+    ({"min_dimension": {"consistency": True}}, "must be a number"),
+    ({"unmeasured_is_violation": "yes"}, "true or false"),
+])
+def test_policy_files_with_the_wrong_types_are_refused(data, message):
+    """"80" is not a floor of 80, and `true` is not a floor of 1."""
+    with pytest.raises(ValueError, match=message):
+        Policy.from_dict(data)
+
+
 # ---- the replay agrees with the live gate ---------------------------------
 
 @pytest.mark.parametrize("age, drift, policy", [

@@ -14,11 +14,17 @@ its job is to be enforceable by something that cannot be talked out of it.
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
 DIMENSIONS = ("freshness", "latency", "consistency", "semantic")
+
+
+def _require_number(name: str, value: Any) -> None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        raise ValueError(f"{name} must be a number, got {value!r}")
 
 
 @dataclass(frozen=True)
@@ -62,18 +68,32 @@ class Policy:
     on_violation: str = "reject"
 
     def __post_init__(self) -> None:
+        # Policies arrive as JSON from files and from the web console, so the
+        # types are checked before the ranges: "80" is not a floor of 80.
+        if not isinstance(self.name, str):
+            raise ValueError(f"name must be a string, got {self.name!r}")
         if self.on_violation not in ("reject", "warn"):
             raise ValueError("on_violation must be 'reject' or 'warn'")
+        if not isinstance(self.unmeasured_is_violation, bool):
+            raise ValueError("unmeasured_is_violation must be true or false, got "
+                             f"{self.unmeasured_is_violation!r}")
+        if not isinstance(self.min_dimension, dict):
+            raise ValueError("min_dimension must be an object of dimension to floor")
         unknown = set(self.min_dimension) - set(DIMENSIONS)
         if unknown:
             raise ValueError(f"unknown dimension(s) in min_dimension: {sorted(unknown)}")
         for name, value in self.min_dimension.items():
+            _require_number(f"min_dimension[{name}]", value)
             if not 0.0 <= value <= 100.0:
                 raise ValueError(f"min_dimension[{name}] must be 0-100, got {value}")
-        if self.min_airs is not None and not 0.0 <= self.min_airs <= 100.0:
-            raise ValueError("min_airs must be 0-100")
-        if self.max_record_age_seconds is not None and self.max_record_age_seconds < 0:
-            raise ValueError("max_record_age_seconds must be >= 0")
+        if self.min_airs is not None:
+            _require_number("min_airs", self.min_airs)
+            if not 0.0 <= self.min_airs <= 100.0:
+                raise ValueError("min_airs must be 0-100")
+        if self.max_record_age_seconds is not None:
+            _require_number("max_record_age_seconds", self.max_record_age_seconds)
+            if self.max_record_age_seconds < 0:
+                raise ValueError("max_record_age_seconds must be >= 0")
 
     @property
     def checks_anything(self) -> bool:
@@ -89,6 +109,8 @@ class Policy:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Policy":
+        if not isinstance(data, dict):
+            raise ValueError(f"a policy must be a JSON object, got {type(data).__name__}")
         known = {f for f in cls.__dataclass_fields__}
         unknown = set(data) - known
         if unknown:

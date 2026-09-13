@@ -8,9 +8,8 @@ applies the weights calibrated in RQ4 to produce a composite and a risk band.
 point: the score is computable from pipeline telemetry, before an agent exists
 to be harmed by the pipeline.
 
-    python -m airsbench.probe --records delivered.jsonl --task retrieval
-    python -m airsbench.probe --records delivered.jsonl --source upstream.jsonl \\
-        --task retrieval --json
+    airs probe --records delivered.jsonl --task retrieval
+    airs probe --records delivered.jsonl --source upstream.jsonl --task retrieval --json
 
 ## Input
 
@@ -20,11 +19,19 @@ reports what it could and could not measure rather than assuming.
     {"id": "SKU-1", "payload": {"price": 12.99, "stock": 4},
      "context": {"entity_type": "...", "units": {...},
                  "descriptions": {...}, "relationships": {...}},
-     "event_timestamp": 1772000000.0, "read_timestamp": 1772000005.05,
+     "event_timestamp": 1772000000.0, "read_timestamp": "2026-02-25T06:13:25.050Z",
      "delivery_latency_ms": 120.0}
 
-`--source` takes the same shape, matched on `id`: the records as they exist
-upstream, before the pipeline moved them. Consistency needs both sides.
+Timestamps are epoch seconds or ISO-8601 strings WITH a timezone. A zoneless
+string is refused: the two timestamps are usually written by two different
+systems, and a time without a zone cannot be compared across them. An epoch
+value in milliseconds is refused too — if both timestamps were milliseconds,
+every age would be a thousand times too large, and the probe would call a fresh
+pipeline stale without any error at all.
+
+`--source` takes the same shape, matched on `id` (a string or an integer): the
+records as they exist upstream, before the pipeline moved them. Consistency
+needs both sides, and exactly one upstream version per id.
 
 ## What it refuses to do
 
@@ -36,15 +43,23 @@ a clean bill of health precisely because nobody looked. The composite is
 computed over the measured dimensions only, and the report says which weight
 was unaccounted for. A probe over a sample with no `--source` and no timestamps
 reports a semantic score and an explicit warning, not a reassuring number.
+
+Malformed input is refused the same way. Every problem is a `ProbeError` that
+says where it is and how to fix it — whether the records came from a file, the
+`airs` command, the admission controller or the web console — never a
+traceback, and never a guess.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import math
 import statistics
+import sys
+from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 from agentic_faults import Record
 
@@ -69,28 +84,186 @@ BANDS = (
     (0.0, "AT RISK", "expect elevated silent failure on this pipeline"),
 )
 
+# Read as epoch seconds, a value this large is a date after the year 5000. What
+# it almost always is instead: milliseconds (or finer) since the epoch.
+MILLISECOND_SUSPECT = 1e11
+
+DUPLICATE_SOURCE_FIX = (
+    "consistency needs exactly one upstream version per id; sample the latest "
+    "version of each record"
+)
+
 
 class ProbeError(ValueError):
     """Input the probe cannot score, reported rather than guessed around."""
 
 
-def load_records(path: Path) -> list[dict[str, Any]]:
-    records = []
-    for number, line in enumerate(path.read_text().splitlines(), start=1):
+# ---- input: one validator for every caller ---------------------------------
+
+def _json_kind(value: Any) -> str:
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "true/false"
+    if isinstance(value, (int, float)):
+        return "a number"
+    if isinstance(value, str):
+        return "a string"
+    if isinstance(value, list):
+        return "an array"
+    if isinstance(value, dict):
+        return "an object"
+    return type(value).__name__
+
+
+def _timestamp(value: Any, field: str, where: str) -> float:
+    """Epoch seconds, from epoch seconds or a zoned ISO-8601 string."""
+    if isinstance(value, str):
+        try:
+            parsed = datetime.fromisoformat(value.strip())
+        except ValueError:
+            raise ProbeError(
+                f"{where}: {field} {value!r} is not an ISO-8601 time; use e.g. "
+                f"2026-09-13T10:00:05.050Z, or epoch seconds"
+            ) from None
+        if parsed.tzinfo is None:
+            raise ProbeError(
+                f"{where}: {field} {value!r} has no timezone, so it cannot be compared "
+                f"with a time written by another system; append Z for UTC or an "
+                f"offset such as +05:00"
+            )
+        return parsed.timestamp()
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ProbeError(
+            f"{where}: {field} must be epoch seconds or an ISO-8601 string with a "
+            f"timezone, not {_json_kind(value)}"
+        )
+    if not math.isfinite(value):
+        raise ProbeError(f"{where}: {field} is {value}, which is not a time")
+    if abs(value) >= MILLISECOND_SUSPECT:
+        raise ProbeError(
+            f"{where}: {field} {value} looks like milliseconds since the epoch, not "
+            f"seconds; divide by 1000 (read as seconds it is a date after the year 5000)"
+        )
+    return float(value)
+
+
+def normalise(entry: Any, where: str) -> dict[str, Any]:
+    """Validate one record; return a copy with timestamps as epoch seconds.
+
+    `where` locates the record in the message ("delivered.jsonl:14",
+    "source record 3"), so the person reading the error can find it.
+    """
+    if not isinstance(entry, dict):
+        raise ProbeError(f"{where}: each record must be a JSON object, not {_json_kind(entry)}")
+    if "payload" not in entry:
+        raise ProbeError(f"{where}: every record needs a 'payload' object")
+    if not isinstance(entry["payload"], dict):
+        raise ProbeError(
+            f"{where}: 'payload' must be an object of field names to values, "
+            f"not {_json_kind(entry['payload'])}"
+        )
+    context = entry.get("context")
+    if context is not None and not isinstance(context, dict):
+        raise ProbeError(
+            f"{where}: 'context' must be an object (entity_type, units, descriptions, "
+            f"relationships), not {_json_kind(context)}"
+        )
+    record_id = entry.get("id")
+    if record_id is not None and (isinstance(record_id, bool)
+                                  or not isinstance(record_id, (str, int))):
+        raise ProbeError(
+            f"{where}: 'id' must be a string or an integer, not {_json_kind(record_id)}"
+        )
+
+    out = dict(entry)
+    for field in ("event_timestamp", "read_timestamp"):
+        if entry.get(field) is not None:
+            out[field] = _timestamp(entry[field], field, where)
+    latency = entry.get("delivery_latency_ms")
+    if latency is not None:
+        if (isinstance(latency, bool) or not isinstance(latency, (int, float))
+                or not math.isfinite(latency)):
+            raise ProbeError(
+                f"{where}: delivery_latency_ms must be a finite number of milliseconds, "
+                f"not {_json_kind(latency)}"
+            )
+        if latency < 0:
+            raise ProbeError(
+                f"{where}: delivery_latency_ms is {latency}; a delivery cannot take "
+                f"negative time, so check the clock or the order of the subtraction"
+            )
+        out["delivery_latency_ms"] = float(latency)
+    return out
+
+
+def _first_duplicate(ids: Iterable[tuple[int, Any]]) -> tuple[Any, int, int] | None:
+    seen: dict[Any, int] = {}
+    for position, record_id in ids:
+        if record_id is None:
+            continue
+        if record_id in seen:
+            return record_id, seen[record_id], position
+        seen[record_id] = position
+    return None
+
+
+def _reject_constant(token: str) -> None:
+    raise ProbeError(f"{token} is not valid JSON; write null, or leave the field out")
+
+
+def parse_records(text: str, name: str = "records",
+                  unique_ids: bool = False) -> list[dict[str, Any]]:
+    """Parse JSONL text into validated records, naming the line of any problem.
+
+    `unique_ids` is for an upstream sample, where two versions of one id would
+    leave consistency comparing against an arbitrary one.
+    """
+    records: list[dict[str, Any]] = []
+    lines: list[int] = []
+    for number, line in enumerate(text.splitlines(), start=1):
         line = line.strip()
         if not line:
             continue
         try:
-            entry = json.loads(line)
+            entry = json.loads(line, parse_constant=_reject_constant)
         except json.JSONDecodeError as exc:
-            raise ProbeError(f"{path}:{number}: not valid JSON — {exc}") from exc
-        if not isinstance(entry, dict) or "payload" not in entry:
-            raise ProbeError(f"{path}:{number}: every record needs a 'payload' object")
-        records.append(entry)
+            raise ProbeError(f"{name}:{number}: not valid JSON — {exc}") from exc
+        except ProbeError as exc:
+            raise ProbeError(f"{name}:{number}: {exc}") from None
+        records.append(normalise(entry, f"{name}:{number}"))
+        lines.append(number)
     if not records:
-        raise ProbeError(f"{path}: no records found")
+        raise ProbeError(f"{name}: no records found")
+    if unique_ids:
+        duplicate = _first_duplicate(
+            (line, record.get("id")) for line, record in zip(lines, records)
+        )
+        if duplicate:
+            record_id, first, second = duplicate
+            raise ProbeError(
+                f"{name}: id {record_id!r} appears on lines {first} and {second}; "
+                f"{DUPLICATE_SOURCE_FIX}"
+            )
     return records
 
+
+def load_records(path: Path, unique_ids: bool = False) -> list[dict[str, Any]]:
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except FileNotFoundError:
+        raise ProbeError(f"{path}: no such file") from None
+    except UnicodeDecodeError:
+        raise ProbeError(
+            f"{path}: not a UTF-8 text file; the probe reads JSONL, one JSON object "
+            f"per line (export Parquet or Avro to JSONL first)"
+        ) from None
+    except OSError as exc:
+        raise ProbeError(f"{path}: cannot be read — {exc.strerror or exc}") from None
+    return parse_records(text, str(path), unique_ids=unique_ids)
+
+
+# ---- measurement ------------------------------------------------------------
 
 def _as_record(entry: dict[str, Any]) -> Record:
     record = Record(
@@ -110,14 +283,27 @@ def measure(
 
     Every dimension returns {"score": float|None, "detail": str}. A None score
     is the honest answer when the input does not carry what the dimension needs
-    — see the module docstring on why that must never become 100.
+    — see the module docstring on why that must never become 100. Freshness also
+    carries `mean_age_seconds` when measured, so the admission controller holds
+    an age budget against the same number the probe scored.
     """
+    delivered = [normalise(e, f"delivered record {i}") for i, e in enumerate(delivered, 1)]
+    if source is not None:
+        source = [normalise(e, f"source record {i}") for i, e in enumerate(source, 1)]
+        duplicate = _first_duplicate(enumerate((e.get("id") for e in source), start=1))
+        if duplicate:
+            record_id, first, second = duplicate
+            raise ProbeError(
+                f"source: id {record_id!r} appears in records {first} and {second}; "
+                f"{DUPLICATE_SOURCE_FIX}"
+            )
+
     out: dict[str, dict[str, Any]] = {}
     records = [_as_record(e) for e in delivered]
 
     # ---- freshness: read_timestamp - event_timestamp ---------------------
     ages = [
-        float(e["read_timestamp"]) - float(e["event_timestamp"])
+        e["read_timestamp"] - e["event_timestamp"]
         for e in delivered
         if e.get("read_timestamp") is not None and e.get("event_timestamp") is not None
     ]
@@ -135,11 +321,12 @@ def measure(
             "score": freshness_score(max(mean_age, 1e-6)),
             "detail": f"mean age {mean_age:.2f}s over {len(ages)} of "
                       f"{len(delivered)} records",
+            "mean_age_seconds": mean_age,
         }
 
     # ---- latency: observed delivery time ---------------------------------
     latencies = [
-        float(e["delivery_latency_ms"]) for e in delivered
+        e["delivery_latency_ms"] for e in delivered
         if e.get("delivery_latency_ms") is not None
     ]
     if not latencies:
@@ -192,9 +379,19 @@ def measure(
     return out
 
 
+# ---- weights and composite --------------------------------------------------
+
 def load_weights(path: Path, task: str) -> tuple[dict[str, float], dict[str, Any]]:
-    payload = json.loads(path.read_text())
-    profiles = payload.get("profiles", {})
+    try:
+        payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise ProbeError(
+            f"weights file {path} not found; the calibrated weights ship with "
+            f"airs-bench, so reinstall it, or pass --weights"
+        ) from None
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ProbeError(f"weights file {path} is not readable calibration JSON — {exc}") from None
+    profiles = payload.get("profiles", {}) if isinstance(payload, dict) else {}
     if task not in profiles:
         raise ProbeError(
             f"no calibrated profile for task {task!r}. Available: "
@@ -202,7 +399,15 @@ def load_weights(path: Path, task: str) -> tuple[dict[str, float], dict[str, Any
             f"across tasks, so a profile from another task must not be reused — "
             f"recalibrate for this one."
         )
-    return profiles[task], payload
+    weights = profiles[task]
+    if (not isinstance(weights, dict) or set(weights) != set(DIMENSIONS)
+            or any(isinstance(w, bool) or not isinstance(w, (int, float))
+                   or not math.isfinite(w) or w < 0 for w in weights.values())):
+        raise ProbeError(
+            f"weights profile {task!r} in {path} must give one non-negative number "
+            f"for each of {', '.join(DIMENSIONS)}"
+        )
+    return weights, payload
 
 
 def composite(measured: dict[str, dict[str, Any]], weights: dict[str, float]):
@@ -230,6 +435,37 @@ def band(score: float) -> tuple[str, str]:
         if score >= threshold:
             return label, note
     return BANDS[-1][1], BANDS[-1][2]
+
+
+def score(
+    delivered: list[dict[str, Any]],
+    source: list[dict[str, Any]] | None = None,
+    task: str = "retrieval",
+    weights_path: Path = DEFAULT_WEIGHTS,
+) -> dict[str, Any]:
+    """Everything `airs probe --json` reports, as data.
+
+    The command prints it and the web console returns it, so the two cannot
+    disagree. Each dimension carries its own weight, beside its score and
+    evidence, so a consumer never pairs a score with the wrong task's weight.
+    """
+    weights, meta = load_weights(weights_path, task)
+    measured = measure(delivered, source)
+    airs, covered = composite(measured, weights)
+    label, note = band(airs) if airs is not None else (None, None)
+    return {
+        "task": task,
+        "n_records": len(delivered),
+        "dimensions": {dim: {**measured[dim], "weight": weights[dim]} for dim in DIMENSIONS},
+        "weights": weights,
+        "airs": airs,
+        "weight_covered": covered,
+        "unmeasured": [dim for dim in DIMENSIONS if measured[dim]["score"] is None],
+        "band": label,
+        "band_note": note,
+        "calibration": {k: meta.get(k) for k in ("calibrated_at", "target")},
+        "validation": meta.get("validation", {}).get(task),
+    }
 
 
 def report(measured, weights, meta, task: str, n_records: int) -> int:
@@ -292,28 +528,23 @@ def main(argv: list[str] | None = None) -> int:
                         help="emit machine-readable output instead of a report")
     args = parser.parse_args(argv)
 
+    # Errors go to stderr, so `--json` output piped into another tool is either
+    # a complete document or nothing.
     try:
         delivered = load_records(args.records)
-        source = load_records(args.source) if args.source else None
-        weights, meta = load_weights(args.weights, args.task)
-        measured = measure(delivered, source)
+        source = load_records(args.source, unique_ids=True) if args.source else None
+        if args.json:
+            result = score(delivered, source, args.task, args.weights)
+        else:
+            weights, meta = load_weights(args.weights, args.task)
+            measured = measure(delivered, source)
     except ProbeError as exc:
-        print(f"error: {exc}")
+        print(f"error: {exc}", file=sys.stderr)
         return 2
 
     if args.json:
-        score, covered = composite(measured, weights)
-        print(json.dumps({
-            "task": args.task,
-            "n_records": len(delivered),
-            "dimensions": measured,
-            "weights": weights,
-            "airs": score,
-            "weight_covered": covered,
-            "band": band(score)[0] if score is not None else None,
-            "calibration": {k: meta.get(k) for k in ("calibrated_at", "target")},
-        }, indent=2))
-        return 0 if score is not None else 1
+        print(json.dumps(result, indent=2, allow_nan=False))
+        return 0 if result["airs"] is not None else 1
 
     return report(measured, weights, meta, args.task, len(delivered))
 

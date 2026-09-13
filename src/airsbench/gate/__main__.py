@@ -5,13 +5,14 @@ readiness; the gate *acts* on it, returning a non-zero exit status when the
 batch violates the contract so a scheduler or a pipeline step can stop before
 an agent is ever asked.
 
-    python -m airsbench.gate --records delivered.jsonl --source upstream.jsonl \\
+    airs gate --records delivered.jsonl --source upstream.jsonl \\
         --policy examples/gate/retrieval.json
-    python -m airsbench.gate --records delivered.jsonl --policy p.json --shadow
+    airs gate --records delivered.jsonl --policy p.json --shadow
 
 Exit status: 0 admitted, 1 refused, 2 bad input. The refusal names the rule and
 the observed value, because a refusal an operator cannot act on is only a
-slower failure.
+slower failure. Bad input — in the records, the policy or the weights — is
+reported on stderr and never admitted.
 
 `--shadow` runs the policy in warn-only mode: the batch is always admitted and
 the violations are reported. Use it to price a candidate policy against live
@@ -23,9 +24,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
-from ..probe import ProbeError, load_records, load_weights
+from ..probe import DEFAULT_WEIGHTS, ProbeError, load_records, load_weights
 from .controller import Controller
 from .policy import Policy
 
@@ -47,23 +49,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
+    # Evaluation sits inside the guard too: the controller measures the records,
+    # and a malformed one must exit 2 with a message, not a traceback.
     try:
         delivered = load_records(args.records)
-        source = load_records(args.source) if args.source else None
+        source = load_records(args.source, unique_ids=True) if args.source else None
         policy = Policy.load(args.policy)
-        weights, _ = load_weights(
-            Path(__file__).parents[1] / "airs" / "calibrated_weights.json", args.task
-        )
+        weights, _ = load_weights(DEFAULT_WEIGHTS, args.task)
+        if args.shadow:
+            policy = policy.shadow()
+        verdict = Controller(policy, weights).evaluate(delivered, source)
     except (ProbeError, ValueError, OSError) as exc:
-        print(f"error: {exc}")
+        print(f"error: {exc}", file=sys.stderr)
         return 2
 
-    if args.shadow:
-        policy = policy.shadow()
-    verdict = Controller(policy, weights).evaluate(delivered, source)
-
     if args.json:
-        print(json.dumps(verdict.to_dict(), indent=2))
+        print(json.dumps(verdict.to_dict(), indent=2, allow_nan=False))
         return 0 if verdict.admitted else 1
 
     print(f"airs gate — {verdict.n_records} records, policy '{policy.name}', "

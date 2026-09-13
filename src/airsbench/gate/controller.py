@@ -13,13 +13,16 @@ Why this shape, and not a prompt instruction or a tool the agent may call:
   A silent failure is expensive and has no owner at all.
 - It needs no model call, so it costs nothing and cannot itself hallucinate.
 
-The controller reuses `airsbench.probe`'s measurement functions rather than
-reimplementing them, so what the gate enforces and what `airs probe` reports
-are the same numbers by construction.
+The controller reuses `airsbench.probe`'s measurement rather than reimplementing
+it — including the record age an age budget is held against — so what the gate
+enforces and what `airs probe` reports are the same numbers by construction.
+Malformed records raise `ProbeError` from that measurement, before any rule is
+evaluated.
 """
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Any, Sequence
 
@@ -56,6 +59,12 @@ class Verdict:
             raise BatchRefused(self)
 
     def to_dict(self) -> dict[str, Any]:
+        """The verdict as JSON-safe data.
+
+        A rule that could not be measured has no observed value. It is NaN in
+        memory and null here: NaN is not JSON, and the verdict that most needs
+        reading by another tool is exactly the one refused for an unmeasured rule.
+        """
         return {
             "admitted": self.admitted,
             "policy": self.policy,
@@ -65,8 +74,10 @@ class Verdict:
             "record_age_seconds": self.record_age_seconds,
             "n_records": self.n_records,
             "shadowed": self.shadowed,
+            "dimensions": self.dimensions,
             "violations": [
-                {"rule": v.rule, "observed": v.observed,
+                {"rule": v.rule,
+                 "observed": None if math.isnan(v.observed) else v.observed,
                  "threshold": v.threshold, "detail": v.detail}
                 for v in self.violations
             ],
@@ -97,7 +108,7 @@ class Controller:
     ) -> Verdict:
         measured = measure(list(delivered), list(source) if source else None)
         airs, covered = composite(measured, self.weights)
-        age = self._mean_age(delivered)
+        age = measured["freshness"].get("mean_age_seconds")
         violations = self._violations(measured, airs, age)
 
         shadowed = bool(violations) and self.policy.on_violation == "warn"
@@ -169,12 +180,3 @@ class Controller:
                     f"AIRS is {airs:.1f}, floor is {policy.min_airs:.0f}",
                 ))
         return out
-
-    @staticmethod
-    def _mean_age(delivered: Sequence[dict[str, Any]]) -> float | None:
-        ages = [
-            float(r["read_timestamp"]) - float(r["event_timestamp"])
-            for r in delivered
-            if r.get("read_timestamp") is not None and r.get("event_timestamp") is not None
-        ]
-        return sum(ages) / len(ages) if ages else None
