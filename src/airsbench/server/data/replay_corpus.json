@@ -1,0 +1,3259 @@
+{
+  "schema": "airs-replay-corpus/1",
+  "arms": [
+    "main",
+    "freshness_sweep"
+  ],
+  "tasks": [
+    "classification",
+    "retrieval"
+  ],
+  "models": [
+    "gpt-4o-mini"
+  ],
+  "runs": 180,
+  "decisions": 13554,
+  "note": "Synthetic faults injected into 2 benchmark tasks, answered by gpt-4o-mini. A price replayed over these runs is evidence of what a gate cost in this study, not a forecast for another pipeline or model.",
+  "batches": [
+    {
+      "run_id": "040940de-9ba8-4efa-b52e-78c329286fb3",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 79,
+      "correct": 68,
+      "silent": 10,
+      "abstained": 1
+    },
+    {
+      "run_id": "048c237e-f3bb-409f-802c-107bef4f3b50",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 77.61195206559445,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 78,
+      "correct": 57,
+      "silent": 21,
+      "abstained": 0
+    },
+    {
+      "run_id": "062c905d-d191-477a-b0f4-8da789d73491",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 19.6875
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 40,
+      "silent": 19,
+      "abstained": 21
+    },
+    {
+      "run_id": "0a41a822-df81-43f2-a0af-9300feeb4b05",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 20.625
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 36,
+      "silent": 15,
+      "abstained": 29
+    },
+    {
+      "run_id": "0a60638e-c9a4-44ad-b3fe-48daa3be27ee",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 70,
+      "silent": 10,
+      "abstained": 0
+    },
+    {
+      "run_id": "0cc6afe1-197e-45f6-84fb-fb8db8f73068",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 61,
+      "silent": 19,
+      "abstained": 0
+    },
+    {
+      "run_id": "0cf1c518-69fb-4a8e-8114-ed07af0709e5",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 77,
+      "correct": 62,
+      "silent": 14,
+      "abstained": 1
+    },
+    {
+      "run_id": "0de76c78-6c42-49d2-b4a6-b25a2daf29c2",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 72,
+      "silent": 8,
+      "abstained": 0
+    },
+    {
+      "run_id": "0f47fb4e-9394-490b-9252-89bd17711a3f",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_8s",
+      "dims": {
+        "freshness": 12.422360248447204,
+        "latency": 100.0,
+        "consistency": 99.91902834008097,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.05,
+      "n": 60,
+      "correct": 41,
+      "silent": 19,
+      "abstained": 0
+    },
+    {
+      "run_id": "0fa3e123-0474-4793-aa6a-963ef26e8f8d",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 64,
+      "silent": 16,
+      "abstained": 0
+    },
+    {
+      "run_id": "133bb9d3-d571-4053-9db0-b2162220f698",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 16.666666666666668,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 68,
+      "silent": 12,
+      "abstained": 0
+    },
+    {
+      "run_id": "135c640c-ca78-4197-b253-1210dd1a4fa6",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 71.5625
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 62,
+      "silent": 7,
+      "abstained": 11
+    },
+    {
+      "run_id": "1728546f-45da-4f54-9024-aa8ce7c8d8b3",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 22.22222222222222,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 4.5,
+      "n": 80,
+      "correct": 63,
+      "silent": 17,
+      "abstained": 0
+    },
+    {
+      "run_id": "18930c82-df2b-4842-972a-f9f939832613",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_1.5s",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 60,
+      "correct": 53,
+      "silent": 7,
+      "abstained": 0
+    },
+    {
+      "run_id": "1b12bb07-991b-4b31-95b9-9309f8fa6105",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 12.5,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.0,
+      "n": 79,
+      "correct": 61,
+      "silent": 17,
+      "abstained": 1
+    },
+    {
+      "run_id": "1c70b846-4d80-4721-8aef-f7dbbdc68943",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_0.5s",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.55,
+      "n": 60,
+      "correct": 55,
+      "silent": 5,
+      "abstained": 0
+    },
+    {
+      "run_id": "1e75da50-50cf-4a5a-a74f-ce8743d8c091",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 79,
+      "correct": 62,
+      "silent": 16,
+      "abstained": 1
+    },
+    {
+      "run_id": "20e69c73-309f-4301-bd31-f68d3db4f2ee",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 12.5,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.0,
+      "n": 80,
+      "correct": 51,
+      "silent": 29,
+      "abstained": 0
+    },
+    {
+      "run_id": "2253c677-6696-40bc-a861-5e242fae4075",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 12.5,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.0,
+      "n": 77,
+      "correct": 56,
+      "silent": 19,
+      "abstained": 2
+    },
+    {
+      "run_id": "226819db-ca0d-4241-805b-f15eff9d55ac",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 95.74999999999999,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 67,
+      "silent": 13,
+      "abstained": 0
+    },
+    {
+      "run_id": "2658f255-f5dc-4689-89fe-f2a02fd04d99",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 68,
+      "silent": 12,
+      "abstained": 0
+    },
+    {
+      "run_id": "27c8a148-f99e-4100-9eb7-82ac2171f02c",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 73.24046920821115
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 57,
+      "silent": 23,
+      "abstained": 0
+    },
+    {
+      "run_id": "287afec5-71d9-4a35-99af-866280c957c4",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 67.5
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 60,
+      "silent": 12,
+      "abstained": 8
+    },
+    {
+      "run_id": "288688bc-6308-4b3e-83ec-a1bb715bfbc5",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 16.666666666666668,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 68,
+      "silent": 12,
+      "abstained": 0
+    },
+    {
+      "run_id": "3211d197-a6ee-48ec-a799-562915319e9e",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 77,
+      "correct": 63,
+      "silent": 14,
+      "abstained": 0
+    },
+    {
+      "run_id": "3286518c-8235-4281-adbd-eacf58ec0740",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 79,
+      "correct": 68,
+      "silent": 10,
+      "abstained": 1
+    },
+    {
+      "run_id": "33ca72b1-9a79-4c68-91ff-f831c24fd93b",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 12.5,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.0,
+      "n": 80,
+      "correct": 50,
+      "silent": 30,
+      "abstained": 0
+    },
+    {
+      "run_id": "35761753-415a-4c63-9202-bce97beb1c7c",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_12s",
+      "dims": {
+        "freshness": 8.29875518672199,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 12.05,
+      "n": 58,
+      "correct": 43,
+      "silent": 14,
+      "abstained": 1
+    },
+    {
+      "run_id": "382f4e44-e40d-4514-93f1-f77429bdb627",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 16.666666666666668,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 70,
+      "silent": 10,
+      "abstained": 0
+    },
+    {
+      "run_id": "3852d998-8433-40d0-8c08-b42c89484bf1",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 75.93008200258954,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 77,
+      "correct": 50,
+      "silent": 26,
+      "abstained": 1
+    },
+    {
+      "run_id": "38e3c8af-2b92-4667-ba98-e5536b2fb843",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 94.72248502049827,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 78,
+      "correct": 67,
+      "silent": 11,
+      "abstained": 0
+    },
+    {
+      "run_id": "3939fe85-aee1-48a8-8de8-bfc546fe0e34",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 94.54545454545456,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 62,
+      "silent": 18,
+      "abstained": 0
+    },
+    {
+      "run_id": "3b8a8d56-3888-4d4a-a2f0-5408472eb54a",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 12.5,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.0,
+      "n": 80,
+      "correct": 51,
+      "silent": 29,
+      "abstained": 0
+    },
+    {
+      "run_id": "3d39f0d7-3d3b-41d4-9a13-ffd0e49fc93f",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 75,
+      "silent": 5,
+      "abstained": 0
+    },
+    {
+      "run_id": "3d5bdff6-772c-413a-814b-2c9ca7e5c165",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 20.3125
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 40,
+      "silent": 10,
+      "abstained": 30
+    },
+    {
+      "run_id": "3f7856e3-aaf3-40d2-a07a-b340ab7049e3",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 68.59567901234568
+      },
+      "record_age_seconds": 3.0,
+      "n": 79,
+      "correct": 60,
+      "silent": 19,
+      "abstained": 0
+    },
+    {
+      "run_id": "404fe8e4-7250-48dd-b7ac-bc24e598ea79",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 21.041055718475075
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 59,
+      "silent": 21,
+      "abstained": 0
+    },
+    {
+      "run_id": "429c8486-1525-46f3-b1b9-3532846ab9d6",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 80,
+      "correct": 71,
+      "silent": 9,
+      "abstained": 0
+    },
+    {
+      "run_id": "43991492-8f6b-4da7-941c-98c17159254d",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 75.625
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 60,
+      "silent": 14,
+      "abstained": 6
+    },
+    {
+      "run_id": "44f6d8a2-4751-449a-a534-d251c29f3cd4",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 78.40152948596658,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 78,
+      "correct": 53,
+      "silent": 24,
+      "abstained": 1
+    },
+    {
+      "run_id": "45c55fda-2e1b-47a2-92c5-40094abb322a",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 71,
+      "silent": 8,
+      "abstained": 1
+    },
+    {
+      "run_id": "480ff3ca-4a05-469b-96e4-0a3f8d3539f3",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_8s",
+      "dims": {
+        "freshness": 12.422360248447204,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.05,
+      "n": 58,
+      "correct": 46,
+      "silent": 11,
+      "abstained": 1
+    },
+    {
+      "run_id": "48303b32-ca27-46f6-940a-4707ba58c863",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 71.56473387723388,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 60,
+      "silent": 20,
+      "abstained": 0
+    },
+    {
+      "run_id": "4ca7053a-27f3-4a86-91ae-5ed8c58f3ceb",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 78,
+      "correct": 68,
+      "silent": 8,
+      "abstained": 2
+    },
+    {
+      "run_id": "4d6093af-3e50-4471-aaad-344e76798b78",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 80,
+      "correct": 70,
+      "silent": 10,
+      "abstained": 0
+    },
+    {
+      "run_id": "4e515bf2-c57c-4929-810a-11716e5ac007",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 68.4375
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 56,
+      "silent": 12,
+      "abstained": 12
+    },
+    {
+      "run_id": "4f0f2e69-23a9-4c82-a4b0-62cd7ff8265d",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_12s",
+      "dims": {
+        "freshness": 8.29875518672199,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 12.05,
+      "n": 60,
+      "correct": 31,
+      "silent": 29,
+      "abstained": 0
+    },
+    {
+      "run_id": "4fb92cf5-926a-444c-9b33-7e86605e9eaf",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 95.08230452674897,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 79,
+      "correct": 65,
+      "silent": 13,
+      "abstained": 1
+    },
+    {
+      "run_id": "50f84053-cad2-47db-9c19-7317f6d6dfd4",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 80,
+      "correct": 65,
+      "silent": 15,
+      "abstained": 0
+    },
+    {
+      "run_id": "51c20ac4-f3e4-4f28-afe8-b82cb6b969b5",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 16.666666666666668,
+        "consistency": 99.94134897360703,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 73,
+      "silent": 7,
+      "abstained": 0
+    },
+    {
+      "run_id": "526c1f3e-3a12-4503-962d-2620df5b4e51",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 77,
+      "correct": 61,
+      "silent": 15,
+      "abstained": 1
+    },
+    {
+      "run_id": "53c83673-d22e-4ebd-9aea-10a7deecc0f9",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_0.5s",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.55,
+      "n": 58,
+      "correct": 53,
+      "silent": 4,
+      "abstained": 1
+    },
+    {
+      "run_id": "54b46f9c-2a99-40ff-9789-f17f02efb13b",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 93.53535353535352,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 71,
+      "silent": 9,
+      "abstained": 0
+    },
+    {
+      "run_id": "54e861bf-1ac7-4991-a4b2-35c1b7367f48",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 94.74320241691844,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 77,
+      "correct": 59,
+      "silent": 18,
+      "abstained": 0
+    },
+    {
+      "run_id": "557a6573-e779-496e-914f-d03e4bcfe3b8",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 71.14197530864197
+      },
+      "record_age_seconds": 0.05,
+      "n": 79,
+      "correct": 66,
+      "silent": 11,
+      "abstained": 2
+    },
+    {
+      "run_id": "59960366-136b-44cb-8ccb-0b9e925c0e58",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 70.625
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 61,
+      "silent": 13,
+      "abstained": 6
+    },
+    {
+      "run_id": "5b33cdd6-6f12-48c2-95a4-a0101c8ac3aa",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 22.22222222222222,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 4.5,
+      "n": 80,
+      "correct": 62,
+      "silent": 17,
+      "abstained": 1
+    },
+    {
+      "run_id": "5bb8a579-2410-4a9f-b798-32edca21ebbe",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 69.44570707070706,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 62,
+      "silent": 15,
+      "abstained": 3
+    },
+    {
+      "run_id": "5d2f4a31-64c5-4ec7-a66c-8592c4fa8d6a",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 20.090634441087612
+      },
+      "record_age_seconds": 3.0,
+      "n": 77,
+      "correct": 58,
+      "silent": 19,
+      "abstained": 0
+    },
+    {
+      "run_id": "5e1951c8-d0d6-43b1-9cd2-dacee2232159",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 72.73413897280967
+      },
+      "record_age_seconds": 0.05,
+      "n": 77,
+      "correct": 62,
+      "silent": 15,
+      "abstained": 0
+    },
+    {
+      "run_id": "5e285978-c4a6-4b43-8293-17b608330f3f",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 68,
+      "silent": 12,
+      "abstained": 0
+    },
+    {
+      "run_id": "5f0b1d27-d19d-4776-bf16-3841bb4d1830",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_5s",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 60,
+      "correct": 48,
+      "silent": 12,
+      "abstained": 0
+    },
+    {
+      "run_id": "6070b3db-0e89-4b8d-85da-7d1e33222a2f",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 16.666666666666668,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 78,
+      "correct": 68,
+      "silent": 8,
+      "abstained": 2
+    },
+    {
+      "run_id": "6105a110-6f08-4bd8-87eb-d0978194b25e",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 16.666666666666668,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 72,
+      "silent": 8,
+      "abstained": 0
+    },
+    {
+      "run_id": "61b3f462-fa91-4f3f-80a7-0a7c4d3fe488",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 76.91540404040403,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 60,
+      "silent": 19,
+      "abstained": 1
+    },
+    {
+      "run_id": "62393853-85b2-4193-a293-0e299d94dc0f",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_12s",
+      "dims": {
+        "freshness": 8.29875518672199,
+        "latency": 100.0,
+        "consistency": 99.91902834008097,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 12.05,
+      "n": 60,
+      "correct": 40,
+      "silent": 18,
+      "abstained": 2
+    },
+    {
+      "run_id": "63ffd0ef-3931-4dea-8eb5-edc5974af2ea",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 95.25764558022622,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 66,
+      "silent": 14,
+      "abstained": 0
+    },
+    {
+      "run_id": "64266077-8dfc-48df-84f9-048cf4a4b8c6",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 61,
+      "silent": 19,
+      "abstained": 0
+    },
+    {
+      "run_id": "66469334-2cda-4c49-8451-85f8d5332cb9",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 69.6875
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 51,
+      "silent": 19,
+      "abstained": 10
+    },
+    {
+      "run_id": "681a18b4-d94b-4917-a442-7c716b4e9fe1",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 16.666666666666668,
+        "consistency": 99.93957703927492,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 77,
+      "correct": 62,
+      "silent": 14,
+      "abstained": 1
+    },
+    {
+      "run_id": "68d4fee3-b50c-40d5-9892-a32c723d90b0",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 80,
+      "correct": 63,
+      "silent": 17,
+      "abstained": 0
+    },
+    {
+      "run_id": "69c9b3ea-b839-430b-a93a-2e236a1a5b2e",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 17.522658610271904
+      },
+      "record_age_seconds": 0.05,
+      "n": 77,
+      "correct": 56,
+      "silent": 21,
+      "abstained": 0
+    },
+    {
+      "run_id": "6affe3db-a26e-4e9f-bf59-7b6f182d2cfa",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 70.4955808080808,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 67,
+      "silent": 11,
+      "abstained": 2
+    },
+    {
+      "run_id": "6bb408d4-2b3c-4a30-b56c-b7baa1968036",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 73.36405529953917,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 57,
+      "silent": 23,
+      "abstained": 0
+    },
+    {
+      "run_id": "6d13d38f-2ba5-4551-a7a8-d6d63bd03f57",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 75.46372377622377,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 62,
+      "silent": 18,
+      "abstained": 0
+    },
+    {
+      "run_id": "72bfd11d-9cfa-4574-9fe6-ae463106ecdc",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_3s",
+      "dims": {
+        "freshness": 32.786885245901644,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.05,
+      "n": 59,
+      "correct": 47,
+      "silent": 11,
+      "abstained": 1
+    },
+    {
+      "run_id": "73595284-74ea-4c88-9f88-1f5c7efb1169",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 18.125
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 43,
+      "silent": 12,
+      "abstained": 25
+    },
+    {
+      "run_id": "7468273e-d267-470c-bfe0-953c02641545",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_3s",
+      "dims": {
+        "freshness": 32.786885245901644,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.05,
+      "n": 60,
+      "correct": 52,
+      "silent": 8,
+      "abstained": 0
+    },
+    {
+      "run_id": "7900820d-96aa-4c2b-8949-2735d041b240",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 16.666666666666668,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 72,
+      "silent": 8,
+      "abstained": 0
+    },
+    {
+      "run_id": "79d8c9f5-7049-4243-8823-d9a48c17e68f",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 64,
+      "silent": 16,
+      "abstained": 0
+    },
+    {
+      "run_id": "79f81265-14f8-4cbe-9126-a0d9ee680f05",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 71.35761589403974
+      },
+      "record_age_seconds": 0.05,
+      "n": 78,
+      "correct": 60,
+      "silent": 18,
+      "abstained": 0
+    },
+    {
+      "run_id": "7d01b0a2-0cc1-44ce-8720-993314645d0e",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_3s",
+      "dims": {
+        "freshness": 32.786885245901644,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.05,
+      "n": 60,
+      "correct": 52,
+      "silent": 8,
+      "abstained": 0
+    },
+    {
+      "run_id": "7e6fb409-6233-4fcd-adc3-a24ecd9d9770",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 78,
+      "correct": 68,
+      "silent": 8,
+      "abstained": 2
+    },
+    {
+      "run_id": "7eb97149-7395-4143-aca1-1485a30bd402",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 78,
+      "correct": 73,
+      "silent": 4,
+      "abstained": 1
+    },
+    {
+      "run_id": "85ba0e39-3e01-49a9-bf08-292f85f81852",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 94.21309872922777,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 57,
+      "silent": 23,
+      "abstained": 0
+    },
+    {
+      "run_id": "867f756c-af6b-42c8-ae9f-2f86197d4289",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 19.6875
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 32,
+      "silent": 21,
+      "abstained": 27
+    },
+    {
+      "run_id": "86982e78-a5b2-483e-8c9c-1754ff194d54",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_5s",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 60,
+      "correct": 50,
+      "silent": 10,
+      "abstained": 0
+    },
+    {
+      "run_id": "8753b743-4225-45a7-bbbe-c7b5741e5a37",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_0.5s",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.91902834008097,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.55,
+      "n": 60,
+      "correct": 54,
+      "silent": 6,
+      "abstained": 0
+    },
+    {
+      "run_id": "887cec8f-9e28-4594-9e74-41cc89676ad7",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 18.125
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 43,
+      "silent": 10,
+      "abstained": 27
+    },
+    {
+      "run_id": "893c0626-0fc9-4286-91e7-f219d6c64bcb",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_8s",
+      "dims": {
+        "freshness": 12.422360248447204,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.05,
+      "n": 60,
+      "correct": 38,
+      "silent": 22,
+      "abstained": 0
+    },
+    {
+      "run_id": "8a4cbd8a-765b-44aa-b81c-4d039ebb2ef1",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 16.666666666666668,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 78,
+      "correct": 72,
+      "silent": 6,
+      "abstained": 0
+    },
+    {
+      "run_id": "8ae494c5-d3b7-4fe6-bbcc-a78ef506d7b7",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_0.5s",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.55,
+      "n": 60,
+      "correct": 53,
+      "silent": 7,
+      "abstained": 0
+    },
+    {
+      "run_id": "8cfe2d1f-2724-4bb4-8aa8-9d2c72a3aab6",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 80,
+      "correct": 61,
+      "silent": 17,
+      "abstained": 2
+    },
+    {
+      "run_id": "8ebac779-edb2-4457-a6a5-f22a6fb36804",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_1.5s",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 60,
+      "correct": 55,
+      "silent": 5,
+      "abstained": 0
+    },
+    {
+      "run_id": "907fe36d-3152-46fd-9837-7f7f51645a09",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_3s",
+      "dims": {
+        "freshness": 32.786885245901644,
+        "latency": 100.0,
+        "consistency": 99.91902834008097,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.05,
+      "n": 60,
+      "correct": 49,
+      "silent": 11,
+      "abstained": 0
+    },
+    {
+      "run_id": "92019f57-e3c1-4d50-a733-041fe75c826d",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 16.875
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 32,
+      "silent": 8,
+      "abstained": 40
+    },
+    {
+      "run_id": "97799deb-0eda-40c1-b192-65a8ded57601",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 78,
+      "correct": 72,
+      "silent": 5,
+      "abstained": 1
+    },
+    {
+      "run_id": "982ed927-6bb8-4009-9331-f11763852cdf",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_5s",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 58,
+      "correct": 48,
+      "silent": 8,
+      "abstained": 2
+    },
+    {
+      "run_id": "9985fc38-1663-4de7-ae00-3c5689828deb",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 95.54166666666667,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 69,
+      "silent": 11,
+      "abstained": 0
+    },
+    {
+      "run_id": "9a64a7dc-1ec1-418f-9257-d27d40a2dac3",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 16.666666666666668,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 75,
+      "silent": 5,
+      "abstained": 0
+    },
+    {
+      "run_id": "9ab21304-b9b6-409d-bea4-8af91f37bdb9",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 79,
+      "correct": 64,
+      "silent": 13,
+      "abstained": 2
+    },
+    {
+      "run_id": "9c7dff71-9873-493a-9991-942b20f0a378",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 93.91666666666667,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 66,
+      "silent": 14,
+      "abstained": 0
+    },
+    {
+      "run_id": "9dc93c22-0490-4fd6-a979-f4f0829e6924",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_1.5s",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 58,
+      "correct": 53,
+      "silent": 4,
+      "abstained": 1
+    },
+    {
+      "run_id": "9dfee46b-8c27-4c61-a76e-199e521deb23",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 20.89442815249267
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 51,
+      "silent": 29,
+      "abstained": 0
+    },
+    {
+      "run_id": "9ea014c7-c067-4e7a-abbb-1167ffaf2287",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 80,
+      "correct": 62,
+      "silent": 18,
+      "abstained": 0
+    },
+    {
+      "run_id": "a03fbf4b-3a28-4b0b-9eca-c99f0ef0b174",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_8s",
+      "dims": {
+        "freshness": 12.422360248447204,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.05,
+      "n": 60,
+      "correct": 38,
+      "silent": 22,
+      "abstained": 0
+    },
+    {
+      "run_id": "a3b2d909-af90-4cef-a8e5-66db442a405a",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_1.5s",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 59,
+      "correct": 45,
+      "silent": 13,
+      "abstained": 1
+    },
+    {
+      "run_id": "a4277d58-e911-4c43-86c4-aa1851f86e60",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 12.5,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.0,
+      "n": 78,
+      "correct": 61,
+      "silent": 15,
+      "abstained": 2
+    },
+    {
+      "run_id": "a783415c-dc98-4a34-abe7-1631ac41738d",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 80,
+      "correct": 67,
+      "silent": 13,
+      "abstained": 0
+    },
+    {
+      "run_id": "b04f13fd-eec1-4f83-ad09-0c5334a6d8fb",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 12.5,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.0,
+      "n": 80,
+      "correct": 50,
+      "silent": 30,
+      "abstained": 0
+    },
+    {
+      "run_id": "b0d98658-0353-4f20-bf34-6b30d7e56b59",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 16.666666666666668,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 64,
+      "silent": 16,
+      "abstained": 0
+    },
+    {
+      "run_id": "b3715a27-a49d-4276-96fc-e74905c408e6",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 79,
+      "correct": 64,
+      "silent": 15,
+      "abstained": 0
+    },
+    {
+      "run_id": "b46a0c20-9741-40c8-b917-c4872247978b",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 78,
+      "correct": 68,
+      "silent": 9,
+      "abstained": 1
+    },
+    {
+      "run_id": "b596759d-575c-45d7-af86-8ab3270d7cbf",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 72,
+      "silent": 8,
+      "abstained": 0
+    },
+    {
+      "run_id": "b656765b-90dd-4b2d-b1f0-ae5310aefa46",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 16.666666666666668,
+        "consistency": 99.93957703927492,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 77,
+      "correct": 65,
+      "silent": 10,
+      "abstained": 2
+    },
+    {
+      "run_id": "b8814fa5-efc2-4d2b-a73f-f0c0de6b257f",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 22.22222222222222,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 4.5,
+      "n": 78,
+      "correct": 65,
+      "silent": 11,
+      "abstained": 2
+    },
+    {
+      "run_id": "b9d905f9-6d1a-45dd-aebd-ef18017ed4eb",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 93.62878787878788,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 70,
+      "silent": 10,
+      "abstained": 0
+    },
+    {
+      "run_id": "bcca39fa-ea61-489c-8b9d-2fc81ee33722",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 94.20833333333333,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 63,
+      "silent": 17,
+      "abstained": 0
+    },
+    {
+      "run_id": "bd117421-17e6-421f-97dd-f95e56f6d104",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_5s",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 60,
+      "correct": 47,
+      "silent": 13,
+      "abstained": 0
+    },
+    {
+      "run_id": "bf57170a-106e-48c8-a6ba-5b0970672791",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 80,
+      "correct": 73,
+      "silent": 7,
+      "abstained": 0
+    },
+    {
+      "run_id": "bfef745e-efb6-4087-afb1-a4d80c774d52",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 22.22222222222222,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 4.5,
+      "n": 80,
+      "correct": 62,
+      "silent": 18,
+      "abstained": 0
+    },
+    {
+      "run_id": "c18ceddf-2b16-42d0-a077-989ccce0b00b",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 68.25513196480938
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 65,
+      "silent": 15,
+      "abstained": 0
+    },
+    {
+      "run_id": "c2737fac-4cd1-4362-95b7-a752af5e7aa8",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 22.22222222222222,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 4.5,
+      "n": 80,
+      "correct": 68,
+      "silent": 12,
+      "abstained": 0
+    },
+    {
+      "run_id": "c56e59cd-94cd-4420-98c7-8779f35786fa",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 95.8167770419426,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 78,
+      "correct": 64,
+      "silent": 13,
+      "abstained": 1
+    },
+    {
+      "run_id": "c7781496-27c6-4905-b195-ed042ba4cc7b",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 95.05394907207597,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 77,
+      "correct": 63,
+      "silent": 13,
+      "abstained": 1
+    },
+    {
+      "run_id": "c77b00e0-f7a2-4bae-b1cc-2a6688353768",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_3s",
+      "dims": {
+        "freshness": 32.786885245901644,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.05,
+      "n": 60,
+      "correct": 53,
+      "silent": 7,
+      "abstained": 0
+    },
+    {
+      "run_id": "c77e2ed1-7a99-4c20-af40-565d2e14afe1",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 72,
+      "silent": 8,
+      "abstained": 0
+    },
+    {
+      "run_id": "c88b07da-a016-43ff-bf7a-7cc4e6bd76cd",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 64,
+      "silent": 16,
+      "abstained": 0
+    },
+    {
+      "run_id": "c8c9f303-4d73-4c0c-ae98-32c5141f0fb3",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_5s",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 59,
+      "correct": 48,
+      "silent": 10,
+      "abstained": 1
+    },
+    {
+      "run_id": "c9c5f84c-5fd7-4582-bf33-c275768ae154",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 19.12251655629139
+      },
+      "record_age_seconds": 0.05,
+      "n": 78,
+      "correct": 60,
+      "silent": 18,
+      "abstained": 0
+    },
+    {
+      "run_id": "ccf8d15f-1a71-4ffb-a7a8-52216e83b1c0",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_8s",
+      "dims": {
+        "freshness": 12.422360248447204,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.05,
+      "n": 59,
+      "correct": 47,
+      "silent": 11,
+      "abstained": 1
+    },
+    {
+      "run_id": "ce3ad5ed-20f2-4507-82c0-941e54734232",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_0.5s",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.55,
+      "n": 59,
+      "correct": 47,
+      "silent": 10,
+      "abstained": 2
+    },
+    {
+      "run_id": "cf6f231f-7280-4c02-aeed-3d6df540a110",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 22.22222222222222,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 4.5,
+      "n": 79,
+      "correct": 61,
+      "silent": 17,
+      "abstained": 1
+    },
+    {
+      "run_id": "cfe20ea1-d52c-4d73-9111-a2475e02c14b",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 74.1760878010878,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 68,
+      "silent": 11,
+      "abstained": 1
+    },
+    {
+      "run_id": "cffbe1b9-c8c2-4979-8712-d62dc828200c",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 69.375
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 54,
+      "silent": 15,
+      "abstained": 11
+    },
+    {
+      "run_id": "d00274f0-743b-4518-82b8-a3255e1e5cfd",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 16.666666666666668,
+        "consistency": 99.94134897360703,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 61,
+      "silent": 19,
+      "abstained": 0
+    },
+    {
+      "run_id": "d1ad4ed7-b498-436a-90ad-58ba2439897b",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 77,
+      "correct": 62,
+      "silent": 15,
+      "abstained": 0
+    },
+    {
+      "run_id": "d287d22f-ef5c-42ca-8354-5ddadb6f6b1e",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 77,
+      "correct": 65,
+      "silent": 11,
+      "abstained": 1
+    },
+    {
+      "run_id": "d37c3672-9377-417f-8563-5e72ed106353",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 80,
+      "correct": 61,
+      "silent": 19,
+      "abstained": 0
+    },
+    {
+      "run_id": "d3d9c241-5fd1-49da-91f4-94005cb3b192",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 20.3125
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 41,
+      "silent": 12,
+      "abstained": 27
+    },
+    {
+      "run_id": "d4788647-91ce-4af8-962b-1b5733f630b0",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 64,
+      "silent": 16,
+      "abstained": 0
+    },
+    {
+      "run_id": "d91c2230-fb65-4abb-ad31-52128b42a4f2",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 71.33789821289821,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 66,
+      "silent": 14,
+      "abstained": 0
+    },
+    {
+      "run_id": "da19dd08-b294-4254-86d1-598ff4067738",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_12s",
+      "dims": {
+        "freshness": 8.29875518672199,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 12.05,
+      "n": 59,
+      "correct": 45,
+      "silent": 11,
+      "abstained": 3
+    },
+    {
+      "run_id": "da82ba96-1db8-4fb2-a6a7-9f4aa43f297e",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 95.51388888888889,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 72,
+      "silent": 8,
+      "abstained": 0
+    },
+    {
+      "run_id": "db0257a4-fad6-43bb-a908-25a78cb95d92",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 18.441358024691358
+      },
+      "record_age_seconds": 0.05,
+      "n": 79,
+      "correct": 58,
+      "silent": 20,
+      "abstained": 1
+    },
+    {
+      "run_id": "dc70864d-0e62-45a9-bd4c-e8dafab72313",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 73,
+      "silent": 7,
+      "abstained": 0
+    },
+    {
+      "run_id": "dd3860c6-04b7-4f22-a10b-2233688065b0",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 80,
+      "correct": 65,
+      "silent": 15,
+      "abstained": 0
+    },
+    {
+      "run_id": "dd60a838-dfab-45a7-a628-d810ac83d162",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_3s",
+      "dims": {
+        "freshness": 32.786885245901644,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.05,
+      "n": 58,
+      "correct": 52,
+      "silent": 5,
+      "abstained": 1
+    },
+    {
+      "run_id": "de4f48e9-7d5f-4b52-bd25-2a2ba9be86e3",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 16.666666666666668,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 64,
+      "silent": 16,
+      "abstained": 0
+    },
+    {
+      "run_id": "e1e6d9cf-e43c-49b9-9a23-b974fb89c0f2",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_12s",
+      "dims": {
+        "freshness": 8.29875518672199,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 12.05,
+      "n": 60,
+      "correct": 31,
+      "silent": 29,
+      "abstained": 0
+    },
+    {
+      "run_id": "e32ebacb-0a44-48a4-988a-397e93d3a212",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 74.15527630805408,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 79,
+      "correct": 56,
+      "silent": 23,
+      "abstained": 0
+    },
+    {
+      "run_id": "e6ad94f5-dd19-43a7-8ff1-034d2635dbc4",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 69.41087613293051
+      },
+      "record_age_seconds": 3.0,
+      "n": 77,
+      "correct": 58,
+      "silent": 18,
+      "abstained": 1
+    },
+    {
+      "run_id": "e702a98d-d219-4254-b513-5a41673cf5bb",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 16.666666666666668,
+        "consistency": 99.87654320987654,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 79,
+      "correct": 63,
+      "silent": 16,
+      "abstained": 0
+    },
+    {
+      "run_id": "e7329cd1-44c2-434b-9a76-2839e0ae712e",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 95.26748971193416,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 79,
+      "correct": 64,
+      "silent": 15,
+      "abstained": 0
+    },
+    {
+      "run_id": "e981fbe6-ced1-41f0-843d-5f092001eca6",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 22.22222222222222,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 4.5,
+      "n": 77,
+      "correct": 60,
+      "silent": 15,
+      "abstained": 2
+    },
+    {
+      "run_id": "e9844937-442f-4fc6-8e69-301f08e524b4",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 70.86092715231787
+      },
+      "record_age_seconds": 3.0,
+      "n": 78,
+      "correct": 63,
+      "silent": 15,
+      "abstained": 0
+    },
+    {
+      "run_id": "e9d70b98-35fb-4060-92f6-dcf2c7d637ca",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 67.1875
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 54,
+      "silent": 19,
+      "abstained": 7
+    },
+    {
+      "run_id": "ea51efc2-bef5-4c39-bebe-8a2265fd1a0b",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_1.5s",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 99.91902834008097,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 60,
+      "correct": 48,
+      "silent": 12,
+      "abstained": 0
+    },
+    {
+      "run_id": "ec8f871b-da07-443b-8852-bbd31962a8b5",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_5s",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 99.91902834008097,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 60,
+      "correct": 44,
+      "silent": 14,
+      "abstained": 2
+    },
+    {
+      "run_id": "ed008d9c-a84a-4ec6-ad75-7edff315c1a0",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_0.5s",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.55,
+      "n": 60,
+      "correct": 56,
+      "silent": 4,
+      "abstained": 0
+    },
+    {
+      "run_id": "edb03525-47a8-491e-b449-5913c1249480",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 74.33175082721911,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 77,
+      "correct": 53,
+      "silent": 23,
+      "abstained": 1
+    },
+    {
+      "run_id": "ee98ef10-5ad1-4be9-a1ad-c0629b110718",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 68,
+      "silent": 12,
+      "abstained": 0
+    },
+    {
+      "run_id": "eee0cba7-bbf3-4a54-81bb-dd4d12f23d31",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 22.22222222222222,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 4.5,
+      "n": 80,
+      "correct": 65,
+      "silent": 15,
+      "abstained": 0
+    },
+    {
+      "run_id": "ef3b71d3-ad5c-4f0d-bd44-17905b69af69",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 19.288079470198678
+      },
+      "record_age_seconds": 3.0,
+      "n": 78,
+      "correct": 55,
+      "silent": 23,
+      "abstained": 0
+    },
+    {
+      "run_id": "efcd7dcc-e0c4-4582-b08d-1483bc72cf76",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_8s",
+      "dims": {
+        "freshness": 12.422360248447204,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.05,
+      "n": 60,
+      "correct": 35,
+      "silent": 25,
+      "abstained": 0
+    },
+    {
+      "run_id": "efd21030-2e1e-4bc3-ab29-4ee5ca004dee",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 72,
+      "silent": 8,
+      "abstained": 0
+    },
+    {
+      "run_id": "f08343ea-9c82-43b4-9844-eed79c7dd973",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 75,
+      "silent": 5,
+      "abstained": 0
+    },
+    {
+      "run_id": "f2546a75-5110-4521-9a03-8d96b7fb4fa7",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 74.76515151515152,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 63,
+      "silent": 16,
+      "abstained": 1
+    },
+    {
+      "run_id": "f35e20a6-472f-4bce-9390-8bd81fca9afc",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 12.5,
+        "latency": 100.0,
+        "consistency": 99.94134897360703,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 8.0,
+      "n": 80,
+      "correct": 61,
+      "silent": 18,
+      "abstained": 1
+    },
+    {
+      "run_id": "f4cec393-4b16-4ee2-b857-a1da74e30ba9",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "severe",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 16.666666666666668,
+        "consistency": 99.87654320987654,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 79,
+      "correct": 69,
+      "silent": 9,
+      "abstained": 1
+    },
+    {
+      "run_id": "f8774ea7-f91b-4592-a16d-d03b835a3ad5",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 74.36321742773356,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 53,
+      "silent": 27,
+      "abstained": 0
+    },
+    {
+      "run_id": "fa399042-1945-48a5-a799-6232c1ae3912",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "mild",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 79,
+      "correct": 64,
+      "silent": 14,
+      "abstained": 1
+    },
+    {
+      "run_id": "fa55771e-5e15-4c14-a91b-30fdb489e6ef",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "latency",
+      "severity": "mild",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 99.93957703927492,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 77,
+      "correct": 65,
+      "silent": 11,
+      "abstained": 1
+    },
+    {
+      "run_id": "fa5f8946-20e8-401d-8c59-3fea4cbde54c",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "schema_drift",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 75.37257495590829,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 79,
+      "correct": 54,
+      "silent": 25,
+      "abstained": 0
+    },
+    {
+      "run_id": "fb8e6cf3-0efa-4c9a-9613-2553eeeda97d",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "severe",
+      "dims": {
+        "freshness": 19.801980198019802,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 5.05,
+      "n": 78,
+      "correct": 63,
+      "silent": 14,
+      "abstained": 1
+    },
+    {
+      "run_id": "fbce2f13-1e47-4009-8d1d-c673673ee418",
+      "task": "retrieval",
+      "model": "gpt-4o-mini",
+      "fault": "semantic_stripping",
+      "severity": "severe",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 99.87654320987654,
+        "semantic": 19.753086419753085
+      },
+      "record_age_seconds": 3.0,
+      "n": 79,
+      "correct": 61,
+      "silent": 17,
+      "abstained": 1
+    },
+    {
+      "run_id": "fc126059-8419-476f-8e8d-cc79c42ff3a7",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 100.0,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 0.05,
+      "n": 80,
+      "correct": 70,
+      "silent": 10,
+      "abstained": 0
+    },
+    {
+      "run_id": "fc26cb92-7bfd-44a5-80c5-af1980095d4e",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "none",
+      "severity": "none",
+      "dims": {
+        "freshness": 33.333333333333336,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 3.0,
+      "n": 80,
+      "correct": 68,
+      "silent": 12,
+      "abstained": 0
+    },
+    {
+      "run_id": "fd681231-26fa-4788-8ebc-a8de7adf0e5f",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_1.5s",
+      "dims": {
+        "freshness": 64.51612903225806,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 1.55,
+      "n": 60,
+      "correct": 54,
+      "silent": 6,
+      "abstained": 0
+    },
+    {
+      "run_id": "ff7d7776-4c9e-4695-a2dd-147a026f7e44",
+      "task": "classification",
+      "model": "gpt-4o-mini",
+      "fault": "freshness",
+      "severity": "sweep_12s",
+      "dims": {
+        "freshness": 8.29875518672199,
+        "latency": 100.0,
+        "consistency": 100.0,
+        "semantic": 100.0
+      },
+      "record_age_seconds": 12.05,
+      "n": 60,
+      "correct": 26,
+      "silent": 34,
+      "abstained": 0
+    }
+  ]
+}

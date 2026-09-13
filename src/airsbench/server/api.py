@@ -17,13 +17,16 @@ from __future__ import annotations
 
 import json
 import re
+from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from .. import __version__
 from ..gate import Controller, Policy
+from ..gate.replay import Batch, fault_free_baseline, replay
 from ..probe import (
     BANDS,
     DEFAULT_WEIGHTS,
@@ -33,9 +36,10 @@ from ..probe import (
     parse_records,
     score,
 )
-from .schemas import GateRequest, ScoreRequest
+from .schemas import GateRequest, ReplayRequest, ScoreRequest
 
 SAMPLES = Path(__file__).parent / "data" / "samples.json"
+REPLAY = Path(__file__).parent / "data" / "replay_corpus.json"
 _LINE = re.compile(r"^(?:delivered|source):(\d+):")
 
 router = APIRouter(prefix="/api")
@@ -67,6 +71,13 @@ def _weights(task: str):
         raise InputError("task", str(exc)) from None
 
 
+def _policy(data: dict[str, Any]) -> Policy:
+    try:
+        return Policy.from_dict(data)
+    except ValueError as exc:
+        raise InputError("policy", str(exc)) from None
+
+
 def _records(text: str | None, name: str, unique_ids: bool = False):
     """Parsed records, or None when the input was left empty."""
     if text is None or not text.strip():
@@ -78,6 +89,11 @@ def _records(text: str | None, name: str, unique_ids: bool = False):
         return parse_records(text, name, unique_ids=unique_ids)
     except ProbeError as exc:
         raise InputError(name, str(exc)) from None
+
+
+@lru_cache(maxsize=1)
+def _replay_corpus() -> dict[str, Any]:
+    return json.loads(REPLAY.read_text(encoding="utf-8"))
 
 
 @router.get("/meta")
@@ -118,10 +134,7 @@ def score_records(body: ScoreRequest):
 @router.post("/gate")
 def gate_batch(body: GateRequest):
     weights, _ = _weights(body.task)
-    try:
-        policy = Policy.from_dict(body.policy)
-    except ValueError as exc:
-        raise InputError("policy", str(exc)) from None
+    policy = _policy(body.policy)
     if body.shadow:
         policy = policy.shadow()
     delivered = _records(body.delivered, "delivered")
@@ -131,6 +144,31 @@ def gate_batch(body: GateRequest):
     except ProbeError as exc:
         raise InputError("delivered", str(exc)) from None
     return {**verdict.to_dict(), "task": body.task, "policy_description": policy.describe()}
+
+
+@router.post("/replay")
+def replay_policy(body: ReplayRequest):
+    """What this policy would have prevented, and cost, across the study's runs.
+
+    `gate.replay` over the baked corpus — the accounting behind
+    `docs/gate_findings.md` — with the no-gate outcome and the fault-free floor
+    beside it, because a price means nothing without what it is measured against.
+    """
+    weights, _ = _weights(body.task)
+    policy = _policy(body.policy)
+    corpus = _replay_corpus()
+    batches = [Batch(**row) for row in corpus["batches"] if row["task"] == body.task]
+    if not batches:
+        raise InputError("task", f"the replay corpus has no runs for task {body.task!r}")
+    return {
+        "task": body.task,
+        "policy_description": policy.describe(),
+        "outcome": replay(batches, policy, weights).to_dict(),
+        "no_gate": replay(batches, Policy(name="no gate"), weights).to_dict(),
+        "fault_free": fault_free_baseline(batches),
+        "corpus": {key: corpus[key] for key in
+                   ("schema", "arms", "tasks", "models", "runs", "decisions", "note")},
+    }
 
 
 @router.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"],

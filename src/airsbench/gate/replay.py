@@ -26,13 +26,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 from ..analysis.airs_correction import corrected_airs
 from ..runner.config import RunConfig, run_arm
 from ..runner.execute import value_staleness_s
+from ..runner.scoring import is_silent_failure
 from .controller import Verdict
 from .policy import DIMENSIONS, Policy, Violation
 
@@ -81,10 +83,7 @@ def load_batches(
             record_age_seconds=value_staleness_s(config),
             n=len(decisions),
             correct=sum(bool(d["correct"]) for d in decisions),
-            silent=sum(
-                bool(not d["correct"] and not d["abstained"] and not d["parse_failed"])
-                for d in decisions
-            ),
+            silent=sum(is_silent_failure(d) for d in decisions),
             abstained=sum(bool(d["abstained"]) for d in decisions),
         ))
     return batches
@@ -187,6 +186,33 @@ class Outcome:
         """
         return self.forfeited / self.prevented if self.prevented else float("inf")
 
+    def to_dict(self) -> dict[str, Any]:
+        """The accounting as JSON-safe data.
+
+        A policy that prevents nothing has no exchange rate: it is infinite in
+        memory and null here, with `prevented` = 0 beside it saying why.
+        """
+        rate = self.exchange_rate
+        return {
+            "policy": self.policy,
+            "batches": self.batches,
+            "refused_batches": self.refused_batches,
+            "decisions": self.decisions,
+            "admitted_decisions": self.admitted_decisions,
+            "coverage": self.coverage,
+            "silent_total": self.silent_total,
+            "silent_admitted": self.silent_admitted,
+            "prevented": self.prevented,
+            "prevented_share": self.prevented_share,
+            "correct_total": self.correct_total,
+            "correct_admitted": self.correct_admitted,
+            "forfeited": self.forfeited,
+            "forfeited_share": self.forfeited_share,
+            "baseline_silent_rate": self.baseline_silent_rate,
+            "residual_silent_rate": self.residual_silent_rate,
+            "exchange_rate": None if math.isinf(rate) else rate,
+        }
+
 
 def replay(batches: list[Batch], policy: Policy, weights: dict[str, float]) -> Outcome:
     admitted = [b for b in batches if evaluate_batch(b, policy, weights).admitted]
@@ -201,6 +227,28 @@ def replay(batches: list[Batch], policy: Policy, weights: dict[str, float]) -> O
         correct_total=sum(b.correct for b in batches),
         correct_admitted=sum(b.correct for b in admitted),
     )
+
+
+def fault_free_baseline(batches: list[Batch]) -> dict[str, float] | None:
+    """The share of silent failure no gate can ever remove.
+
+    What a HEALTHY pipeline still produces. A gate refuses degraded batches; it
+    cannot make the agent right about a hard query it was always going to get
+    wrong. Reported as a range, not a point: silent failure clusters by run, so
+    the spread ACROSS healthy pipelines is the honest error bar. It also explains
+    why a very tight policy can print a residual below the mean — it admits a
+    handful of pipelines, not a representative sample of healthy ones.
+    """
+    healthy = [b for b in batches if b.fault == "none"]
+    if not healthy:
+        return None
+    rates = sorted(b.silent / b.n for b in healthy)
+    return {
+        "rate": sum(b.silent for b in healthy) / sum(b.n for b in healthy),
+        "min": rates[0],
+        "max": rates[-1],
+        "pipelines": len(healthy),
+    }
 
 
 # ---- reporting -------------------------------------------------------------
@@ -313,17 +361,9 @@ def report(batches: list[Batch], task: str, sweep: str) -> int:
         return 1
 
     base = replay(selected, Policy(name="no gate"), weights)
-    # The share of silent failure no gate can ever remove: what a HEALTHY
-    # pipeline still produces. A gate refuses degraded batches; it cannot make
-    # the agent right about a hard query it was always going to get wrong.
-    healthy = [b for b in selected if b.fault == "none"]
-    floor = (sum(b.silent for b in healthy) / sum(b.n for b in healthy)
-             if healthy else 0.0)
-    # Reported as a range, not a point: silent failure clusters by run, so the
-    # spread ACROSS healthy pipelines is the honest error bar. It also explains
-    # why a very tight policy can print a residual below the mean — it admits a
-    # handful of pipelines, not a representative sample of healthy ones.
-    rates = sorted(b.silent / b.n for b in healthy) or [0.0]
+    baseline = fault_free_baseline(selected) or {
+        "rate": 0.0, "min": 0.0, "max": 0.0, "pipelines": 0}
+    floor = baseline["rate"]
     print(f"Gate replay — {task}, {len(selected)} pipelines, "
           f"{base.decisions:,} decisions")
     print("Weights: " + "  ".join(f"{d}={weights[d]:.0%}" for d in DIMENSIONS))
@@ -331,7 +371,8 @@ def report(batches: list[Batch], task: str, sweep: str) -> int:
           f"silent failures\n({base.silent_total:,} confidently wrong answers "
           f"reaching a user).")
     print(f"Fault-free baseline: {floor:.1%} "
-          f"(range {rates[0]:.1%}-{rates[-1]:.1%} across {len(healthy)} clean "
+          f"(range {baseline['min']:.1%}-{baseline['max']:.1%} across "
+          f"{baseline['pipelines']} clean "
           f"pipelines).\nRefusing a batch cannot make the agent right about a "
           f"query it was always\ngoing to get wrong, so only the "
           f"{100 * (base.baseline_silent_rate - floor):.1f}pp above this baseline is "

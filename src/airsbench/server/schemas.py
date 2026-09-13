@@ -30,3 +30,8 @@ class ScoreRequest(_Request):
 class GateRequest(ScoreRequest):
     policy: dict[str, Any] = Field(description="an admission policy, as in examples/gate/")
     shadow: bool = Field(False, description="report violations but admit the batch")
+
+
+class ReplayRequest(_Request):
+    task: str = Field("retrieval", description="which task's runs to replay the policy over")
+    policy: dict[str, Any] = Field(description="an admission policy, as in examples/gate/")

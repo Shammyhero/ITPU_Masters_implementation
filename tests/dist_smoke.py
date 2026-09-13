@@ -30,6 +30,13 @@ def _get_json(url: str):
         return json.load(response)
 
 
+def _post_json(url: str, body: dict):
+    request = urllib.request.Request(url, data=json.dumps(body).encode(),
+                                     headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(request, timeout=10) as response:
+        return json.load(response)
+
+
 def _wait_for(url: str, process: subprocess.Popen, timeout: float = 20.0):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -49,25 +56,29 @@ def main(airs: str, examples: Path) -> int:
                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     try:
         meta = _wait_for(f"{base}/api/meta", process)
-        body = json.dumps({
+        result = _post_json(f"{base}/api/score", {
             "task": "retrieval",
             "delivered": (examples / "probe" / "degraded.jsonl").read_text(encoding="utf-8"),
             "source": (examples / "probe" / "source.jsonl").read_text(encoding="utf-8"),
-        }).encode()
-        request = urllib.request.Request(f"{base}/api/score", data=body,
-                                         headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(request, timeout=10) as response:
-            result = json.load(response)
+        })
         if result["band"] != "AT RISK":
             raise SystemExit(f"/api/score returned band {result['band']!r} for the degraded sample")
         samples = _get_json(f"{base}/api/samples")
         if not samples["samples"]:
             raise SystemExit("/api/samples is empty: server/data/samples.json "
                              "is missing from the wheel")
+        replayed = _post_json(f"{base}/api/replay", {
+            "task": "retrieval",
+            "policy": {"name": "consistency", "min_dimension": {"consistency": 90.0}},
+        })
+        rate = replayed["outcome"]["exchange_rate"]
+        if rate is None or replayed["corpus"]["runs"] == 0:
+            raise SystemExit("/api/replay priced nothing: replay_corpus.json missing or empty")
         with urllib.request.urlopen(f"{base}/", timeout=10) as page:
             status = page.status
         print(f"airs serve: /api/meta v{meta['version']}, /api/score {result['band']} "
-              f"{result['airs']:.1f}, /api/samples {len(samples['samples'])}, / {status} "
+              f"{result['airs']:.1f}, /api/samples {len(samples['samples'])}, "
+              f"/api/replay {rate:.2f} over {replayed['corpus']['runs']} runs, / {status} "
               f"(web console built: {meta['frontend_built']})")
         return 0
     finally:

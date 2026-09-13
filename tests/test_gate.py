@@ -333,6 +333,24 @@ def test_conservation_identities_hold(corpus, policy):
     assert out.admitted_decisions <= out.decisions
 
 
+def test_the_fault_free_floor_is_a_pooled_rate_with_its_range(corpus):
+    from airsbench.gate.replay import fault_free_baseline
+
+    corpus[1].fault = "schema_drift"  # the dirty batch is faulted, so not part of the floor
+    corpus.append(_batch("clean-2", CLEAN, 0.5, 300, 240, 60))
+    floor = fault_free_baseline(corpus)
+    assert floor["rate"] == pytest.approx((10 + 60) / (100 + 300))
+    assert (floor["min"], floor["max"], floor["pipelines"]) == (0.10, 0.20, 2)
+    assert fault_free_baseline([corpus[1]]) is None, "no healthy pipeline, no floor"
+
+
+def test_outcome_json_has_no_infinity(corpus):
+    """No gate prevents nothing, so its exchange rate is infinite — null in JSON."""
+    data = replay(corpus, Policy(name="no gate"), WEIGHTS).to_dict()
+    assert data["exchange_rate"] is None
+    json.dumps(data, allow_nan=False)
+
+
 # ---- attribution ----------------------------------------------------------
 
 def test_attribution_credits_only_excess_silent_failure(capsys):
