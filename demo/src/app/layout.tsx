@@ -1,17 +1,27 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AIST — Agentic Infrastructure Stress Test",
+  title: "AIRS — is your data pipeline ready for an agent?",
   description:
-    "Why agents fail silently on degraded data, and what a pipeline score can " +
-    "tell you before you deploy one. Every figure exported from 248 benchmark runs.",
+    "Score a data pipeline's readiness for an AI agent from a sample of its records, " +
+    "and see the evidence that the score means something.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <nav className="topnav" aria-label="Site">
+          <div className="topnav-inner">
+            <Link href="/" className="brand">AIRS</Link>
+            <Link href="/">Check my pipeline</Link>
+            <Link href="/evidence/">Why trust the score</Link>
+          </div>
+        </nav>
+        {children}
+      </body>
     </html>
   );
 }

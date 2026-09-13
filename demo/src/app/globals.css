@@ -15,6 +15,8 @@
   :root {
     --bg: #f7f8fa; --panel: #fff; --panel-2: #f0f2f6; --line: #dfe3ea;
     --text: #14171d; --muted: #5b6472; --accent: #0b6bcb;
+    /* The dark theme's tones are unreadable on white (READY green is ~1.8:1). */
+    --good: #11805d; --warn: #a15c00; --bad: #c62f2f;
   }
 }
 * { box-sizing: border-box; }
@@ -71,8 +73,16 @@ td.cool { color: var(--muted); }
   font-weight: 700; letter-spacing: .04em; font-family: var(--mono); }
 .band.READY { background: color-mix(in srgb, var(--good) 20%, transparent); color: var(--good); }
 .band.WATCH { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
-.band\.AT { background: color-mix(in srgb, var(--bad) 20%, transparent); color: var(--bad); }
-.band.RISK { background: color-mix(in srgb, var(--bad) 20%, transparent); color: var(--bad); }
+/* "AT RISK" arrives as the class AT-RISK (the console) or AT.RISK (Stress). */
+.band.AT-RISK, .band.AT\.RISK { background: color-mix(in srgb, var(--bad) 20%, transparent); color: var(--bad); }
+.band.NONE { background: var(--panel-2); color: var(--muted); }
+@media (prefers-color-scheme: light) {
+  /* On white, no tint keeps small pill text at 4.5:1 (green peaks at 4.43), so the
+     light theme outlines the pill instead and the text sits on the panel itself. */
+  .band.READY, .band.WATCH, .band.AT-RISK, .band.AT\.RISK {
+    background: transparent; box-shadow: inset 0 0 0 1px currentColor;
+  }
+}
 .score { font-family: var(--mono); font-size: 2.2rem; font-weight: 650; letter-spacing: -0.03em; }
 footer { margin-top: 5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
 .dial { margin-bottom: 1.25rem; }
@@ -165,3 +175,66 @@ section h2 { margin-top: .6rem; }
 .abst-l { font-size: .78rem; color: var(--muted); margin-top: .3rem; }
 .callout.big { font-size: 1rem; margin-top: 1.5rem; }
 .guess p { max-width: 60ch; }
+
+/* ---- navigation ---- */
+.topnav { border-bottom: 1px solid var(--line); background: var(--panel); }
+.topnav-inner { max-width: 1080px; margin: 0 auto; padding: .7rem 1.25rem; display: flex;
+  gap: 1.25rem; align-items: baseline; flex-wrap: wrap; font-size: .9rem; }
+.topnav a { color: var(--muted); text-decoration: none; }
+.topnav a:hover { color: var(--text); }
+.topnav .brand { font-family: var(--mono); font-weight: 700; color: var(--accent);
+  letter-spacing: .04em; margin-right: .5rem; }
+
+/* ---- mode A: check my pipeline ---- */
+.hero.compact { padding: .5rem 0 0; }
+.hero.compact h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); max-width: none; }
+.toolbar { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; margin: 2rem 0 1rem; }
+.toolbar .l { margin: 0 .25rem 0 0; }
+.inputs { grid-template-columns: 1fr 1fr; }
+@media (max-width: 760px) { .inputs { grid-template-columns: 1fr; } }
+.drop { display: flex; flex-direction: column; gap: .45rem; transition: border-color .12s, background .12s; }
+.drop.dragging { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--panel)); }
+.drop.invalid { border-color: color-mix(in srgb, var(--bad) 60%, var(--line)); }
+.input-head { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+.input-head h3 { margin: 0; }
+.optional { font-size: .72rem; font-weight: 400; color: var(--muted); margin-left: .5rem;
+  font-family: var(--mono); }
+.input-actions { display: flex; gap: .35rem; }
+.input-actions .tab { padding: .2rem .6rem; font-size: .78rem; }
+.hint { font-size: .82rem; color: var(--muted); margin: 0; }
+.input-foot { margin-top: 0; }
+.field-error { font-size: .84rem; color: var(--bad); border-left: 3px solid var(--bad);
+  padding: .4rem .65rem; background: color-mix(in srgb, var(--bad) 8%, transparent);
+  border-radius: 0 6px 6px 0; }
+.score-bar { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin: 1rem 0 1.5rem; }
+.score-bar .cta, .score-bar .src { margin-top: 0; }
+.stale { font-size: .85rem; color: var(--warn); }
+.callout.error { border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 8%, transparent); }
+.callout.error b { color: var(--bad); }
+.score-view { display: flex; flex-direction: column; gap: 1.25rem; }
+.score-view.is-stale { opacity: .55; }
+.composite { display: grid; grid-template-columns: minmax(180px, 240px) 1fr; gap: 1.5rem; align-items: center; }
+@media (max-width: 620px) { .composite { grid-template-columns: 1fr; } }
+.score.big { font-size: 3.2rem; line-height: 1; }
+.muted { color: var(--muted); }
+.band-note { margin: .45rem 0 0; font-size: .95rem; }
+.callout.coverage { margin-top: 0; }
+.dims { display: flex; flex-direction: column; gap: 1.05rem; }
+.dim-head { display: flex; align-items: baseline; gap: .75rem; margin-bottom: .3rem; }
+.dim-name { font-weight: 600; text-transform: capitalize; }
+.dim-weight { color: var(--muted); font-size: .75rem; margin-right: auto; }
+.dim-score { font-weight: 650; }
+.dim .fill { background: var(--accent); }
+.dim.weightless .fill { background: var(--muted); }
+.dim.unmeasured .dim-score { color: var(--warn); }
+.fill.hatched { background: repeating-linear-gradient(135deg,
+  color-mix(in srgb, var(--warn) 35%, transparent) 0 6px, transparent 6px 12px) !important; }
+.dim-detail { font-size: .82rem; color: var(--muted); margin-top: .3rem; }
+.footnote { font-size: .74rem; line-height: 1.55; margin-top: 0; }
+details.format { margin-top: 2rem; }
+details.format summary { cursor: pointer; font-weight: 600; }
+details.format .rec { margin-top: .9rem; overflow-x: auto; white-space: pre; }
+.format-notes { font-size: .88rem; color: var(--muted); padding-left: 1.2rem; margin: 0; }
+.format-notes li { margin: .3rem 0; }
+.format-notes b { color: var(--text); font-family: var(--mono); font-size: .82rem; font-weight: 600; }
+.link-cta { display: inline-block; text-decoration: none; }

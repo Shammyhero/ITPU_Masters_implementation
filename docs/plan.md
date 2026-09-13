@@ -153,7 +153,7 @@ without the walkthrough.
 |---|---|
 | **Mode B walkthrough** — the six-step sequence over the 302 committed runs | 10 |
 | **Trace view** — upstream / delivered / answered three-column diff with flip classification | 6 |
-| Packaging: bundled demo data, offline verification, README | 2 |
+| Packaging: bundled demo data, offline verification, README. **`demo/src/data/aist.json`:** it was never committed — an unanchored `data/` rule in `.gitignore` hid it (fixed 14 Sep) — so a clone could not build the demo or the console. Decided 14 Sep: it is regenerated from all 302 runs (it was baked from 248) and committed in **W3 step 6**, so the wheel builds from a clone; replacing its hand-typed panels with generated ones stays here in W5 | 2 |
 | **Supervisor presentation** — rehearse, present | 2 |
 
 ### ► MILESTONE 1 — Fri 16 Oct 2026
