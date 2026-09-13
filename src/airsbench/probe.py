@@ -249,8 +249,13 @@ def parse_records(text: str, name: str = "records",
 
 
 def load_records(path: Path, unique_ids: bool = False) -> list[dict[str, Any]]:
+    return parse_records(read_jsonl(path), str(path), unique_ids=unique_ids)
+
+
+def read_jsonl(path: Path) -> str:
+    """The text of a JSONL file, or a ProbeError that says why it cannot be read."""
     try:
-        text = Path(path).read_text(encoding="utf-8")
+        return Path(path).read_text(encoding="utf-8")
     except FileNotFoundError:
         raise ProbeError(f"{path}: no such file") from None
     except UnicodeDecodeError:
@@ -260,7 +265,6 @@ def load_records(path: Path, unique_ids: bool = False) -> list[dict[str, Any]]:
         ) from None
     except OSError as exc:
         raise ProbeError(f"{path}: cannot be read — {exc.strerror or exc}") from None
-    return parse_records(text, str(path), unique_ids=unique_ids)
 
 
 # ---- measurement ------------------------------------------------------------

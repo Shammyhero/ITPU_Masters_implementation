@@ -7,7 +7,10 @@ dist/
 .ruff_cache/
 .ipynb_checkpoints/
 .env
-data/
+# The downloaded datasets at the repository root. Anchored: unanchored, `data/`
+# also ignored src/airsbench/server/data/ and demo/src/data/, whose baked files
+# must be committed for a clone to build the wheel and the demo.
+/data/
 logs/
 .DS_Store
 # results/ IS committed — the run artifacts are the evidence behind every

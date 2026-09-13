@@ -10,9 +10,12 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Shamsiddin Khamidov" }]
-# Core package (agentic_faults + airs calculator) is stdlib-only by design:
-# it must be installable anywhere the score is computed.
-dependencies = []
+# The decided install is `pip install airs-bench`, then `airs serve`, so the web
+# stack is a core dependency. The scoring core stays stdlib-only at import time:
+# agentic_faults, the AIRS calculator, `airs probe` and `airs gate` never import it
+# (pinned by tests/test_server.py), so a pipeline step running `airs gate` loads
+# no web framework. Floors are the versions the test suite was run against.
+dependencies = ["fastapi>=0.141", "uvicorn>=0.52"]
 
 [project.optional-dependencies]
 data = ["pandas>=2.0", "pyarrow>=15", "datasets>=2.19", "requests>=2.31"]
@@ -28,10 +31,11 @@ analysis = [
     "seaborn>=0.13",
     "jupyter",
 ]
-dev = ["pytest>=8", "ruff>=0.4"]
+dev = ["pytest>=8", "ruff>=0.4", "httpx>=0.28"]
 ci = [
     "pytest>=8",
     "ruff>=0.4",
+    "httpx>=0.28",
     "pandas>=2.0",
     "pyarrow>=15",
     "scipy>=1.12",
@@ -54,7 +58,7 @@ where = ["src"]
 # find its calibrated weights. `make ci` installs editable and cannot see that;
 # `make dist-check` builds the wheel and can. tests/test_cli.py pins this list.
 [tool.setuptools.package-data]
-airsbench = ["airs/*.json", "runner/*.sql"]
+airsbench = ["airs/*.json", "runner/*.sql", "server/data/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
