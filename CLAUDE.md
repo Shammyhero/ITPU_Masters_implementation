@@ -146,12 +146,16 @@ results/discarded/       runs from superseded designs — evidence, not data
 
 ## Start here
 
-`docs/campaign_status.md` — current campaign state, the exact resume
-command, the remaining roadmap with costs, and findings so far. It is the
-operational entry point for any new session.
+`docs/handoff/01_state_and_results.md` → `02_plan_and_next_steps.md` →
+`03_operating_guide.md`, then `docs/plan.md`. They carry the current state, the
+next step, the traps and the working conventions, and are kept current after
+every step. (`docs/campaign_status.md` is the old campaign log; its roadmap is
+superseded.)
 
 ## Docs to read before changing the design
 
+- `docs/analyst_brief.md` — the product being built now (the Analyst). Its header
+  records the author's decisions and the corrections; it overrides the body.
 - `docs/research_questions_v2.md` — current RQs, hypotheses, stats plan,
   declared experimental parameters. **Supersedes the original proposal's RQs.**
 - `docs/chapter3_methodology.md` — methodology as implemented

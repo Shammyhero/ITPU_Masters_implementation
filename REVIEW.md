@@ -577,6 +577,15 @@ yes; environment no (F-E3).
 
 # Phase 3 — The product
 
+> **Superseded in part, 2026-09-14 — the Analyst.** Modes A–C below were built up to
+> Mode A (W3, `docs/plan.md`). On 14 Sep the author adopted the Analyst
+> (`docs/analyst_brief.md`): live, gated question answering over declared sources with
+> a verifier that attributes each wrong answer to the pipeline or the model. It
+> replaces Mode A's paste-first input (paste remains a source), Mode B's six-step
+> walkthrough (replay becomes a feed into the same renderer) and Mode C. The trace view
+> and the Tick contract below survive into it. Read this phase as the design history,
+> and the brief plus `docs/plan.md` Part 1b as the current product.
+
 > **Revised 2026-09-12 after the author's framing correction:** this is not a
 > defence prop. It is a tool a data engineer could use on their own pipeline,
 > which happens to also be shown at a defence. Offline operation is a *property*
@@ -717,6 +726,12 @@ pre-baked array. Mode C streams over a WebSocket.
 ---
 
 # Phase 4 — The revised plan
+
+> **Superseded from Stage 3 onward, 2026-09-14.** W1–W3 (Stages 1–2 and the product
+> core) are complete. The Analyst replaced Stages 3–5: the refetch arm now runs two
+> conditions on a loop shared with the product, and W4's Mode A work moved into the
+> Analyst. The current plan is `docs/plan.md` (Part 1b); this phase is kept as the
+> reasoning that produced it.
 
 **Recalculated 2026-09-12 against the author's real timeline.**
 ~240 h at 20 h/week, split by two hard milestones:

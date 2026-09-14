@@ -225,7 +225,11 @@ The AIRS scoring curves have been tested for sensitivity to their undocumented
 constants: the rankings largely survive, the magnitudes do not —
 [`docs/sensitivity_findings.md`](docs/sensitivity_findings.md).
 
-Remaining work, week by week, is in [`docs/plan.md`](docs/plan.md): the
-installable product by mid-October, then the thesis document.
+Remaining work, week by week, is in [`docs/plan.md`](docs/plan.md). Next is
+**the Analyst** ([`docs/analyst_brief.md`](docs/analyst_brief.md)): live,
+gated question answering over your own declared data sources, where every
+answer is re-checked against the system of record and each wrong one is
+attributed to the pipeline or the model — by mid-October, then the thesis
+document.
 
 License: [MIT](LICENSE)

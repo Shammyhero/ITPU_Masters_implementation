@@ -238,3 +238,22 @@ staleness alone.
       *before* the accuracy curve moves
 - [ ] Results chapter: report the fault ranking as the headline, the
       detectability split as the interpretation, and architecture as secondary
+
+---
+
+## 9. Additions under the Analyst (adopted 14 Sep)
+
+The Analyst (`docs/analyst_brief.md`, `docs/plan.md` Part 1b) adds no new research
+question. It adds three analyses that bear on the existing ones, each declared here
+before it is run.
+
+| Analysis | Bears on | Hypothesis | Test | Output |
+|---|---|---|---|---|
+| **Verifier agreement** | RQ2, RQ3 — admissibility of the live instrument | H-V: the live verifier, run over the retrieval runs of the main factorial and the freshness sweep, reproduces each decision's correctness, the silent-failure rates and the flip-partition split **exactly** | Decision-level equality; any mismatch is a verifier defect, not a statistic | Fig 4.10, `verifier_agreement_findings.md` |
+| **Refetch arm** (two conditions) | RQ3 (detectability), kill question 3 | H-R1: an agent given a `refetch(record_id)` tool refetches more on stale records than on fresh ones and loses fewer answers on flipped queries than without it. H-R2: gate-initiated refetch reduces silent failure on flipped queries at a lower exchange rate than refusal | Paired comparison within replication, closed-form paired bootstrap as in `interaction.py`; CR2 for any cell comparison | Fig 4.9, `refetch_findings.md` |
+| **Live-source case study** | RQ4 and RQ5 — transfer beyond the two curated datasets | H-L: on a real source with genuine update velocity, AIRS ranks answers that fail above answers that do not; the attribution split is reported whatever it is | Rank correlation / AUC of AIRS against verified failure; descriptive lag and attribution distributions; a null is reportable | Fig 4.11, `live_case_study_findings.md` |
+
+Declared constraints: classification is out of scope for the verifier (its label is a
+property of the flight, not computable from the record); the Analyst's plan-returning
+prompt is a different instrument from the corpus agent's, so live rates are not pooled
+with corpus rates; live sessions never enter `results/runs/`.
