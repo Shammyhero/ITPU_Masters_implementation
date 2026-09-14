@@ -1,16 +1,17 @@
-"""Bake the console's bundled data from the repository. Run before a release.
+"""Bake the tool's bundled data from the repository. Run before a release.
 
     python -m airsbench.server.bake
 
-An installed wheel cannot read `examples/` or `results/runs/`: neither is inside
-the package. What the console needs from them is generated into `server/data/`
-and committed, and the tests fail when a committed file differs from a fresh
-bake — so the data is never hand-edited and never stale.
+An installed wheel cannot read `examples/`, `results/runs/` or `data/`: none of
+them is inside the package. What the tool needs from them is generated into the
+package and committed, and the tests fail when a committed file differs from a
+fresh bake — so the data is never hand-edited and never stale.
 
-  samples.json         the worked examples: sample records and example policies
-  replay_corpus.json   every run the gate findings were replayed over, reduced
-                       to what the accounting needs, so /api/replay prices a
-                       policy on the same evidence as `docs/gate_findings.md`
+  server/data/samples.json         the worked examples: records and policies
+  server/data/replay_corpus.json   every run the gate findings were replayed
+                                   over, reduced to what the accounting needs
+  sources/data/esci_slice.json.gz  a seeded slice of the ESCI catalog and its
+                                   update stream, for the bundled demo source
 
 Numbers in the prose come from the files they describe (the calibrated weights,
 the policy itself, the runs), not from memory.
@@ -19,7 +20,10 @@ the policy itself, the runs), not from memory.
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
+import math
+import random
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -27,15 +31,21 @@ from typing import Any
 from ..gate import Policy
 from ..gate.replay import load_batches
 from ..probe import DEFAULT_WEIGHTS, parse_records, score
+from ..sources.demo import SLICE
 
 ROOT = Path(__file__).parents[3]
 DATA = Path(__file__).parent / "data"
 OUT = DATA / "samples.json"
 REPLAY_OUT = DATA / "replay_corpus.json"
+ESCI_DATA = ROOT / "data" / "ecommerce"
 # The arms `docs/gate_findings.md` replays: the fault factorial and the freshness
 # sweep, on the primary model. Other arms change the treatment (metadata shown
 # to the agent, other models, composed faults) and would price a different gate.
 REPLAY_ARMS = ("main", "freshness_sweep")
+# 200 queries — about 1,100 products and 11,000 updates, ~0.2 MB compressed: small
+# enough to ship in the wheel, large enough that demo questions rarely repeat.
+SLICE_QUERIES = 200
+SLICE_SEED = 20260914
 
 SAMPLES = {
     "healthy": ("Healthy pipeline",
@@ -107,6 +117,56 @@ def build_replay_corpus(results_dir: Path = ROOT / "results" / "runs") -> dict[s
     }
 
 
+def _plain(value: Any) -> Any:
+    """A pandas/numpy cell as a JSON-safe Python value; NaN becomes null."""
+    if hasattr(value, "item"):
+        value = value.item()
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    return value
+
+
+def build_esci_slice(data_dir: Path = ESCI_DATA, n_queries: int = SLICE_QUERIES,
+                     seed: int = SLICE_SEED) -> dict[str, Any]:
+    """A seeded set of queries, the products they name, and those products' updates.
+
+    Updates for other products never change these products' state, so the slice
+    replays to exactly the full catalog's state for every product it holds — a
+    test checks that against `data/ecommerce`.
+    """
+    import pandas as pd
+
+    catalog = pd.read_parquet(data_dir / "catalog.parquet").to_dict("records")
+    known = {str(row["product_id"]) for row in catalog}
+    queries = sorted(
+        ({"query_id": int(q["query_id"]), "query": str(q["query"]),
+          "relevant_product_ids": [str(p) for p in q["relevant_product_ids"]]}
+         for q in pd.read_parquet(data_dir / "queries.parquet").to_dict("records")),
+        key=lambda q: q["query_id"],
+    )
+    usable = [q for q in queries if sum(p in known for p in q["relevant_product_ids"]) >= 2]
+    chosen = sorted(random.Random(seed).sample(usable, n_queries), key=lambda q: q["query_id"])
+    wanted = {pid for query in chosen for pid in query["relevant_product_ids"]}
+    rows = sorted(({key: _plain(value) for key, value in row.items()}
+                   for row in catalog if str(row["product_id"]) in wanted),
+                  key=lambda row: row["product_id"])
+    updates = [update for update in
+               (json.loads(line) for line in
+                (data_dir / "updates.jsonl").read_text(encoding="utf-8").splitlines() if line)
+               if update["product_id"] in wanted]
+    return {
+        "schema": "airs-esci-slice/1",
+        "seed": seed,
+        "n_queries": n_queries,
+        "note": "A seeded slice of the study's ESCI catalog and its synthetic update stream, "
+                "for the bundled demo source.",
+        "semantic_context": json.loads((data_dir / "semantic_context.json").read_text()),
+        "queries": chosen,
+        "catalog": rows,
+        "updates": updates,
+    }
+
+
 def _write(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -115,6 +175,7 @@ def _write(path: Path, payload: dict[str, Any]) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--results", type=Path, default=ROOT / "results" / "runs")
+    parser.add_argument("--data-dir", type=Path, default=ESCI_DATA)
     args = parser.parse_args(argv)
 
     samples = build()
@@ -125,6 +186,16 @@ def main(argv: list[str] | None = None) -> int:
     corpus = build_replay_corpus(args.results)
     _write(REPLAY_OUT, corpus)
     print(f"wrote {REPLAY_OUT}: {corpus['runs']} runs, {corpus['decisions']:,} decisions")
+
+    if not (args.data_dir / "updates.jsonl").exists():
+        print(f"kept {SLICE}: {args.data_dir} is not prepared (make data-ecommerce)")
+        return 0
+    esci = build_esci_slice(args.data_dir)
+    raw = json.dumps(esci, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    SLICE.parent.mkdir(parents=True, exist_ok=True)
+    SLICE.write_bytes(gzip.compress(raw, compresslevel=9, mtime=0))  # mtime=0: byte-stable
+    print(f"wrote {SLICE}: {len(esci['queries'])} queries, {len(esci['catalog']):,} products, "
+          f"{len(esci['updates']):,} updates, {SLICE.stat().st_size / 1e6:.2f} MB")
     return 0
 
 

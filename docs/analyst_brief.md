@@ -105,6 +105,18 @@ left open and the corrections made after checking it against the code.
 
 14. **§9 — hours and order** are replaced by `docs/plan.md`, stages A1–A11.
 
+15. **§3.1 and §3.4 — consistency is scored against upstream as of when the delivered
+    values were true, not against upstream now** (found building A1). The corpus compared
+    delivered records with the same records before the fault chain — the catalog as of
+    t − staleness (`runner.execute.run_retrieval`) — so consistency measured what the
+    pipeline did and freshness measured age (invariant 5). Comparing with upstream at
+    answer time would count every value that moved during the staleness window against
+    consistency, making it collinear with freshness under the calibrated weights. So
+    `Source.fetch` takes `as_of`: **consistency uses upstream as of the delivered values'
+    time; the verifier uses upstream at answer time.** A source with no history (a file, a
+    table without versions) reports `supports_as_of: false`, and its consistency also
+    absorbs staleness — said in the output, not hidden.
+
 ---
 
 # Implementation brief — the Analyst: live AIRS-gated question answering over a connected source

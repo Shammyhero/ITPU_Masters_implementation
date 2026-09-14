@@ -117,6 +117,18 @@ failure.
 airs gate --records delivered.jsonl --policy examples/gate/retrieval.json
 ```
 
+**`airs sources`** — the data sources the Analyst will answer from: a bundled demo
+slice of the study's own catalog, served exactly the way the benchmark served it
+(`demo-healthy`, `demo-stale`, `demo-drift`, `demo-stripped`), plus your own files
+declared in a `sources.yaml` (JSONL, CSV, and Parquet with `airs-bench[parquet]`).
+Sources are declared, never requested over HTTP, read-only, and credentials never
+go in the file.
+
+```bash
+airs sources sample demo-stale --seed 7
+airs sources --sources sources.yaml list
+```
+
 `airs probe` and `python -m airsbench.probe` are the same program with the same
 exit codes. Timestamps may be epoch seconds or ISO-8601 with a timezone.
 Worked examples: [`examples/probe/`](examples/probe/) · [`examples/gate/`](examples/gate/)
@@ -184,6 +196,7 @@ src/airsbench/agents/    LLM client, prompts, retrieval + classification agents
 src/airsbench/pipelines/ catalog time machine + record builders (loader.py)
 src/airsbench/gate/      admission control: Policy, Controller, offline policy replay
 src/airsbench/server/    `airs serve`: the local API, and the data baked for it
+src/airsbench/sources/   declared, read-only data sources: the bundled demo slice, files, inline
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema
 src/airsbench/analysis/  one module per research question — all free to re-run
 src/airsbench/dataprep/  dataset preparation + free sensitivity check

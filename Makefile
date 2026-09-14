@@ -96,6 +96,8 @@ dist-check:
 	@$(AIRS) gate --records $(EX)/probe/degraded.jsonl --source $(EX)/probe/source.jsonl \
 		--policy $(EX)/gate/retrieval.json >/dev/null; \
 		test $$? -eq 1 || { echo "dist-check: a degraded batch was not refused (exit 1)"; exit 1; }
+	@cd $(DIST) && venv/bin/python -c "import yaml" || { echo "dist-check: PyYAML is not installed with the wheel"; exit 1; }
+	@$(AIRS) sources sample demo-stale --seed 7 --json >/dev/null
 	@cd $(DIST) && venv/bin/python $(CURDIR)/tests/dist_smoke.py venv/bin/airs $(EX)
 	@rm -rf $(DIST)
 	@echo "wheel verification passed"

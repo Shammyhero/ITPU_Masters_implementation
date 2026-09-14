@@ -1,93 +1,89 @@
 # Handoff 2/3 — Plan and next steps
 
 Authoritative plan: **`docs/plan.md`** (Part 1b = the Analyst). Product brief as adopted:
-**`docs/analyst_brief.md`** — its header (decisions + corrections) overrides the brief
-body. Adversarial audit: **`REVIEW.md`** (Phase 3 is now design history). This file is
-the condensed "what to do next" view. Update it whenever the plan moves.
+**`docs/analyst_brief.md`** — its header (decisions + 15 corrections) overrides the body.
+Adversarial audit: **`REVIEW.md`** (Phase 3 is design history). This file is the condensed
+"what to do next" view. Update it whenever the plan moves.
 
 ---
 
-## 1. Immediate next step: stage A1 — sources
+## 1. Immediate next step: A3 — the verifier (then A4)
 
-W1, W2, F-C7 and W3 are done (14 Sep, ~2 weeks ahead). The Analyst was adopted on
-14 Sep and replaces the old W4–W8. Start with **A1**, then A3 → A4 before any UI:
+**A1 (sources) is done** (14 Sep): `src/airsbench/sources/` with the `demo` source (the
+study's own serving recipe over a bundled slice), `files`, `inline`, `sources.yaml`,
+`airs sources`. Next, per rule 4 of the plan — **verifier before interface**:
 
-| Stage | h | Summary |
+- **A3 (14 h, non-negotiable)** — `src/airsbench/analyst/verifier.py`: answer-plan schema;
+  checkable types `min_by`, `max_by`, `count_where`, `sum_where`, `lookup`, `top_k`, executed
+  deterministically on the delivered read (t0) and the upstream read of **the same ids**;
+  `RetrievalAgent.ground_truth` becomes the `min_by` case. Correctness against upstream first,
+  then attribution (`answer_key_moved` / `agent_impairment` / `both`; none for abstained or
+  parse-failed); `runner/scoring.py::is_silent_failure` imported. Build on the `demo` source,
+  stdout Ticks, no UI. Use `Sample.meta["served_as_of"]` for the consistency reference and
+  `Sample.as_of` for the answer key.
+- **A4 (6 h, non-negotiable, by Fri 2 Oct)** — the verifier over the main-factorial and
+  freshness-sweep **retrieval** runs must reproduce correctness, silent-failure rates and the
+  flip-partition split **exactly** → `analysis/verifier_agreement.py`, **Fig 4.10**,
+  `docs/verifier_agreement_findings.md`. Any mismatch stops UI work.
+- A2 (manifest, two-state semantic rule) follows in the week of 21 Sep.
+
+| Stage | h | State |
 |---|---|---|
-| **A1** | 12 | `src/airsbench/sources/`: `Source` protocol (`sample`, `fetch`, `describe`), `SourcePair`, read-only; `demo` adapter (bundled ESCI slice + update stream, fault chain applied once by the source) built first; `files` adapter; sources **declared** in `sources.yaml` / CLI; paste becomes the `inline` source |
-| A2 | 8 | manifest schema, committed manifests, review/approve, costed inference; **two-state semantic rule** |
-| **A3** | 14 | verifier + checkable question types + live attribution, stdout Ticks, no UI — **non-negotiable** |
-| **A4** | 6 | verifier agreement with the corpus, exact, retrieval only → **Fig 4.10** — **non-negotiable, stops UI work if it fails** |
-| A5 | 8 | model options: free local Ollama (discovered) or API key (OpenAI / Anthropic / **Gemini**, new); caps before each call; close the "unpriced = free" gap |
-| A6 | 12 | router admit/refetch/refuse + `analyst/loop.py`, shared with the refetch arm |
-| A7 | 8 | `/api/sources`, `/api/models`, `/api/session`, **`/api/ask` (SSE Ticks)**; live quarantine + credential tests |
-| A8 | 18 | console: source picker, manifest review, model choice, conversation, trace panel, meter, semantic toggle, replay feed |
-| A9 | 15 | task switch, recommended policy, meter prior (raw vs true cost), printable report |
-| A10 | 8 | postgres, duckdb/sqlite, http adapters — cut first |
-| A11 | 6 | live-source case study → Fig 4.11 — cut second |
-| Refetch arm | 28 | agent-initiated + gate-initiated conditions, ~54 runs, ~$2.20, Fig 4.9, hard cut 30 Oct |
+| A1 sources | 12 | **done 14 Sep** |
+| A2 manifest | 8 | 21–25 Sep |
+| **A3 verifier** | 14 | **next** (gate Fri 25 Sep: attributed Ticks on `demo`) |
+| **A4 Fig 4.10** | 6 | gate **Fri 2 Oct** |
+| A5 model options (free Ollama / OpenAI · Anthropic · Gemini key; close "unpriced = free") | 8 | 28 Sep–2 Oct |
+| A6 router + shared loop | 12 | 28 Sep–2 Oct |
+| A7 API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | 5–9 Oct |
+| A8 console | 18 | 5–16 Oct |
+| A9 task switch, recommended policy, meter prior, report | 15 | 12–23 Oct |
+| Refetch arm (two conditions, ~$2.20, Fig 4.9) | 28 | 19–30 Oct, hard cut 30 Oct |
+| A10 postgres/duckdb/http | 8 | cut first |
+| A11 live case study (Fig 4.11) | 6 | cut second |
 
-**Calendar:** A1 + A3 start (14–18 Sep) · A3 + A4 + A2 (21–25 Sep) · A5 + A6 (28 Sep–2 Oct) ·
-A7 + A8 (5–9 Oct) · A8 + A9 + M1 presentation (12–16 Oct) · A9 + arm build + A10 (19–23 Oct) ·
-arm run + A10 (26–30 Oct) · A11 + positioning + papers + DOI (2–6 Nov). **159 h in ~160 h —
-no buffer**, by the author's choice to keep everything; cut order if a checkpoint slips:
-A10 → A11 → A9 report → A2 inference → A8 toggle.
+**Checkpoints:** Fri 25 Sep A3 · **Fri 2 Oct Fig 4.10 exact** · Fri 9 Oct `/api/ask` on the
+free model · **Fri 16 Oct M1** · Fri 23 Oct arm dry-run · Fri 30 Oct arm runs · **Fri 6 Nov
+freeze**. No buffer; cut order A10 → A11 → A9 report → A2 inference → A8 toggle.
 
-**Checkpoints:** Fri 25 Sep A3 prints attributed Ticks · **Fri 2 Oct Fig 4.10 exact** · Fri 9 Oct
-`/api/ask` end to end on the free model · **Fri 16 Oct M1** · Fri 23 Oct arm dry-run · Fri 30 Oct
-arm runs (hard cut) · **Fri 6 Nov freeze**.
+## 2. Decisions made (do not re-litigate)
 
-## 2. Decisions made on 14 Sep (do not re-litigate)
+**14 Sep, the Analyst:** adopt with the brief's corrections · sources declared locally,
+credentials from environment variables · refetch arm = agent-initiated + gate-initiated
+conditions on one loop · models: free local Ollama or API key (OpenAI, Anthropic, Gemini),
+keys in memory only · W4's Mode A work kept as A9 · timeline does not drop features.
 
-- **Adopt the Analyst**, with the 14 corrections in the brief's header (correctness before
-  attribution; two-state semantic rule; toggle = real injector; no upstream loses consistency
-  and the verifier, not freshness; same ids at t1; Fig 4.10 retrieval-only and exact; router
-  REFETCH ≠ the arm; "offline $0" needs a local model; live never in `results/runs/`; keep the
-  Tick `airs` extension; the plan prompt is a different instrument; honest case-study framing;
-  per-mode privacy wording).
-- **Sources declared locally**, credentials from environment variables; the console selects,
-  tests and describes declared sources; no path/DSN/URL over HTTP.
-- **Refetch arm: two conditions, one loop.**
-- **Models: Free (local Ollama, whatever is installed) or API key (OpenAI, Anthropic, Gemini)**;
-  keys from environment or entered for the session, memory only.
-- **W4's Mode A work kept**, redesigned into A9. Timeline does not drop features; the cut order
-  applies only when a checkpoint is missed.
+**14 Sep, A1:** `sources.yaml` in YAML with PyYAML as a core dependency · Parquet as the
+optional `[parquet]` extra · demo time is simulated per question (reads exactly as of the
+answer) · `airs sources` command added · consistency is scored against upstream as of when
+the delivered values were true (brief correction 15).
 
-## 3. Product decisions from W3 (still standing)
+**W3, still standing:** real tool, not a prop · `pip install` → `airs serve` · no scoring
+rule implemented twice · fastapi + uvicorn core, `probe`/`gate`/`airs` import no web stack ·
+Tick `airs` block `{score | null, detail, weight}` + band · ISO-8601 timestamps with zone ·
+no SaaS, no GitHub Actions.
 
-- Real tool for a data engineer's own pipeline; the defence is one place it is shown.
-- `pip install` → `airs serve`; FastAPI serving the static Next.js export; one process.
-- **No scoring rule implemented twice.**
-- fastapi + uvicorn core; `probe`, `gate`, `airs` import no web stack (pinned).
-- Tick `airs` block = `{score | null, detail, weight}` + band, all modes.
-- Timestamps epoch seconds or ISO-8601 with zone; duplicate upstream ids refused.
-- No SaaS, no GitHub Actions.
+## 3. Thesis writing (W9–W12, 9 Nov–4 Dec, 80 h, together)
 
-## 4. Thesis writing (W9–W12, 9 Nov–4 Dec, 80 h, together)
+Order **Ch3 → Ch4 → Ch2 → Ch1 + Ch5**; Markdown first. Ch3 adds the Analyst (sources and the
+as-of consistency reference, verifier, attribution, quarantine, prompt-as-instrument) and the
+arm's two conditions; Ch4 covers Figs 4.1–4.11 + 3.1. **Checkpoint Fri 27 Nov:** Ch 2–4 drafted.
 
-Order **Ch3 → Ch4 → Ch2 → Ch1 + Ch5**; Markdown first. Ch3 must add the Analyst (verifier,
-attribution, quarantine, prompt-as-instrument) and the arm's two conditions; Ch4 covers
-Figs 4.1–4.11 + 3.1. RQs v2 §9 declares the three new analyses (verifier agreement, refetch
-arm, case study) and their hypotheses. **Checkpoint Fri 27 Nov:** Ch 2–4 drafted.
-
-## 5. Open findings to carry (from `REVIEW.md`)
+## 4. Open findings to carry (from `REVIEW.md`)
 
 | ID | Status | What |
 |---|---|---|
 | F-C7 | **RESOLVED 13 Sep** | CR2 + Bell–McCaffrey; decision models calibrated |
-| F-A1 | 2–6 Nov | ISO 25012 / data contracts / agent benchmarks positioning |
-| F-A2 | 2–6 Nov | Read the 4 load-bearing papers in full |
-| F-B1 | limitation | AIRS constants underived — state in Ch3/Ch5 |
-| F-C4 | polish | No multiple-comparison correction across 8 interaction contrasts |
-| F-E5 | 2–6 Nov | Zenodo DOI |
-| Kill Q3 | Oct | "Is one API call agentic?" → refetch arm, agent-initiated condition |
-| Phase 1D | Nov | external validity → live case study (A11) |
-| CR2/BM refs | before Ch3 | verify the CR2, Bell–McCaffrey and few-cluster citations |
-| Fragility predictability | idea | per-question readiness signal; unscheduled |
+| F-A1 · F-A2 · F-E5 | 2–6 Nov | positioning (ISO 25012, data contracts, agent benchmarks) · read the 4 load-bearing papers · Zenodo DOI |
+| F-B1 | limitation | AIRS constants underived |
+| F-C4 | polish | no multiple-comparison correction across 8 interaction contrasts |
+| Kill Q3 | Oct | refetch arm, agent-initiated condition |
+| Phase 1D | Nov | external validity → A11 case study |
+| CR2/BM refs | before Ch3 | verify the citations |
 
-## 6. Cut list (decided — do not reopen)
+## 5. Cut list (decided — do not reopen)
 
-Real Kafka/Airflow pipeline · leading-indicator/AIRS-drift arm · third task domain / fifth
-model · `airs lint` · generic multi-step agent · Streamlit rewrite · SaaS hosting · GitHub
-Actions · untestable warehouse connectors · open-ended NL over arbitrary schemas · writes of
-any kind · multi-user/auth/deployment · Mode B's bespoke walkthrough and Mode C (absorbed).
+Real Kafka/Airflow pipeline · leading-indicator arm · third domain / fifth model · `airs lint` ·
+generic multi-step agent · Streamlit rewrite · SaaS · GitHub Actions · untestable warehouse
+connectors · open-ended NL over arbitrary schemas · writes · multi-user/auth/deployment ·
+Mode B's bespoke walkthrough and Mode C (absorbed).

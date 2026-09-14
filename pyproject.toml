@@ -15,9 +15,13 @@ authors = [{ name = "Shamsiddin Khamidov" }]
 # agentic_faults, the AIRS calculator, `airs probe` and `airs gate` never import it
 # (pinned by tests/test_server.py), so a pipeline step running `airs gate` loads
 # no web framework. Floors are the versions the test suite was run against.
-dependencies = ["fastapi>=0.141", "uvicorn>=0.52"]
+# PyYAML reads the declared sources file (`airs sources`, `airs serve --sources`);
+# like the web stack, it is imported only by the commands that need it.
+dependencies = ["fastapi>=0.141", "uvicorn>=0.52", "pyyaml>=6.0"]
 
 [project.optional-dependencies]
+# Parquet in a `files` source. JSONL and CSV need nothing extra.
+parquet = ["pyarrow>=15"]
 data = ["pandas>=2.0", "pyarrow>=15", "datasets>=2.19", "requests>=2.31"]
 # Serves only infra_unused/ (quarantined 2026-09-13). No experiment, analysis
 # or test imports these; results are simulated archetypes, see infra_unused/README.md.
@@ -59,7 +63,8 @@ where = ["src"]
 # `make dist-check` builds the wheel and can. tests/test_cli.py pins this list.
 [tool.setuptools.package-data]
 # web/ is the static console, built into the package by `make web` (not committed).
-airsbench = ["airs/*.json", "runner/*.sql", "server/data/*.json", "web/**/*"]
+airsbench = ["airs/*.json", "runner/*.sql", "server/data/*.json", "sources/data/*.json.gz",
+             "web/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -248,6 +248,22 @@ def test_measure_refuses_duplicate_source_ids_from_any_caller():
         measure([_entry(pid="A")], [_entry(pid="A"), _entry(pid="A", price=12.0)])
 
 
+def test_consistency_sees_through_the_opaque_names_semantic_stripping_records():
+    """Field-name opacity belongs to the semantic dimension (invariant 5). With the
+    map the injector recorded, consistency is untouched; without it, every key
+    reads as a mismatch and stripping would masquerade as drift."""
+    source = [{"id": "A", "payload": {"price": 1.0, "stock": 2}}]
+    opaque = {"id": "A", "payload": {"f1": 1.0, "f2": 2}}
+    assert measure([opaque], source)["consistency"]["score"] == 0.0
+    mapped = {**opaque, "opaque_map": {"f1": "price", "f2": "stock"}}
+    assert measure([mapped], source)["consistency"]["score"] == 100.0
+
+
+def test_an_opaque_map_that_is_not_names_to_names_is_refused():
+    with pytest.raises(ProbeError, match="'opaque_map' must map"):
+        measure([{"payload": {}, "opaque_map": {"f1": 3}}])
+
+
 def test_a_missing_file_is_a_probe_error(tmp_path):
     with pytest.raises(ProbeError, match="no such file"):
         load_records(tmp_path / "nope.jsonl")

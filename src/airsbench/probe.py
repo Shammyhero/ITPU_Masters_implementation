@@ -175,6 +175,14 @@ def normalise(entry: Any, where: str) -> dict[str, Any]:
         raise ProbeError(
             f"{where}: 'id' must be a string or an integer, not {_json_kind(record_id)}"
         )
+    opaque_map = entry.get("opaque_map")
+    if opaque_map is not None and (
+            not isinstance(opaque_map, dict)
+            or not all(isinstance(k, str) and isinstance(v, str) for k, v in opaque_map.items())):
+        raise ProbeError(
+            f"{where}: 'opaque_map' must map each opaque field name to its original name, "
+            f"as semantic stripping records it"
+        )
 
     out = dict(entry)
     for field in ("event_timestamp", "read_timestamp"):
@@ -277,6 +285,10 @@ def _as_record(entry: dict[str, Any]) -> Record:
     )
     if entry.get("read_timestamp") is not None:
         record.read_timestamp = float(entry["read_timestamp"])
+    if entry.get("opaque_map"):
+        # The names semantic stripping made opaque, so consistency can reverse
+        # them: opacity belongs to the semantic dimension alone (invariant 5).
+        record.meta["opaque_map"] = dict(entry["opaque_map"])
     return record
 
 

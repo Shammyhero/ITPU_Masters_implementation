@@ -2,15 +2,18 @@
 
     airs serve
     airs serve --records delivered.jsonl --source upstream.jsonl --task retrieval
+    airs serve --sources sources.yaml
     airs serve --port 8080 --no-browser
 
 Records named with --records and --source are validated before the server
-starts and offered to the page. The page never asks the server to read a path,
-so no web page can use this server to read files off the machine. It binds to
-127.0.0.1 unless told otherwise, makes no outbound request, and calls no model.
+starts and offered to the page. Data sources are declared with --sources (see
+`airsbench.sources.config`) and validated at startup too. The page never asks
+the server to read a path or open a connection, so no web page can use this
+server to reach files or systems on the machine. It binds to 127.0.0.1 unless
+told otherwise, makes no outbound request, and calls no model.
 
-Exit status: 0 after a clean stop, 2 if the records, the task or the port are
-unusable — reported before anything listens.
+Exit status: 0 after a clean stop, 2 if the records, the sources, the task or the
+port are unusable — reported before anything listens.
 """
 
 from __future__ import annotations
@@ -80,6 +83,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="JSONL of delivered records to open the console with")
     parser.add_argument("--source", type=Path, default=None,
                         help="JSONL of the same records upstream, matched on 'id'")
+    parser.add_argument("--sources", type=Path, default=None,
+                        help="a sources.yaml declaring your data sources")
     parser.add_argument("--task", default="retrieval",
                         help="calibrated weight profile for the preloaded records")
     parser.add_argument("--no-browser", action="store_true", help="do not open a browser")
@@ -89,6 +94,11 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         preloaded = preload(args.records, args.source, args.task)
+        declared = None
+        if args.sources is not None:
+            from ..sources.config import load_sources
+
+            declared = load_sources(args.sources)
     except ProbeError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
@@ -121,6 +131,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"AIRS console at {url}   (Ctrl+C to stop)")
     if loopback:
         print("Listening on this machine only. No model is called and nothing is sent anywhere.")
+    if declared is not None:
+        print(f"Validated {len(declared)} data sources from {args.sources} "
+              f"(`airs sources list` shows them).")
     if not app.state.frontend_built:
         print("The web console is not built into this install; the API is up at /api/docs.")
     server.run()

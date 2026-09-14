@@ -225,6 +225,25 @@ guarantee enforced at the adapter.
   missing environment variable is refused with the variable's name; no path, DSN or URL
   is accepted over HTTP.
 
+> **Progress 14 Sep — A1 built.** `src/airsbench/sources/`: the four-member protocol;
+> the `demo` source — a seeded 200-query ESCI slice (1,129 products, 11,341 updates,
+> 0.21 MB, byte-stable bake, drift- and replay-tested against `data/ecommerce`) served
+> through the runner's own catalog replay, record builder, staleness accounting and
+> fault chain, with four built-in pairs (`demo-healthy`, `demo-stale`, `demo-drift`,
+> `demo-stripped`); `files` (JSONL, CSV, and Parquet through the new `[parquet]` extra)
+> and `inline` sources; `sources.yaml` read with PyYAML, now a core dependency (author
+> decision), refusing unknown keys, duplicate ids and inline credentials; a new
+> `airs sources list | describe | sample`; `airs serve --sources` validates at startup.
+> Demo questions use simulated time per question (author decision), so upstream is read
+> exactly as of the answer and the t0/t1 gap is zero. **Two findings, both fixed and
+> tested:** consistency must be scored against upstream *as of when the delivered values
+> were true*, the corpus's reference (brief correction 15), so `fetch` takes `as_of`;
+> and the probe dropped semantic stripping's `opaque_map`, which now travels through
+> `to_probe_entry` and `probe`. The demo source reproduces `runner.execute`'s AIRS
+> exactly for every condition tested. 567 tests. Deferred by design: the environment-
+> variable credential mechanism (first needed by A10), `--records/--source` as a
+> `cli` source pair and the API routes (A7), the console (A8).
+
 ### A2 · The semantic manifest · 8 h
 
 `manifest.yaml` schema (field roles: id, measure, label, updated_at; unit; definition;

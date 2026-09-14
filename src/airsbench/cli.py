@@ -1,8 +1,9 @@
 """`airs` — the command installed by `pip install airs-bench`.
 
     airs serve
-    airs probe --records delivered.jsonl --source upstream.jsonl --task retrieval
-    airs gate  --records delivered.jsonl --policy policy.json
+    airs probe   --records delivered.jsonl --source upstream.jsonl --task retrieval
+    airs gate    --records delivered.jsonl --policy policy.json
+    airs sources sample demo-stale --seed 7
 
 Each subcommand IS the module's own `main`, so `airs probe` and
 `python -m airsbench.probe` are one program with one set of exit codes — probe:
@@ -24,6 +25,7 @@ COMMANDS = {
     "serve": "open the local web console in a browser (records stay on this machine)",
     "probe": "score a pipeline's readiness from a sample of delivered records",
     "gate": "admit or refuse a batch of records against a declared policy",
+    "sources": "list, describe and sample your declared data sources",
 }
 
 
@@ -34,6 +36,8 @@ def _load(command: str) -> Callable[[list[str]], int]:
         from .probe import main
     elif command == "gate":
         from .gate.__main__ import main
+    elif command == "sources":
+        from .sources.__main__ import main
     else:
         raise KeyError(command)
     return main

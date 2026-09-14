@@ -1,6 +1,7 @@
 # Handoff 1/3 — Current state and results
 
-**Refreshed:** 14 Sep 2026 · **Last commit:** `05d0ce3` (pushed) — W3 step 6
+**Refreshed:** 14 Sep 2026 · **Last pushed commit:** `b691124` (Analyst adopted) · A1
+(sources) committed next
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
 **Read next:** `02_plan_and_next_steps.md`, then `03_operating_guide.md`.
@@ -19,102 +20,99 @@ Cause Silent Failure in Agentic AI Systems."** A benchmark injects four data fau
 LLM agent (retrieval over an e-commerce catalog; classification of flight delays),
 measures *silent failure* (committed, parseable, wrong), and builds **AIRS** — a
 pipeline readiness score computable from telemetry without running an agent. The
-product is an installable tool: `pip install .` (from a clone, after `make web`),
-then `airs serve` for a local web console, or `airs probe` / `airs gate` on the
-command line.
+product is an installable tool (`pip install .` after `make web`; `airs serve`,
+`airs probe`, `airs gate`, `airs sources`), now being extended into **the Analyst**:
+live, gated question answering over declared data sources, with every wrong answer
+attributed to the pipeline or the model (`docs/analyst_brief.md`).
 
 ## 2. Health right now
 
 | | |
 |---|---|
-| Tests | **501 passing**, lint clean (`make test`, `make lint`) |
-| Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite (last run: W3 step 3) |
-| Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` and `airs serve` (API + console). Passes. Needs `make web` first |
-| Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64), `make lock` |
-| Figures | `make figures` builds all 9, deterministic. Fig 3.1 regenerated for F-C7 |
+| Tests | **567 passing**, lint clean (`make test`, `make lint`) |
+| Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
+| Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
+| Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
+| Figures | `make figures` builds all 9, deterministic |
 | Runs on disk | 302 run artifacts in `results/runs/` (committed), 24 270 decisions |
-| Spend | $5.15 total — OpenAI $2.42 of ~$7 (**~$4.58 left**), Anthropic $2.73 of ~$4 (**~$1.27 left**). Nothing spent since |
+| Spend | $5.15 total — OpenAI ~$4.58 left, Anthropic ~$1.27 left. Nothing spent since |
 | CI | **None, deliberately.** `make ci` + `make dist-check` replace it |
-| Working tree | Clean at `05d0ce3` apart from uncommitted doc edits in progress |
 
 ## 3. Timeline and where we are
 
 | Milestone | Date | State |
 |---|---|---|
-| W1 survival fixes | 14–18 Sep | **done** |
-| W2 fragility, power, figures | 21–25 Sep | **done** |
-| F-C7 small-cluster correction | (not in plan) | **done 13 Sep** |
-| W3 product backend + Mode A | 28 Sep–2 Oct | **done 14 Sep — ~2 weeks ahead** |
-| **Plan revision: the Analyst** | 14 Sep | **adopted** — `docs/analyst_brief.md`, `docs/plan.md` Part 1b; next: stage A1 (02 §1) |
+| W1 survival fixes · W2 fragility, power, figures | 14–25 Sep (dated) | **done** |
+| F-C7 small-cluster correction | 13 Sep | **done** |
+| W3 product core — CLI, API, console, packaging | 28 Sep–2 Oct (dated) | **done 14 Sep** |
+| **The Analyst adopted** — `docs/analyst_brief.md`, `docs/plan.md` Part 1b | 14 Sep | **done** |
+| **A1 sources** | 14–18 Sep | **done 14 Sep** |
+| A3 verifier · A4 Fig 4.10 agreement | by Fri 25 Sep · **Fri 2 Oct** | next |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |
 | **M2 — submission** | ~Fri 4 Dec · defence December, TBC | |
 
-Capacity: 20 h/week. Plan: `docs/plan.md` (W3 progress note has the detail).
+Capacity: 20 h/week. ~159 h of work scheduled into ~160 h to the freeze (02 §1).
 
 ## 4. The six research questions — answered
 
 | RQ | Answer | Findings doc |
 |---|---|---|
-| RQ1 | Degradation monotone in data age; threshold 5.05 s. Retrieval = *exposure* (rises 2.3→19.2%) × *conditional rate* (flat ~85–100%). | `freshness_sweep_findings.md`, Fig 4.1 |
-| RQ2 | Rank on **residual** impairment (retrieval): drift −0.173 > stripping −0.128 > freshness −0.003 ≈ latency 0. Raw and residual agree on order; the partition changes magnitude. | `flip_partition_findings.md` §2, §6; Fig 4.2 |
-| RQ3 | Silent failure driven by drift + stripping (retrieval), freshness (classification). Abstention driven by stripping only. **Every published significant coefficient survives the F-C7 p-value calibration.** | `statistical_analysis_findings.md`, `power_findings.md` |
-| RQ4 | AIRS ranks held-out pipelines ρ −0.748 (retrieval) / −0.882 (classification). **Agent confidence AUC 0.501 on retrieval**; AIRS 0.580, DeLong p<0.0001. Confidence wins on classification (0.608 vs 0.557). | `airs_calibration_findings.md`; Figs 4.3, 4.4 |
+| RQ1 | Degradation monotone in data age; threshold 5.05 s. Retrieval = *exposure* × *conditional rate*. | `freshness_sweep_findings.md`, Fig 4.1 |
+| RQ2 | Rank on **residual** impairment (retrieval): drift −0.173 > stripping −0.128 > freshness −0.003 ≈ latency 0. | `flip_partition_findings.md`; Fig 4.2 |
+| RQ3 | Silent failure driven by drift + stripping (retrieval), freshness (classification); abstention by stripping only. Every published significant coefficient survives the F-C7 calibration. | `statistical_analysis_findings.md`, `power_findings.md` |
+| RQ4 | AIRS ranks held-out pipelines ρ −0.748 / −0.882. **Agent confidence AUC 0.501 on retrieval**; AIRS 0.580, DeLong p<0.0001. | `airs_calibration_findings.md`; Figs 4.3, 4.4 |
 | RQ5 | Ranking transfers across 4 models, **inverts across tasks**. | `cross_model_findings.md` |
-| RQ6 | Two faults **never compound — they saturate**. 5 of 8 pairs sub-additive. | `interaction_findings.md`; Fig 4.6 |
+| RQ6 | Two faults **never compound — they saturate**. | `interaction_findings.md`; Fig 4.6 |
+
+RQs v2 §9 declares three further analyses under the Analyst: verifier agreement (Fig
+4.10), the two-condition refetch arm (Fig 4.9), the live-source case study (Fig 4.11).
 
 ## 5. Other results that carry the thesis
 
-- **Gate economics** (`gate_findings.md`, Fig 4.5): ~75% of silent failure is present
-  on a fault-free pipeline (14.2% vs 19.6%); every worthwhile gate forfeits **7–21
-  correct answers per silent failure prevented** (attribution "true cost"; the raw
-  sweep rate is lower — consistency ≥ 90 on retrieval is 2.26 raw vs 7.0 true).
-- **Detectability null**: giving the agent each record's age does not make it more cautious.
-- **AIRS curve sensitivity** (Fig 4.7): consistency dominance and latency's 0% weight
-  survive all 7 parameterisations; freshness weight does not have one value.
-- **Query fragility** (Fig 4.8): silent failure concentrates 11.8× / 16.4× beyond a
-  permutation null; re-asking gives Jaccard 0.91 / 1.00.
-- **Power under clustering + F-C7** (`power_findings.md`, Fig 3.1): ICC ≤ 0.003. The
-  original cluster-robust test was anti-conservative (α 0.11–0.12 per cell). Cell and
-  pooled comparisons now use **CR2 + Bell–McCaffrey df** (α 0.045–0.058); three cell
-  results lost significance; cell MDEs are **10–12 pp**, pooled 6 pp. Decision-model
-  coefficients have α 0.06–0.10 and are reported with simulation-calibrated p-values
-  (`analysis/pvalue_calibration.py`).
+- **Gate economics** (Fig 4.5): ~75% of silent failure is present on a fault-free
+  pipeline (14.2% vs 19.6%); worthwhile gates forfeit **7–21 correct answers per silent
+  failure genuinely prevented** (attribution true cost; the raw sweep rate is lower —
+  consistency ≥ 90 on retrieval is 2.26 raw vs 7.0 true).
+- **Detectability null**: giving the agent each record's age does not make it cautious.
+- **AIRS curve sensitivity** (Fig 4.7), **query fragility** (Fig 4.8).
+- **Power + F-C7** (Fig 3.1): ICC ≤ 0.003; cell tests now CR2 + Bell–McCaffrey (α
+  0.045–0.058); cell MDEs 10–12 pp, pooled 6 pp; decision-model p-values calibrated.
 - **Silent-failure definition**: one, threshold-free (invariant 8).
 
-## 6. What exists as a product (W3)
+## 6. What exists as a product
 
 | Piece | What |
 |---|---|
-| `airs` command | `airs serve`, `airs probe`, `airs gate` (`src/airsbench/cli.py`); exit codes identical to `python -m` |
-| Input contract | JSONL, `payload` required; timestamps epoch seconds or ISO-8601 **with zone**; ms values refused; duplicate upstream ids refused; every refusal is a `ProbeError` naming line and fix |
-| API (`src/airsbench/server/`) | `GET /api/meta`, `GET /api/samples`, `POST /api/score` (= `probe.score()`), `POST /api/gate` (= `Controller`), `POST /api/replay` (= `gate.replay` over `server/data/replay_corpus.json`, 180 runs). One error shape: 422 `{error: {input, line, message}}` |
-| Security | binds 127.0.0.1; Host-header allowlist (DNS rebinding); CORS only with `--dev`; 64 MB body cap; no outbound requests; local files only via `airs serve --records/--source` |
-| Console (`demo/`) | `/` = Mode A "Check my pipeline" (paste/drop, samples, score view with unmeasured-weight warning); `/evidence/` = the four-act argument. **No scoring in TypeScript** (`ProbeLive.tsx` deleted) |
-| Packaging | `make web` builds the console into `src/airsbench/web/` (gitignored, package data); `server/bake.py` bakes `samples.json` + `replay_corpus.json` (drift-tested) |
+| `airs` command | `serve`, `probe`, `gate`, `sources` (`src/airsbench/cli.py`) |
+| Input contract | JSONL, `payload` required; timestamps epoch seconds or ISO-8601 **with zone**; ms refused; duplicate upstream ids refused; `opaque_map` accepted (consistency reverses stripped names) |
+| API (`server/`) | `/api/meta`, `/api/samples`, `/api/score`, `/api/gate`, `/api/replay` (180 baked runs); 422 `{error: {input, line, message}}` |
+| Security | 127.0.0.1; Host allowlist; CORS only with `--dev`; 64 MB cap; no outbound requests; files and sources only through CLI flags / `sources.yaml` |
+| Console (`demo/`) | `/` Mode A "Check my pipeline"; `/evidence/` the four-act argument; no scoring in TypeScript |
+| **Sources (`sources/`, A1)** | protocol `name / describe / sample / fetch(as_of)`; **`demo`** — seeded ESCI slice (200 queries, 1,129 products, 11,341 updates, 0.21 MB) served through the runner's own functions, four built-in pairs; **`files`** (JSONL, CSV, Parquet via `[parquet]`); **`inline`**; `sources.yaml` (PyYAML) refusing unknown keys, duplicate ids and inline credentials; `airs sources list/describe/sample`; `airs serve --sources` |
+| Packaging | `make web` → `src/airsbench/web/`; `server/bake.py` bakes `samples.json`, `replay_corpus.json`, `sources/data/esci_slice.json.gz` (all drift-tested) |
 
-## 7. Commits since the previous handoff (newest first)
+## 7. Commits (newest first)
 
 | Commit | What |
 |---|---|
-| `05d0ce3` | W3 step 6 — console in the wheel, `aist.json` committed (302 runs), `make web`, dist-check serves the console |
-| `0d87c71` | W3 step 5 — Mode A in the browser; TS scorer deleted; a11y + light-theme contrast fixes |
-| `137de5d` | W3 step 4 — `/api/replay`; `Outcome.to_dict`; replay via `is_silent_failure` (outputs byte-identical) |
-| `d232271` | W3 step 3 — `airs serve`, FastAPI core deps, `.gitignore` `data/` anchored |
-| `803fb35` | W3 step 2 — input hardening, ISO timestamps, `probe.score()`, no NaN in JSON |
-| `0bcbb62` | W3 step 1 — `airs` CLI, package data (weights were missing from the wheel), `make dist-check` |
-| `4c50ca6` | F-C7 — CR2 + Bell–McCaffrey; decision-model p-value calibration |
-| `4648406` | the previous handoff |
+| *(next)* | A1 — sources |
+| `b691124` | The Analyst adopted; handoff notes refreshed |
+| `05d0ce3` | W3 step 6 — console in the wheel, `aist.json` committed |
+| `0d87c71` | W3 step 5 — Mode A in the browser; TS scorer deleted |
+| `137de5d` | W3 step 4 — `/api/replay` |
+| `d232271` | W3 step 3 — `airs serve`, `.gitignore` `data/` anchored |
+| `803fb35` | W3 step 2 — input hardening, `probe.score()` |
+| `0bcbb62` | W3 step 1 — `airs` CLI, package data, `make dist-check` |
+| `4c50ca6` | F-C7 — CR2 + Bell–McCaffrey; p-value calibration |
 
 ## 8. Honest limitations already recorded (do not rediscover)
 
-- Pipeline "batch vs streaming" is **simulated** as inherent staleness — no Kafka/Airflow runs.
-- Latency runs analytically (`sleep=False`).
-- Agent is **one LLM call** — the "is this agentic?" gap (refetch arm / Analyst, see 02).
-- Synthetic faults; one model for most arms; n = 3–4 replications.
-- AIRS target constants remain underived (state in Ch3/Ch5; sensitivity doc quantifies).
-- **Product gaps:** no task-profile switch in the console yet (retrieval unless
-  preloaded with `--task`); `aist.json` still has hand-typed panels (W5); the Kafka /
-  Postgres / Parquet sample snippets are unscheduled; the console was verified in the
-  browser against `next dev`, and from the wheel by content checks only.
+- Pipeline archetypes are **simulated** staleness signatures — no Kafka/Airflow runs.
+- Latency runs analytically. Agent is one LLM call until the refetch arm.
+- Synthetic faults; one model for most arms; n = 3–4 replications; AIRS constants underived.
+- **Product:** no task-profile switch in the console yet (A9); `aist.json` panels partly
+  hand-typed (W5 note); a **files source has no history**, so its consistency also absorbs
+  staleness — the output says so; console verified in the browser against `next dev`, and
+  from the wheel by content checks only.
