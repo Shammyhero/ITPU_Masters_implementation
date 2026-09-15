@@ -1,0 +1,63 @@
+"""The Analyst's prompt: answer a question from the records, and say how.
+
+Invariant 1 holds: the prompt never mentions faults, never hints that data may be
+out of date or incomplete, and is identical whatever the pipeline did. Only the
+rendered records differ. The abstain option is offered neutrally, as in the
+corpus prompts, because silent failure can only be observed where declining was
+possible.
+
+This is a different instrument from the corpus agent's prompt (brief correction
+11): it asks for an answer plan, and each record carries the id its source
+stamped, since a generic source need not keep the id in the payload. Live rates
+are therefore not pooled with the corpus's.
+"""
+
+from __future__ import annotations
+
+import json
+from typing import Sequence
+
+from agentic_faults import Record
+
+from ..agents.prompts import render_record
+
+ANALYST_SYSTEM = """You are a data analyst answering one question using only the records provided.
+Work out which computation answers the question, then carry it out on the records.
+If the records are insufficient to answer reliably, abstain instead of guessing.
+Respond with JSON only:
+{"answer": "<one sentence>", "plan": <plan>, "value": <result>,
+ "confidence": <0-1>, "abstain": <true|false>}
+
+The plan is one of:
+  {"type": "min_by", "measure": "<field>", "where": [<condition>, ...]}
+      value: the id of the record
+  {"type": "max_by", "measure": "<field>", "where": [<condition>, ...]}
+      value: the id of the record
+  {"type": "top_k", "measure": "<field>", "k": <n>, "order": "asc" or "desc", "where": [...]}
+      value: a list of ids
+  {"type": "count_where", "where": [<condition>, ...]}   value: a number
+  {"type": "sum_where", "measure": "<field>", "where": [<condition>, ...]}   value: a number
+  {"type": "lookup", "id": "<record id>", "measure": "<field>"}   value: that field's value
+A condition is {"field": "<field>", "op": ">", ">=", "<", "<=", "==" or "!=", "value": <value>}."""
+
+ANALYST_USER = """Question: {question}
+
+Records (each has an "id"; its fields are under "data"):
+{records}
+
+Answer the question from these records only. If you cannot answer it reliably from the
+records, set "abstain" to true. Respond with JSON only."""
+
+
+def render_analyst_records(records: Sequence[Record]) -> str:
+    return json.dumps(
+        [{"id": record.meta.get("record_id"), **render_record(record)} for record in records],
+        indent=2, default=str, ensure_ascii=False,
+    )
+
+
+def analyst_messages(question: str, records: Sequence[Record]) -> list[tuple[str, str]]:
+    return [
+        ("system", ANALYST_SYSTEM),
+        ("user", ANALYST_USER.format(question=question, records=render_analyst_records(records))),
+    ]

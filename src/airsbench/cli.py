@@ -26,6 +26,7 @@ COMMANDS = {
     "probe": "score a pipeline's readiness from a sample of delivered records",
     "gate": "admit or refuse a batch of records against a declared policy",
     "sources": "list, describe and sample your declared data sources",
+    "analyst": "ask questions of a source, verify every answer, attribute the wrong ones",
 }
 
 
@@ -38,6 +39,8 @@ def _load(command: str) -> Callable[[list[str]], int]:
         from .gate.__main__ import main
     elif command == "sources":
         from .sources.__main__ import main
+    elif command == "analyst":
+        from .analyst.__main__ import main
     else:
         raise KeyError(command)
     return main
@@ -60,7 +63,8 @@ def usage() -> str:
     lines += [
         "",
         "Run 'airs <command> --help' for its options.",
-        "No command calls a model, needs an API key, or sends data off this machine.",
+        "No command needs an API key or sends data off this machine. Only `airs analyst`",
+        "calls a model, and only a local one (ollama/<name>) when you ask it to.",
     ]
     return "\n".join(lines)
 

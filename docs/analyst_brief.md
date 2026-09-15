@@ -117,6 +117,36 @@ left open and the corrections made after checking it against the code.
     table without versions) reports `supports_as_of: false`, and its consistency also
     absorbs staleness — said in the output, not hidden.
 
+16. **§3.4 — answers are verified against the question's plan, not the agent's** (author
+    decision, 15 Sep). An agent that misreads "cheapest" as "most expensive" and then
+    carries out its own plan correctly would otherwise be graded correct. Questions are
+    structured (a plan plus wording); the agent still returns its plan, which is recorded
+    twice — `plan_matches_question` (same form) and `agent_plan_agrees` (same answer when
+    re-executed over the served records) — and never graded. Seen live: `llama3.1:8b` wrote
+    `stock >= 1` (equivalent on whole-number stock) and `stock >= 0` (a real widening) for
+    `stock > 0`.
+
+17. **§3.4 — four labels, not three** (author decision, 15 Sep):
+
+    ```
+    answer_key_moved      served ≠ truth, the agent gave the served answer
+    both                  served ≠ truth, the agent gave something else
+    corrupted_in_transit  served = truth, a field the plan reads was missing, renamed,
+                          retyped, changed or made opaque in delivery
+    agent_impairment      served = truth, the fields it reads arrived intact
+    ```
+
+    On the demo source severe drift changed a needed field in 76% of questions and severe
+    stripping in 99%; with three labels every wrong answer there would read "agent
+    impairment (model)". `corrupted_in_transit` states a fact about the delivery and lists
+    the fields; it does not claim the change caused the error. The first two labels sum to
+    wrong answers on flipped queries and the last two to wrong answers on unflipped ones,
+    so the published partition is recovered exactly.
+
+18. **§7.1 — Fig 4.10 validates all four labels** (author decision, 15 Sep): A4 regenerates
+    each corpus run's fault realization and checks it against the run's logged consistency
+    and semantic scores before using it.
+
 ---
 
 # Implementation brief — the Analyst: live AIRS-gated question answering over a connected source

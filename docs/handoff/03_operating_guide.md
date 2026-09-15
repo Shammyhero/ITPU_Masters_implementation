@@ -16,7 +16,7 @@
 **`sources/{base,demo,files,inline,config,__main__}.py`** · `demo/src/` · tests
 `test_{server,replay_api,cli,probe,gate,sources,demo_source}.py` · `tests/dist_smoke.py`
 
-**For the verifier (A3/A4):** `src/airsbench/agents/{retrieval,prompts,llm}.py`
+**For verifier agreement (A4):** `src/airsbench/analyst/{plan,verifier,session}.py`, `src/airsbench/agents/{retrieval,prompts,llm}.py`
 (`RetrievalAgent.ground_truth`; `llm.py` prices any model absent from `PRICING` at $0 — A5
 must close that for hosted models) · `src/airsbench/analysis/flip_partition.py` (`Replayer`,
 `QueryOutcome.flipped`, `followed served`) · `docs/flip_partition_findings.md` ·
@@ -36,6 +36,7 @@ must close that for hosted models) · `src/airsbench/analysis/flip_partition.py`
 | `src/airsbench/probe.py`, `gate/` | scoring and admission control — stdlib only at import |
 | `src/airsbench/server/` | `airs serve` FastAPI API (the only FastAPI importer); `data/` baked |
 | `src/airsbench/sources/` | **A1** declared read-only sources; `data/esci_slice.json.gz` baked |
+| `src/airsbench/analyst/` | **A3** plans, verifier (four labels), answerers, prompt, session → Tick, `airs analyst` |
 | `src/airsbench/analysis/` | one module per result, all $0 |
 | `demo/` | console source (Next.js export) → `src/airsbench/web/` via `make web` |
 | `results/runs/` | 302 JSON artifacts — **canonical dataset** (invariant 7) |
@@ -48,7 +49,7 @@ with `run_arm(run)`.
 ## 3. Commands
 
 ```bash
-make test         # 567 tests, ~22 s
+make test         # 652 tests, ~23 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -57,6 +58,8 @@ make figures      # all 9 figures
 make lock         # re-pin requirements-lock.txt
 .venv/bin/airs serve [--records d.jsonl --source u.jsonl] [--sources sources.yaml] [--dev]
 .venv/bin/airs sources list | describe <id> | sample <id> [--seed N] [--json] [--sources f]
+.venv/bin/airs analyst ask <pair> [--answerer literal|ollama/<name>] [--questions N] [--seed S]
+    [--plan JSON --question TEXT] [--json]     # Ollama here has llama3.1:8b, qwen2.5:14b-instruct
 .venv/bin/python -m airsbench.server.bake   # regenerate baked data (slice needs data/ecommerce)
 npm --prefix demo run data                  # regenerate demo/src/data/aist.json
 python -m airsbench.runner.run --<arm> --dry-run   # ALWAYS before any paid run
@@ -101,6 +104,24 @@ corrupts `.next` · figures print recomputed vs published values.
 - `gzip.compress(..., mtime=0)` or every bake rewrites the slice with a new timestamp.
 - The slice bake needs `data/ecommerce`; without it `bake` keeps the committed slice.
 
+**15 Sep (A3):**
+- **The corpus's forbidden-prompt-word test matches substrings** (`age`, `old`, `fresh` …), so
+  "average", "message", "language", "threshold", "hold" all fail it. Word the Analyst prompt
+  around them; `tests/test_analyst_session.py` extends the list with fault vocabulary.
+- **Grade against the question's plan, never the agent's.** Agents rewrite filters:
+  `llama3.1:8b` wrote `stock >= 1` (equivalent on whole-number stock) and `stock >= 0` (not)
+  for `stock > 0`. Form-equality alone is noise; `agent_plan_agrees` re-executes the agent's
+  plan over the served records.
+- **Ties in `min_by` must go to the first candidate** (strict `<`), or A4 cannot be exact —
+  that is what `min()` in `RetrievalAgent.ground_truth` does.
+- **An abstained answer is verifiable but carries no attribution** (`attribution: None`);
+  counters must skip it rather than count a `None` label.
+- **Never read a measure on a record the filter excludes** — the corpus filters in-stock first,
+  so a corrupted price on an out-of-stock record must not make the answer uncomputable.
+- A local 8 B model answers in ~5–7 s per question on this machine; `qwen2.5:14b` is slower.
+- Hosted answerers raise `AnswererError` until A5; a transport failure is an `AnswererError`,
+  unparseable output is a parse failure (invariant 6).
+
 ## 5. Working conventions the author expects
 
 - **Step by step.** Propose before code; surface decisions via questions; wait for approval.
@@ -121,5 +142,5 @@ corrupts `.next` · figures print recomputed vs published values.
 
 > Read `docs/handoff/01_state_and_results.md`, `02_plan_and_next_steps.md`,
 > `03_operating_guide.md`, then `CLAUDE.md`, `docs/plan.md` and the header of
-> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (567
-> passing). Continue from 02 §1 (A3, the verifier).
+> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (652
+> passing). Continue from 02 §1 (A4, verifier agreement).

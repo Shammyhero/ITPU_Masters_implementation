@@ -40,7 +40,7 @@ Implementation **freezes Fri 06 Nov**. November is writing. December is defence.
 | Evidence, figures & power | W2 | 21 | $0 | **done** |
 | F-C7 small-cluster correction | 13 Sep | ~3.5 | $0 | **done** |
 | Product core — CLI, API, console, packaging | W3 | 20 | $0 | **done 14 Sep** |
-| **The Analyst A1–A9** | 14 Sep → 23 Oct | 101 | ~$0.40 (development calls; estimate) | |
+| **The Analyst A1–A9** | 14 Sep → 23 Oct | 103 | ~$0.40 (development calls; estimate) | |
 | Adapters A10 · live case study A11 | 19 Oct → 6 Nov | 14 | ~$0.05 | |
 | Refetch arm, two conditions | 19 → 30 Oct | 28 | ~$2.20 | |
 | M1 presentation | 16 Oct | 2 | $0 | |
@@ -50,7 +50,8 @@ Implementation **freezes Fri 06 Nov**. November is writing. December is defence.
 | **Total** | | **~324** | **~$2.65** | |
 
 **The honest arithmetic.** From Mon 14 Sep to the freeze on Fri 6 Nov is eight weeks,
-~160 h. The work scheduled into that window is **159 h — no buffer.** The author chose
+~160 h. The work scheduled into that window is **161 h — no buffer** (159 h, plus A4's
+fault-realization check added on 15 Sep). The author chose
 (14 Sep) to keep everything that makes the product better rather than pre-cut. The
 buffer is the pace: W1–W3 ran far under their estimates. If a checkpoint below is
 missed, cut in this order and no other: **A10 adapters → A11 case study → A9 report →
@@ -267,7 +268,35 @@ answers. Silent failure is `runner/scoring.py::is_silent_failure`, imported. Bui
 against the `demo` source with **no frontend**: Ticks printed to stdout. Unverifiable
 question types are answered and labelled unverified, never guessed at.
 
-### A4 · Verifier agreement — Fig 4.10 · 6 h · **non-negotiable, immediately after A3**
+> **Progress 15 Sep — A3 built.** `src/airsbench/analyst/`: `plan.py` (the six checkable
+> types, deterministic, ties to the first candidate — `min_by(price, stock > 0)` equals
+> `RetrievalAgent.ground_truth` over 2,000 randomised catalogs; records that lack a
+> field or hold a non-number the plan needs are *not computable*, with the reason);
+> `verifier.py` (three executions — truth, served, delivered — correctness first,
+> `is_silent_failure` imported, and **four labels**); `answerers.py` (`literal`, and a
+> local Ollama model through the corpus `LLMClient`; hosted refused until A5);
+> `prompts.py` (plan-returning, held to the corpus's forbidden-word list plus fault
+> vocabulary); `session.py` (one question as a Tick); `airs analyst ask`. **Author
+> decisions 15 Sep:** answers are verified against **the question's plan**, never the
+> agent's own (which is recorded, not graded); attribution has four labels —
+> `answer_key_moved`, `both`, `corrupted_in_transit`, `agent_impairment` — aggregating
+> exactly to the published flipped/unflipped split (property-tested). Literal answerer,
+> 60 questions per demo pair: healthy 58/58 correct; stale 6 `answer_key_moved`, one
+> per flip; drift 44 abstained, 1 `corrupted_in_transit`; stripped 59 abstained.
+> **Live, local, $0 — `llama3.1:8b`:** all 6 flipped stale questions answered with the
+> served-best at confidence 1.00 → `answer_key_moved`; drift 4 correct and 2
+> `corrupted_in_transit` at 1.00. Found and fixed: the model's plan differed in form from
+> the question's in 7 of 12 answers — `stock >= 1` (equivalent on whole-number stock) and
+> `stock >= 0` (a real widening) — so the Tick also records `agent_plan_agrees`, the
+> agent's plan re-executed over the served records. 652 tests.
+
+### A4 · Verifier agreement — Fig 4.10 · 8 h · **non-negotiable, immediately after A3**
+
+> **Scope added 15 Sep (author decision, +2 h):** A4 also regenerates each corpus run's
+> exact fault realization — the runner's fault chain replayed in query order with the
+> run's seed — so Fig 4.10 validates all four labels, not only the two-way split. The
+> regeneration is itself checked: it must reproduce each run's logged consistency and
+> semantic scores exactly, which is record-level evidence for invariant 3.
 
 Run the verifier over the retrieval runs of the main factorial and the freshness sweep:
 it must reproduce, **exactly**, each decision's correctness, the published silent-failure
@@ -381,7 +410,7 @@ router's REFETCH stays in the product without an experimental claim behind it.
 | Week | Work | h |
 |---|---|---|
 | **14–18 Sep** | A1 sources (12) · A3 verifier, start (8) | 20 |
-| **21–25 Sep** | A3 finish (6) · **A4 Fig 4.10** (6) · A2 manifest (8) | 20 |
+| **21–25 Sep** | A3 finish (6) · **A4 Fig 4.10** (8) · A2 manifest (8) | 22 |
 | **28 Sep–2 Oct** | A5 model options (8) · A6 router + shared loop (12) | 20 |
 | **5–9 Oct** | A7 API + firewalls (8) · A8 console, part 1 (12) | 20 |
 | **12–16 Oct** | A8 part 2 (6) · A9, part 1 (12) · **M1 presentation** (2) | 20 |

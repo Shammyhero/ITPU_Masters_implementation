@@ -10,7 +10,7 @@ subject. Model, prompt, temperature, dataset, scoring and hardware are held
 constant — only infrastructure conditions vary.
 
 **Status:** six research questions answered. 302 benchmark runs, 24 270 agent
-decisions, 4 models, $5.15 of API spend, 501 tests green. Current work follows
+decisions, 4 models, $5.15 of API spend, 652 tests green. Current work follows
 the week-by-week plan in [`docs/plan.md`](docs/plan.md).
 
 ---
@@ -129,6 +129,20 @@ airs sources sample demo-stale --seed 7
 airs sources --sources sources.yaml list
 ```
 
+**`airs analyst`** — ask a question of a source and find out whether the answer was
+right, and if not, whose fault it was. The answer is re-computed against the system of
+record as of the moment it was given, and every wrong one gets a label:
+*answer key moved* (the pipeline served values that have since changed), *corrupted in
+transit* (fields the answer needs changed on the way), *agent impairment* (the records
+arrived intact and the model still got it wrong), or *both*. Answers come from a local
+model in your Ollama, or from `literal` — the question executed over the delivered
+records at face value. Hosted models arrive with spend caps.
+
+```bash
+airs analyst ask demo-stale --questions 5
+airs analyst ask demo-drift --answerer ollama/llama3.1:8b
+```
+
 `airs probe` and `python -m airsbench.probe` are the same program with the same
 exit codes. Timestamps may be epoch seconds or ISO-8601 with a timezone.
 Worked examples: [`examples/probe/`](examples/probe/) · [`examples/gate/`](examples/gate/)
@@ -197,6 +211,7 @@ src/airsbench/pipelines/ catalog time machine + record builders (loader.py)
 src/airsbench/gate/      admission control: Policy, Controller, offline policy replay
 src/airsbench/server/    `airs serve`: the local API, and the data baked for it
 src/airsbench/sources/   declared, read-only data sources: the bundled demo slice, files, inline
+src/airsbench/analyst/   the Analyst: checkable question plans, the verifier, answerers
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema
 src/airsbench/analysis/  one module per research question — all free to re-run
 src/airsbench/dataprep/  dataset preparation + free sensitivity check

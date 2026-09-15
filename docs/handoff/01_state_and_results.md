@@ -1,7 +1,7 @@
 # Handoff 1/3 — Current state and results
 
-**Refreshed:** 14 Sep 2026 · **Last pushed commit:** `b691124` (Analyst adopted) · A1
-(sources) committed next
+**Refreshed:** 15 Sep 2026 · **Last pushed commit:** `e78ab97` (A1 sources) · A3
+(the verifier) committed next
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
 **Read next:** `02_plan_and_next_steps.md`, then `03_operating_guide.md`.
@@ -29,7 +29,7 @@ attributed to the pipeline or the model (`docs/analyst_brief.md`).
 
 | | |
 |---|---|
-| Tests | **567 passing**, lint clean (`make test`, `make lint`) |
+| Tests | **652 passing**, lint clean (`make test`, `make lint`) |
 | Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
 | Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
@@ -47,7 +47,8 @@ attributed to the pipeline or the model (`docs/analyst_brief.md`).
 | W3 product core — CLI, API, console, packaging | 28 Sep–2 Oct (dated) | **done 14 Sep** |
 | **The Analyst adopted** — `docs/analyst_brief.md`, `docs/plan.md` Part 1b | 14 Sep | **done** |
 | **A1 sources** | 14–18 Sep | **done 14 Sep** |
-| A3 verifier · A4 Fig 4.10 agreement | by Fri 25 Sep · **Fri 2 Oct** | next |
+| **A3 verifier** — four labels, `airs analyst ask`, live on `llama3.1:8b` | by Fri 25 Sep | **done 15 Sep** |
+| A4 Fig 4.10 verifier agreement (+ fault realizations) | **Fri 2 Oct** | next |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |
@@ -91,13 +92,15 @@ RQs v2 §9 declares three further analyses under the Analyst: verifier agreement
 | Security | 127.0.0.1; Host allowlist; CORS only with `--dev`; 64 MB cap; no outbound requests; files and sources only through CLI flags / `sources.yaml` |
 | Console (`demo/`) | `/` Mode A "Check my pipeline"; `/evidence/` the four-act argument; no scoring in TypeScript |
 | **Sources (`sources/`, A1)** | protocol `name / describe / sample / fetch(as_of)`; **`demo`** — seeded ESCI slice (200 queries, 1,129 products, 11,341 updates, 0.21 MB) served through the runner's own functions, four built-in pairs; **`files`** (JSONL, CSV, Parquet via `[parquet]`); **`inline`**; `sources.yaml` (PyYAML) refusing unknown keys, duplicate ids and inline credentials; `airs sources list/describe/sample`; `airs serve --sources` |
+| **Analyst (`analyst/`, A3)** | `plan.py` six checkable types (min_by ≡ `RetrievalAgent.ground_truth`); `verifier.py` truth / served / delivered executions, correctness first, **four labels** `answer_key_moved · both · corrupted_in_transit · agent_impairment`, changed fields as evidence, agent plan recorded (`plan_matches_question`, `agent_plan_agrees`) never graded; `answerers.py` `literal` + local Ollama (hosted refused until A5); `prompts.py` plan-returning, invariant 1; `session.py` one question → Tick; `airs analyst ask`. Nothing written to disk |
 | Packaging | `make web` → `src/airsbench/web/`; `server/bake.py` bakes `samples.json`, `replay_corpus.json`, `sources/data/esci_slice.json.gz` (all drift-tested) |
 
 ## 7. Commits (newest first)
 
 | Commit | What |
 |---|---|
-| *(next)* | A1 — sources |
+| *(next)* | A3 — the verifier |
+| `e78ab97` | A1 — sources |
 | `b691124` | The Analyst adopted; handoff notes refreshed |
 | `05d0ce3` | W3 step 6 — console in the wheel, `aist.json` committed |
 | `0d87c71` | W3 step 5 — Mode A in the browser; TS scorer deleted |
