@@ -1,0 +1,35 @@
+# Semantic manifest — what each field means. Reviewed with `airs manifest review`;
+# a change to the source's fields makes it stale until reviewed again.
+source: demo
+entity: retail_product
+fields:
+  product_id:
+    role: id
+    definition: Unique catalog identifier (ESCI product_id)
+    relationship: joins to queries.relevant_product_ids
+  title:
+    role: label
+    definition: Customer-facing product title
+  brand:
+    role: label
+    definition: Manufacturer brand name
+    relationship: groups products from the same manufacturer
+  price:
+    role: measure
+    unit: USD
+    definition: Current listed price in US dollars; changes over time
+  stock:
+    role: measure
+    unit: units_available
+    definition: Units currently available; 0 means out of stock
+checkable_questions:
+- min_by
+- max_by
+- top_k
+- count_where
+- sum_where
+- lookup
+proposed_by: 'bundled: the study''s own semantic context'
+reviewed:
+  at: '2026-09-17T00:00:00Z'
+  fields_fingerprint: sha256:4f72e50ddfffb773

@@ -7,32 +7,33 @@ Adversarial audit: **`REVIEW.md`** (Phase 3 is design history). This file is the
 
 ---
 
-## 1. Immediate next step: A2 — the source manifest
+## 1. Immediate next step: A5 + A6 — model options, then the router and shared loop
 
-**A1 (sources), A3 (the verifier) and A4 (verifier agreement) are done**, so the
-instrument side of the Analyst is finished and admissible: `airs analyst ask` answers
-questions over a declared source, checks each answer against the system of record and
-attributes every wrong one, and Fig 4.10 shows that same verifier reproducing all 6,714
-logged corpus decisions exactly (`docs/verifier_agreement_findings.md`). **The Fri 2 Oct
-gate is met, 16 days early.** Everything after this is product, not measurement.
+**A1, A3, A4 and A2 are done.** The Analyst can declare a source, say what its fields
+mean (`airs manifest`), measure semantics honestly (UNMEASURED until a person reviews a
+manifest that still matches the schema), answer a question with `literal` or a local
+Ollama model, verify it against upstream and attribute every wrong answer — and Fig 4.10
+shows that verifier reproducing all 6,714 corpus decisions.
 
-**A2 (8 h, week of 21 Sep)** — the manifest and the two-state semantic rule. Read
-`docs/plan.md` Part 1b A2 for the specification before starting; it is the piece that
-lets a declared source say what its fields *mean*, so semantic completeness is measured
-against a declared contract rather than against the bundled demo's shape. Inference is
-the part to cut first if the week runs short (cut order below).
+**A5 (8 h, 28 Sep–2 Oct)** — the second model option from the author's decision of
+14 Sep: an API key for **OpenAI, Anthropic or Gemini**, the model chosen from that
+provider's list, the key in process memory only. Two things must land *before* any
+hosted call: a per-session **spend cap enforced before the request**, and closing the
+`llm.py` hole where a model missing from `PRICING` is priced at $0. Gemini routing is new.
+Then `airs analyst ask --answerer openai/<model>` and `airs manifest propose --model …`
+drop their refusals. Read `docs/plan.md` Part 1b A5 first.
 
-Watch, carried from A4: a files source has no history, so its consistency also absorbs
-staleness (brief correction 15) — the manifest must not imply otherwise.
+**A6 (12 h)** — the router (ANSWER / REFETCH / REFUSE from the gate policy) and the shared
+loop in `analyst/loop.py` that the API and the refetch arm both run.
 
 | Stage | h | State |
 |---|---|---|
 | A1 sources | 12 | **done 14 Sep** (`e78ab97`) |
 | A3 verifier | 14 | **done 15 Sep** (`f5da23a`) |
-| A4 Fig 4.10 | 8 | **done 16 Sep** — gate Fri 2 Oct met early |
-| **A2 manifest** | 8 | **next** — 21–25 Sep |
-| A5 model options (free Ollama / OpenAI · Anthropic · Gemini key; close "unpriced = free") | 8 | 28 Sep–2 Oct |
-| A6 router + shared loop | 12 | 28 Sep–2 Oct |
+| A4 Fig 4.10 | 8 | **done 16 Sep** (`b2589da`) — gate Fri 2 Oct met early |
+| A2 manifest | 8 | **done 17 Sep** |
+| **A5** model options (free Ollama / OpenAI · Anthropic · Gemini key; close "unpriced = free") | 8 | 28 Sep–2 Oct — **next** |
+| **A6** router + shared loop | 12 | 28 Sep–2 Oct — after A5 |
 | A7 API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | 5–9 Oct |
 | A8 console | 18 | 5–16 Oct |
 | A9 task switch, recommended policy, meter prior, report | 15 | 12–23 Oct |
@@ -46,6 +47,12 @@ free model · **Fri 16 Oct M1** · Fri 23 Oct arm dry-run · Fri 30 Oct arm runs
 A2 inference → A8 toggle.
 
 ## 2. Decisions made (do not re-litigate)
+
+**17 Sep, A2:** the semantic score stays the calibrated **category** rule; field coverage
+is reported beside it, never folded in · reviewed = **stamp + schema fingerprint** (a
+renamed or retyped column makes it stale → UNMEASURED) · inference ships: offline
+heuristic + local Ollama now, hosted with A5 · a manifest renders only onto bare records;
+the demo's pipeline renders its own context and its manifest only describes it.
 
 **16 Sep, A4:** injector seeds keyed on the **parameter shape** — flat single fault gets
 `config.seed`, nested/compound gets per-component streams — so every run on disk

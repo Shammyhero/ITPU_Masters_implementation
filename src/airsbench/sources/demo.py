@@ -50,6 +50,9 @@ from ..runner.execute import N_CANDIDATES, build_event_ts, build_fault_chain, va
 from .base import Sample, SourceError, SourcePair, SourceSchema, schema_from_payloads
 
 SLICE = Path(__file__).parent / "data" / "esci_slice.json.gz"
+# The demo pipeline renders its own semantic layer (the runner's record builders);
+# this reviewed manifest describes it, so semantic is measured on the demo pairs.
+DEMO_MANIFEST = Path(__file__).parent / "data" / "demo_manifest.yaml"
 # The first seed of the block reserved for live sessions (docs/plan.md, A7). It is
 # outside every evidence arm, so nothing served here can be mistaken for a run.
 LIVE_SEED = 100_000
@@ -147,6 +150,10 @@ def _schema(name: str, data: DemoSlice) -> SourceSchema:
 
 class DemoDelivered:
     """What the demo pipeline delivers: stale by its condition, faulted once."""
+
+    # Context is built into each record before the fault chain, as in the corpus;
+    # a manifest must never be rendered back on top (it would undo stripping).
+    renders_context = True
 
     def __init__(self, name: str, condition: Condition, *, seed: int = LIVE_SEED,
                  clock: Callable[[], float] = time.time, data: DemoSlice | None = None) -> None:
@@ -260,4 +267,5 @@ def demo_pair(pair_id: str, condition: Condition, *, seed: int = LIVE_SEED,
                        f"{delivered.staleness_seconds:g} s behind upstream.")
     return SourcePair(id=pair_id, kind="demo", delivered=delivered,
                       upstream=DemoUpstream(f"{pair_id}/upstream", clock=clock, data=data),
-                      description=description, manifest=manifest)
+                      description=description,
+                      manifest=manifest if manifest is not None else str(DEMO_MANIFEST))

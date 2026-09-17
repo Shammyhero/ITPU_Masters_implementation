@@ -155,8 +155,11 @@ def _manifest(spec: dict[str, Any], base: Path, label: str) -> str | None:
     if not isinstance(value, str):
         raise SourceError(f"{label}.manifest: a path to a manifest file")
     path = _resolve(value, base)
-    if not path.is_file():
-        raise SourceError(f"{label}.manifest: {path} does not exist")
+    if path.exists() and not path.is_file():
+        raise SourceError(f"{label}.manifest: {path} is not a file")
+    # A manifest that does not exist yet is not a broken declaration: it is the
+    # file `airs manifest propose --out` is about to write. Semantic reports it as
+    # absent, with that command (sources/manifest.py).
     return str(path)
 
 

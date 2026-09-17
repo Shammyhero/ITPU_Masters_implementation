@@ -458,15 +458,24 @@ def score(
     source: list[dict[str, Any]] | None = None,
     task: str = "retrieval",
     weights_path: Path = DEFAULT_WEIGHTS,
+    semantic_unmeasured: str | None = None,
 ) -> dict[str, Any]:
     """Everything `airs probe --json` reports, as data.
 
     The command prints it and the web console returns it, so the two cannot
     disagree. Each dimension carries its own weight, beside its score and
     evidence, so a consumer never pairs a score with the wrong task's weight.
+
+    `semantic_unmeasured` is the Analyst's first semantic state (brief
+    correction 2): with no reviewed manifest the tool does not know what the
+    fields mean, so the dimension is reported UNMEASURED with that reason and
+    the composite rests on the others. Given no reason, the probe's own rule
+    applies unchanged — records without context score 0.
     """
     weights, meta = load_weights(weights_path, task)
     measured = measure(delivered, source)
+    if semantic_unmeasured is not None:
+        measured["semantic"] = {"score": None, "detail": semantic_unmeasured}
     airs, covered = composite(measured, weights)
     label, note = band(airs) if airs is not None else (None, None)
     return {

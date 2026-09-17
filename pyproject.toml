@@ -64,6 +64,7 @@ where = ["src"]
 [tool.setuptools.package-data]
 # web/ is the static console, built into the package by `make web` (not committed).
 airsbench = ["airs/*.json", "runner/*.sql", "server/data/*.json", "sources/data/*.json.gz",
+             "sources/data/*.yaml",
              "web/**/*"]
 
 [tool.pytest.ini_options]

@@ -10,7 +10,7 @@ subject. Model, prompt, temperature, dataset, scoring and hardware are held
 constant — only infrastructure conditions vary.
 
 **Status:** six research questions answered. 302 benchmark runs, 24 270 agent
-decisions, 4 models, $5.15 of API spend, 664 tests green. Current work follows
+decisions, 4 models, $5.15 of API spend, 690 tests green. Current work follows
 the week-by-week plan in [`docs/plan.md`](docs/plan.md).
 
 ---
@@ -83,8 +83,9 @@ Start here if you are reviewing the research rather than the code.
 
 ## The tools this produced
 
-Meant to outlive the thesis. None of them makes a model call, needs an API key,
-costs anything, or sends records off the machine. All three are one command,
+Meant to outlive the thesis. None of them needs an API key, costs anything, or
+sends records off the machine; only `airs analyst` and `airs manifest propose
+--model` call a model, and only a local one you name. They are one command,
 `airs`, from one install — `pip install .` from this repository for now; it is
 not yet on PyPI. From a clone, run `make web` first to build the web console
 into the package (Node is needed for that, once).
@@ -138,6 +139,19 @@ transit* (fields the answer needs changed on the way), *agent impairment* (the r
 arrived intact and the model still got it wrong), or *both*. Answers come from a local
 model in your Ollama, or from `literal` — the question executed over the delivered
 records at face value. Hosted models arrive with spend caps.
+
+**`airs manifest`** — say what a source's fields mean. Semantic readiness is
+`UNMEASURED` until a person has reviewed a manifest for the source, because a tool that
+has not been told whether `price` includes tax has not measured anything. `propose`
+drafts one offline (or with a local model), `review` walks it field by field and stamps
+it with a fingerprint of the source's schema — rename or retype a column and the
+manifest goes stale until someone looks again.
+
+```bash
+airs manifest --sources sources.yaml propose exports --out manifest.yaml
+airs manifest --sources sources.yaml review manifest.yaml --source exports
+airs manifest show demo-healthy
+```
 
 ```bash
 airs analyst ask demo-stale --questions 5
@@ -211,7 +225,7 @@ src/airsbench/agents/    LLM client, prompts, retrieval + classification agents
 src/airsbench/pipelines/ catalog time machine + record builders (loader.py)
 src/airsbench/gate/      admission control: Policy, Controller, offline policy replay
 src/airsbench/server/    `airs serve`: the local API, and the data baked for it
-src/airsbench/sources/   declared, read-only data sources: the bundled demo slice, files, inline
+src/airsbench/sources/   declared, read-only data sources (demo slice, files, inline) and the manifest
 src/airsbench/analyst/   the Analyst: checkable question plans, the verifier, answerers
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema
 src/airsbench/analysis/  one module per research question — all free to re-run

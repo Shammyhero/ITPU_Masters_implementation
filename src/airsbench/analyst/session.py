@@ -28,6 +28,7 @@ from typing import Any, Callable
 
 from ..probe import score
 from ..sources import SourcePair, to_probe_entry
+from ..sources.manifest import semantic_layer
 from .answerers import Answerer
 from .plan import Plan
 from .verifier import AgentAnswer, verify
@@ -63,7 +64,11 @@ def ask(pair: SourcePair, question: Question, answerer: Answerer, *, seed: int |
         task: str = "retrieval", session_id: str | None = None,
         clock: Callable[[], float] = time.time) -> dict[str, Any]:
     started = clock()
+    layer = semantic_layer(pair)
     sample = pair.delivered.sample(question.n, key=question.key, seed=seed)
+    # The semantic layer the agent reads and the probe scores: a reviewed manifest
+    # rendered onto bare records, or nothing added (brief correction 2).
+    sample.records = layer.apply(sample.records)
     text = question.text.replace("{query}", str(sample.meta.get("query", "")))
     ids = [record_id for record_id in sample.ids if record_id is not None]
 
@@ -77,7 +82,7 @@ def ask(pair: SourcePair, question: Question, answerer: Answerer, *, seed: int |
                          for record, record_id in zip(sample.records, sample.ids)]
     airs = score(delivered_entries,
                  [to_probe_entry(record) for record in served] if served is not None else None,
-                 task)
+                 task, semantic_unmeasured=layer.unmeasured_reason)
 
     t0 = clock()
     answer, usage = answerer.answer(text, question.plan, sample.records)
@@ -91,13 +96,15 @@ def ask(pair: SourcePair, question: Question, answerer: Answerer, *, seed: int |
     return build_tick(
         pair=pair, question=question, text=text, sample=sample, answer=answer, usage=usage,
         airs=airs, verification=verification, served=served, truth=truth, as_of=as_of,
+        semantic=layer,
         seed=seed, session_id=session_id or uuid.uuid4().hex[:12], answerer=answerer.name,
         started=started, t0=t0, t1=t1,
     )
 
 
 def build_tick(*, pair, question, text, sample, answer: AgentAnswer, usage, airs, verification,
-               served, truth, as_of, seed, session_id, answerer, started, t0, t1) -> dict[str, Any]:
+               served, truth, as_of, seed, session_id, answerer, started, t0, t1,
+               semantic=None) -> dict[str, Any]:
     staleness = sample.meta.get("staleness_seconds")
     notes = []
     if pair.upstream is None:
@@ -106,6 +113,8 @@ def build_tick(*, pair, question, text, sample, answer: AgentAnswer, usage, airs
     elif not as_of:
         notes.append("this source cannot be read as of a past time, so pipeline lag shows up "
                      "as values changed in transit rather than as the answer key moving")
+    if semantic is not None and not semantic.measured:
+        notes.append(semantic.reason)
     decision = {
         "answer": answer.text,
         "plan": answer.plan,
@@ -128,6 +137,7 @@ def build_tick(*, pair, question, text, sample, answer: AgentAnswer, usage, airs
             "upstream": pair.upstream.name if pair.upstream is not None else None,
             "supports_as_of": as_of,
             "condition": sample.meta.get("condition"),
+            "semantic": semantic.to_dict() if semantic is not None else None,
         },
         "question": {"text": text, "plan": question.plan.to_dict(),
                      "describe": question.plan.describe(), "key": sample.key,

@@ -37,6 +37,7 @@ must close that for hosted models) · `src/airsbench/analysis/flip_partition.py`
 | `src/airsbench/probe.py`, `gate/` | scoring and admission control — stdlib only at import |
 | `src/airsbench/server/` | `airs serve` FastAPI API (the only FastAPI importer); `data/` baked |
 | `src/airsbench/sources/` | **A1** declared read-only sources; `data/esci_slice.json.gz` baked |
+| `src/airsbench/sources/manifest*.py` | **A2** semantic manifest, the two-state rule, `airs manifest` |
 | `src/airsbench/analyst/` | **A3** plans, verifier (four labels), answerers, prompt, session → Tick, `airs analyst` |
 | `src/airsbench/analysis/` | one module per result, all $0 |
 | `demo/` | console source (Next.js export) → `src/airsbench/web/` via `make web` |
@@ -50,7 +51,7 @@ with `run_arm(run)`.
 ## 3. Commands
 
 ```bash
-make test         # 664 tests, ~25 s
+make test         # 690 tests, ~26 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -59,6 +60,7 @@ make figures      # all 10 figures (needs data/ecommerce)
 make lock         # re-pin requirements-lock.txt
 .venv/bin/airs serve [--records d.jsonl --source u.jsonl] [--sources sources.yaml] [--dev]
 .venv/bin/airs sources list | describe <id> | sample <id> [--seed N] [--json] [--sources f]
+.venv/bin/airs manifest [--sources f] propose <pair> [--model ollama/<name>] [--out m.yaml] | review m.yaml --source <pair> | show <pair>
 .venv/bin/airs analyst ask <pair> [--answerer literal|ollama/<name>] [--questions N] [--seed S]
     [--plan JSON --question TEXT] [--json]     # Ollama here has llama3.1:8b, qwen2.5:14b-instruct
 .venv/bin/python -m airsbench.server.bake   # regenerate baked data (slice needs data/ecommerce)
@@ -141,6 +143,25 @@ corrupts `.next` · figures print recomputed vs published values.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
 
+**17 Sep (A2):**
+- **The semantic score counts four context categories, not described fields.** A manifest
+  with one definition scores the same as one with five; coverage is reported separately.
+  The brief said otherwise until corrected.
+- **Never render a manifest onto a pipeline that renders its own context** (the demo):
+  it would put context back on records semantic stripping removed. `renders_context` on
+  the delivered source decides; files render, only onto records without context.
+- **Severe stripping is probabilistic per record** — `demo-stripped` scores ~17, not 0.
+- **A declared `manifest:` file may not exist yet** — that is state *absent*, not a
+  declaration error, or `airs manifest propose --out` could never create it.
+- **File sources lift the id column out of the payload**; manifest code treats
+  `schema.id_field` as present.
+- **`sources.manifest` imports `analyst.plan` inside functions** — `analyst` imports
+  `sources`, and a module-level import is a cycle.
+- `airs sources sample` now states the share of calibrated weight a composite rests on; a
+  `100.0 READY` over one measured dimension is a different claim.
+- A local 8 B model proposes a manifest in ~8 s and over-fits the entity to the sample
+  (`laptop` for a catalog) — the reason nothing counts until reviewed.
+
 ## 5. Working conventions the author expects
 
 - **Step by step.** Propose before code; surface decisions via questions; wait for approval.
@@ -161,5 +182,5 @@ corrupts `.next` · figures print recomputed vs published values.
 
 > Read `docs/handoff/01_state_and_results.md`, `02_plan_and_next_steps.md`,
 > `03_operating_guide.md`, then `CLAUDE.md`, `docs/plan.md` and the header of
-> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (664
-> passing). Continue from 02 §1 (A2, the manifest).
+> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (690
+> passing). Continue from 02 §1 (A5 model options, then A6).

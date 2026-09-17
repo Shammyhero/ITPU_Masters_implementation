@@ -24,6 +24,7 @@ from typing import Any
 
 from ..probe import ProbeError, score
 from .base import SourceError, SourcePair, to_probe_entry
+from .manifest import semantic_layer
 
 
 def _entries(records, ids) -> list[dict[str, Any]]:
@@ -39,8 +40,9 @@ def _upstream_entries(pair: SourcePair, sample, at: float | None) -> list[dict[s
 
 def sample_report(pair: SourcePair, n: int, key: str | None, seed: int | None,
                   task: str) -> dict[str, Any]:
+    layer = semantic_layer(pair)
     sample = pair.delivered.sample(n, key=key, seed=seed)
-    delivered = _entries(sample.records, sample.ids)
+    delivered = _entries(layer.apply(sample.records), sample.ids)
     supports_as_of = pair.upstream is not None and pair.upstream.describe().supports_as_of
     served_as_of = sample.meta.get("served_as_of") if supports_as_of else None
     now = _upstream_entries(pair, sample, sample.as_of if supports_as_of else None)
@@ -62,7 +64,8 @@ def sample_report(pair: SourcePair, n: int, key: str | None, seed: int | None,
         "delivered": delivered,
         "upstream_now": now,
         "upstream_as_served": as_served,
-        "airs": score(delivered, reference, task),
+        "semantic": layer.to_dict(),
+        "airs": score(delivered, reference, task, semantic_unmeasured=layer.unmeasured_reason),
     }
 
 
@@ -112,12 +115,12 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _list(pairs: dict[str, SourcePair]) -> int:
-    print(f"  {'source':<18}{'kind':<7}{'upstream':<10}{'as of':<7}description")
+    print(f"  {'source':<18}{'kind':<7}{'upstream':<10}{'as of':<7}{'manifest':<12}description")
     for pair in pairs.values():
         as_of = "yes" if pair.upstream is not None and pair.upstream.describe().supports_as_of \
             else "no"
         print(f"  {pair.id:<18}{pair.kind:<7}{'yes' if pair.upstream else 'NONE':<10}"
-              f"{as_of:<7}{pair.description}")
+              f"{as_of:<7}{semantic_layer(pair).state:<12}{pair.description}")
     return 0
 
 
@@ -158,9 +161,12 @@ def _print_sample(report: dict[str, Any]) -> int:
         f"{dim} {'UNMEASURED' if d['score'] is None else format(d['score'], '.1f')}"
         for dim, d in airs["dimensions"].items()
     )
-    total = "no score" if airs["airs"] is None else f"{airs['airs']:.1f} {airs['band']}"
+    total = ("no score" if airs["airs"] is None else
+             f"{airs['airs']:.1f} {airs['band']}, resting on "
+             f"{airs['weight_covered']:.0%} of the calibrated weight")
     print(f"\n  AIRS ({airs['task']} profile): {dims} → {total}")
     print(f"  consistency compared with {report['consistency_reference']}")
+    print(f"  semantic layer: {report['semantic']['reason']}")
     return 0
 
 

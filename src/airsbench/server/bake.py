@@ -12,6 +12,8 @@ fresh bake — so the data is never hand-edited and never stale.
                                    over, reduced to what the accounting needs
   sources/data/esci_slice.json.gz  a seeded slice of the ESCI catalog and its
                                    update stream, for the bundled demo source
+  sources/data/demo_manifest.yaml  the reviewed manifest describing that slice,
+                                   built from the study's own semantic context
 
 Numbers in the prose come from the files they describe (the calibrated weights,
 the policy itself, the runs), not from memory.
@@ -31,7 +33,7 @@ from typing import Any
 from ..gate import Policy
 from ..gate.replay import load_batches
 from ..probe import DEFAULT_WEIGHTS, parse_records, score
-from ..sources.demo import SLICE
+from ..sources.demo import DEMO_MANIFEST, SLICE
 
 ROOT = Path(__file__).parents[3]
 DATA = Path(__file__).parent / "data"
@@ -46,6 +48,14 @@ REPLAY_ARMS = ("main", "freshness_sweep")
 # enough to ship in the wheel, large enough that demo questions rarely repeat.
 SLICE_QUERIES = 200
 SLICE_SEED = 20260914
+
+# Roles of the demo payload fields. Units are kept exactly where the runner's
+# record builder keeps them (price, stock), so the rendered context equals the
+# context the corpus agent read — pinned by tests/test_manifest.py.
+DEMO_ROLES = {"product_id": "id", "title": "label", "brand": "label",
+              "price": "measure", "stock": "measure"}
+DEMO_UNIT_FIELDS = ("price", "stock")
+DEMO_REVIEWED_AT = (2026, 9, 17)
 
 SAMPLES = {
     "healthy": ("Healthy pipeline",
@@ -167,6 +177,29 @@ def build_esci_slice(data_dir: Path = ESCI_DATA, n_queries: int = SLICE_QUERIES,
     }
 
 
+def build_demo_manifest():
+    """The bundled demo slice's manifest, stamped as reviewed at a fixed time."""
+    from datetime import datetime, timezone
+
+    from ..sources.demo import PAYLOAD_FIELDS, _schema, load_slice
+    from ..sources.manifest import FieldSpec, Manifest, default_questions, stamp
+
+    data = load_slice()
+    context = data.context
+    fields = tuple(
+        FieldSpec(name, DEMO_ROLES[name],
+                  unit=context["units"].get(name) if name in DEMO_UNIT_FIELDS else None,
+                  definition=context["descriptions"].get(name),
+                  relationship=context["relationships"].get(name))
+        for name in PAYLOAD_FIELDS
+    )
+    manifest = Manifest("demo", context["entity_type"], fields,
+                        tuple(default_questions(fields)),
+                        proposed_by="bundled: the study's own semantic context")
+    return stamp(manifest, _schema("demo", data),
+                 now=lambda: datetime(*DEMO_REVIEWED_AT, tzinfo=timezone.utc))
+
+
 def _write(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -186,6 +219,11 @@ def main(argv: list[str] | None = None) -> int:
     corpus = build_replay_corpus(args.results)
     _write(REPLAY_OUT, corpus)
     print(f"wrote {REPLAY_OUT}: {corpus['runs']} runs, {corpus['decisions']:,} decisions")
+
+    from ..sources.manifest import dump_manifest
+
+    DEMO_MANIFEST.write_text(dump_manifest(build_demo_manifest()), encoding="utf-8")
+    print(f"wrote {DEMO_MANIFEST}")
 
     if not (args.data_dir / "updates.jsonl").exists():
         print(f"kept {SLICE}: {args.data_dir} is not prepared (make data-ecommerce)")

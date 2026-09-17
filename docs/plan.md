@@ -121,7 +121,7 @@ tests. The writing budget in November is not a source of hours.
 | 4.7 | AIRS curve sensitivity tornado | `curve_sensitivity.py` | built |
 | 4.8 | Query fragility — overlap vs chance | `fragility.py` | built |
 | 4.9 | Refetch arm — agent-initiated vs gate-initiated vs none | refetch analysis | Oct |
-| **4.10** | **Verifier agreement — the live verifier reproduces the corpus** | A4 | **by 2 Oct** |
+| **4.10** | **Verifier agreement — the live verifier reproduces the corpus** | `verifier_agreement.py` | **built 16 Sep** |
 | 4.11 | Live-source case study — lag, attribution split, AIRS ranking | A11 | Nov |
 
 ## W3 · Mon 28 Sep – Fri 02 Oct · Product: backend + Mode A core · 20 h · $0
@@ -255,6 +255,25 @@ semantic UNMEASURED**; a reviewed manifest renders context into the records and 
 probe's existing rule scores it (fields left undescribed lower completeness; no context
 at all = 0). Tests pin both states against the probe's own tests.
 *Cut gate:* committed manifests only, inference dropped.
+
+> **Progress 17 Sep — A2 done.** `sources/manifest.py` (schema, validation, fingerprint,
+> the two-state `semantic_layer`, offline `propose`, `refine_with_model`),
+> `sources/manifest_cli.py` (`airs manifest propose | review | show`), a bundled reviewed
+> `sources/data/demo_manifest.yaml` baked from the slice's own context, `probe.score(...,
+> semantic_unmeasured=)`, and the state in every Tick (`source.semantic`) and in `airs
+> sources list | sample`. **Author decisions 17 Sep:** the calibrated category rule is
+> kept and field coverage reported beside it (brief correction 2 corrected against the
+> code — undescribed fields never lowered the score); reviewed = stamp + schema
+> fingerprint; inference ships (heuristic + local Ollama, hosted with A5). Nothing was
+> cut. The four demo pairs score exactly what they scored in A1, and the bundled manifest
+> renders exactly the context the corpus agent read. **Live, $0:** on a CSV of six real
+> catalog rows, `llama3.1:8b` proposed units and definitions in 8 s and named the entity
+> `laptop` from the sample — plausible and wrong for a catalog, which is why nothing
+> counts until reviewed; semantic went UNMEASURED → 75 on approval (no relationships
+> declared). **Found and fixed live:** declaring `manifest:` before the file existed made
+> `sources.yaml` unloadable, so `propose --out` could never create it; and `airs sources
+> sample` printed `100.0 READY` resting on consistency alone without saying so — it now
+> states the share of calibrated weight covered. 690 tests.
 
 ### A3 · The verifier and live attribution · 14 h · **non-negotiable**
 

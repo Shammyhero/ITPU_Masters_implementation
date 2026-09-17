@@ -40,8 +40,12 @@ left open and the corrections made after checking it against the code.
    pins it ("missing context is not a missing measurement — it IS the degradation").
    Implemented rule: **no reviewed manifest → semantic UNMEASURED** (the tool does not
    know what the fields mean); **reviewed manifest → context rendered from it and scored
-   by the probe's existing rule**, where fields left without descriptions or units lower
-   completeness and records with no context score 0.
+   by the probe's existing rule**, where records with no context score 0.
+   *Corrected 17 Sep, against the code:* the probe's rule counts the four context
+   categories (entity, units, descriptions, relationships), not the fields described —
+   an earlier version of this line said undescribed fields lower completeness, and they
+   do not. The calibrated rule is kept unchanged (author decision); field coverage is
+   reported beside the score as an observation. See correction 19.
 
 3. **§3.2 — the semantic toggle applies the real injector.** Dropping the manifest alone
    will not move abstention on real data: columns such as `price` and `stock` describe
@@ -146,6 +150,27 @@ left open and the corrections made after checking it against the code.
 18. **§7.1 — Fig 4.10 validates all four labels** (author decision, 15 Sep): A4 regenerates
     each corpus run's fault realization and checks it against the run's logged consistency
     and semantic scores before using it.
+
+19. **§3.2 — the manifest, as built** (author decisions, 17 Sep):
+    - **The score stays the calibrated category rule.** Which fields lack a definition is
+      reported as field coverage beside it, never folded in (see correction 2).
+    - **Reviewed means a stamp plus a schema fingerprint** — field names and kinds, with
+      integer and float one kind. A renamed or retyped column makes the manifest stale
+      and semantic UNMEASURED until it is reviewed again. `reviewed: true` would have
+      stayed "reviewed" through exactly the drift a manifest exists to catch.
+    - **Five states, two outcomes:** reviewed → measured; unreviewed, stale, absent
+      (including a declared file not written yet) and invalid → UNMEASURED with the reason
+      and the command that fixes it.
+    - **Inference ships:** an offline heuristic (roles from names and types, never units or
+      meanings) always, refined by a local Ollama model at $0; hosted models with A5's
+      spend caps. Nothing proposed counts until reviewed.
+    - **Rendering depends on the source.** A pipeline that renders its own semantic layer
+      (the demo, via the runner's record builders) is *described* by its manifest and never
+      re-rendered — that would undo semantic stripping. Bare records (files) get the
+      reviewed manifest rendered in, only where they carry no context of their own. The
+      bundled demo manifest renders exactly the context the corpus agent read (tested).
+    - The manifest schema adds `relationship` per field and `entity` at the top, because
+      the probe's four categories need both; a manifest without them scores 50–75 and says so.
 
 ---
 
