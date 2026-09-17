@@ -1,7 +1,7 @@
 # Handoff 1/3 — Current state and results
 
-**Refreshed:** 18 Sep 2026 · **Last pushed commit:** `477a8a5` (A2 the semantic manifest) ·
-A5 (model options and spend caps) committed next
+**Refreshed:** 18 Sep 2026 · **Last pushed commit:** `f2c2b1f` (A5 model options) · A6
+(the router and the shared loop) committed next
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
 **Read next:** `02_plan_and_next_steps.md`, then `03_operating_guide.md`.
@@ -29,7 +29,7 @@ attributed to the pipeline or the model (`docs/analyst_brief.md`).
 
 | | |
 |---|---|
-| Tests | **711 passing**, lint clean (`make test`, `make lint`) |
+| Tests | **740 passing**, lint clean (`make test`, `make lint`) |
 | Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
 | Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
@@ -51,7 +51,8 @@ attributed to the pipeline or the model (`docs/analyst_brief.md`).
 | **A4 Fig 4.10** — 6,714 decisions, 0 disagreements; 90/90 realizations | **Fri 2 Oct** | **done 16 Sep** |
 | **A2 manifest** — two-state semantic rule, `airs manifest`, fingerprinted review | 21–25 Sep | **done 17 Sep** |
 | **A5 model options** — hosted keys, spend caps in the request path | 28 Sep–2 Oct | **done 18 Sep** |
-| A6 router + shared loop | 28 Sep–2 Oct | next |
+| **A6 router + shared loop** — admit/refetch/refuse, the session meter | 28 Sep–2 Oct | **done 18 Sep** |
+| A7 API + firewalls (`/api/ask`, live quarantine) | 5–9 Oct | next |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |
@@ -108,7 +109,8 @@ while drift and stripping put 25.0% / 22.5% of decisions on records damaged in t
 
 | Commit | What |
 |---|---|
-| *(next)* | A5 — model options and spend caps |
+| *(next)* | A6 — the router and the shared loop |
+| `f2c2b1f` | A5 — model options and spend caps |
 | `477a8a5` | A2 — the semantic manifest |
 | `b2589da` | A4 — verifier agreement, Fig 4.10, seed-rule fix (F-E7) |
 | `f5da23a` | A3 — the verifier |

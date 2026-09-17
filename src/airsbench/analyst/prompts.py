@@ -49,6 +49,28 @@ Answer the question from these records only. If you cannot answer it reliably fr
 records, set "abstain" to true. Respond with JSON only."""
 
 
+# Used ONLY by the agent-initiated refetch condition (A6). It is a different
+# instrument from ANALYST_SYSTEM and its rates are never pooled with the corpus's
+# or with the other live modes. Invariant 1 still holds within it: nothing here
+# mentions faults, staleness, drift or degraded data — it offers a capability and
+# says nothing about why it might matter. "fresh" is itself forbidden vocabulary —
+# caught by tests/test_loop.py on the first draft of this prompt.
+REFETCH_SYSTEM = ANALYST_SYSTEM + """
+
+You may also ask for any record to be read again before answering, once:
+{"action": "refetch", "ids": ["<record id>", ...], "why": "<one sentence>"}
+Ask only if reading them again would change your answer. Otherwise answer now."""
+
+
+def refetch_messages(question: str, records: Sequence[Record]) -> list[tuple[str, str]]:
+    """The agent-initiated condition's prompt — see REFETCH_SYSTEM."""
+    return [
+        ("system", REFETCH_SYSTEM),
+        ("user", ANALYST_USER.format(question=question,
+                                     records=render_analyst_records(records))),
+    ]
+
+
 def render_analyst_records(records: Sequence[Record]) -> str:
     return json.dumps(
         [{"id": record.meta.get("record_id"), **render_record(record)} for record in records],

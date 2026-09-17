@@ -7,28 +7,27 @@ Adversarial audit: **`REVIEW.md`** (Phase 3 is design history). This file is the
 
 ---
 
-## 1. Immediate next step: A6 — the router and the shared loop
+## 1. Immediate next step: A7 — the Analyst API and its firewalls
 
-**A1, A2, A3, A4 and A5 are done.** The Analyst declares a source, says what its fields
-mean, measures semantics honestly, answers with `literal`, a local model, or a hosted one
-under a spend cap, verifies every answer against upstream and attributes the wrong ones —
-and Fig 4.10 shows that verifier reproducing all 6,714 corpus decisions.
+**A1–A6 are done.** The loop runs end to end: a question is sampled, scored, routed
+(admit / re-read / refuse), answered by `literal`, a local model or a hosted one under a
+spend cap, verified against upstream and attributed — with a session meter pricing what
+enforcement bought. Fig 4.10 shows that verifier reproducing all 6,714 corpus decisions.
 
-**A6 (12 h, shared with the refetch arm — never cut)** — `src/airsbench/analyst/loop.py`,
-called by both the API and the batch runner:
+**A7 (8 h, week of 5 Oct)** — `GET /api/sources`, `POST /api/sources/{id}/test`,
+`POST /api/session`, and **`POST /api/ask` streaming Ticks over SSE**, all calling
+`analyst/loop.py` — the API adds transport, never a second copy of the logic. Read
+`docs/plan.md` Part 1b A7 and `docs/analyst_brief.md` §5 before starting. The firewalls
+are the point of the stage, and each needs its own test:
 
-    sample → probe.measure → Controller.evaluate(policy)
-      ADMIT   answer
-      REFETCH re-read upstream, re-score, then answer   (the gate-initiated condition)
-      REFUSE  no model call: the rule and the observed value, $0
+- **sources are declared, never named in a request** (the W3 security property);
+- **live traffic never reaches `results/runs/`** — `~/.airs/sessions/`, `arm: "live"`,
+  seed block 100 000–110 000, and `tests/test_live_quarantine.py` asserting every
+  analysis entry point excludes it (brief correction 9);
+- **no key, DSN or record path in any response, log or URL**;
+- the existing Host-header allowlist and 127.0.0.1 binding still hold.
 
-The same loop offers the agent a `refetch(record_id)` tool for the arm's *agent-initiated*
-condition — the treatment that answers kill question 3. Tool-call accounting, loop
-termination, invariant 1 (the prompt never mentions faults) and the paired design in batch
-mode all need tests. Read `docs/plan.md` Part 1b A6, and reuse `gate/controller.py` rather
-than writing a second policy evaluator (no scoring rule implemented twice).
-
-Then **A7** (the API and its firewalls) in the week of 5 Oct.
+Then **A8** (the console) from 5 Oct, which is the M1 deliverable on 16 Oct.
 
 | Stage | h | State |
 |---|---|---|
@@ -37,8 +36,8 @@ Then **A7** (the API and its firewalls) in the week of 5 Oct.
 | A4 Fig 4.10 | 8 | **done 16 Sep** (`b2589da`) — gate Fri 2 Oct met early |
 | A2 manifest | 8 | **done 17 Sep** |
 | A5 model options (Ollama / OpenAI · Anthropic · Gemini, caps, "unpriced = free" closed) | 8 | **done 18 Sep** |
-| **A6** router + shared loop | 12 | **next** — 28 Sep–2 Oct |
-| A7 API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | 5–9 Oct |
+| A6 router + shared loop | 12 | **done 18 Sep** |
+| **A7** API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | **next** — 5–9 Oct |
 | A8 console | 18 | 5–16 Oct |
 | A9 task switch, recommended policy, meter prior, report | 15 | 12–23 Oct |
 | Refetch arm (two conditions, ~$2.20, Fig 4.9) | 28 | 19–30 Oct, hard cut 30 Oct |
@@ -51,6 +50,13 @@ free model · **Fri 16 Oct M1** · Fri 23 Oct arm dry-run · Fri 30 Oct arm runs
 A2 inference → A8 toggle.
 
 ## 2. Decisions made (do not re-litigate)
+
+**18 Sep, A6:** a re-read is offered only for rules it legitimately repairs (record age,
+freshness) — drift and stripping refuse, because a re-read bypasses the pipeline and
+would hide the contract violation · the agent-initiated tool is a **JSON action in the
+answer schema**, identical across providers · that condition gets its **own prompt**, so
+invariant 1 holds unchanged everywhere else and the two are never pooled · the arm's
+batch runner stays in W6 (19–30 Oct), which is when the ~$2.20 is spent.
 
 **18 Sep, A5:** prices are **declared or refused** — only prices verified for the corpus
 models ship, anything else goes in `~/.airs/pricing.yaml`, and a hosted model with no
@@ -109,7 +115,7 @@ argument** for every live claim in Ch5. **Checkpoint Fri 27 Nov:** Ch 2–4 draf
 | F-A1 · F-A2 · F-E5 | 2–6 Nov | positioning · read the 4 load-bearing papers · Zenodo DOI |
 | F-B1 | limitation | AIRS constants underived |
 | F-C4 | polish | no multiple-comparison correction across 8 interaction contrasts |
-| Kill Q3 | Oct | refetch arm, agent-initiated condition |
+| Kill Q3 | Oct | refetch arm, agent-initiated condition. **First live evidence (18 Sep):** offered a re-read, `llama3.1:8b` asked 0 times in 12 stale questions |
 | Phase 1D | Nov | external validity → A11 case study |
 | CR2/BM refs | before Ch3 | verify the citations |
 

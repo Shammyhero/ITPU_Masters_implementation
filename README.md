@@ -10,7 +10,7 @@ subject. Model, prompt, temperature, dataset, scoring and hardware are held
 constant — only infrastructure conditions vary.
 
 **Status:** six research questions answered. 302 benchmark runs, 24 270 agent
-decisions, 4 models, $5.15 of API spend, 711 tests green. Current work follows
+decisions, 4 models, $5.15 of API spend, 740 tests green. Current work follows
 the week-by-week plan in [`docs/plan.md`](docs/plan.md).
 
 ---

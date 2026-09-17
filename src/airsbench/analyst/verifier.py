@@ -59,6 +59,9 @@ class AgentAnswer:
     confidence: float = 0.0
     abstained: bool = False
     parse_failed: bool = False
+    # Ids the agent asked to have read again (agent-initiated refetch, A6). It is
+    # a request, never an answer: the verifier ignores it entirely.
+    refetch_ids: tuple[str, ...] = ()
 
 
 @dataclass

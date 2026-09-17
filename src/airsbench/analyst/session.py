@@ -128,9 +128,14 @@ def build_tick(*, pair, question, text, sample, answer: AgentAnswer, usage, airs
         "confidence": answer.confidence,
         "abstained": answer.abstained,
         "parse_failed": answer.parse_failed,
+        # No verification happens when there is no upstream to check against, and
+        # when the gate refused before any model was called (A6) — then there is
+        # no answer to verify at all.
         **(verification.to_dict() if verification is not None else {
-            "verifiable": False, "reason": notes[0], "attribution": None,
-            "correct": None, "silent_failure": None}),
+            "verifiable": False,
+            "reason": notes[0] if notes else "no answer was produced, so there is "
+                                             "nothing to verify",
+            "attribution": None, "correct": None, "silent_failure": None}),
     }
     return {
         "t": started,

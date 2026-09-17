@@ -32,7 +32,7 @@ from ..agents.llm import UnpricedModel, is_local_model, require_price
 from ..runner.config import TASK_TEMPERATURE
 from .budget import Budget, SpendRefused
 from .plan import Plan, execute
-from .prompts import analyst_messages
+from .prompts import analyst_messages, refetch_messages
 from .verifier import AgentAnswer, rows
 
 OLLAMA_PREFIX = "ollama/"
@@ -41,6 +41,9 @@ OLLAMA_PREFIX = "ollama/"
 # keeps `gemini/` because its ids are otherwise unmarked.
 PROVIDERS = {"openai/": "", "anthropic/": "", "gemini/": "gemini/"}
 MAX_ANSWER_TEXT = 500
+# A question is asked over a handful of candidates; a request naming more ids
+# than that is not a considered re-read.
+MAX_REFETCH_IDS = 20
 # One question's prompt is the records plus the plan grammar. Measured on the
 # demo source at 6 records: ~1,500 in, ~90 out. The estimate only has to be
 # honest enough to cap spend before the call; `record` then charges the truth.
@@ -96,8 +99,10 @@ class ModelAnswerer:
     """
 
     def __init__(self, spec: str, client: Any | None = None,
-                 budget: Budget | None = None) -> None:
+                 budget: Budget | None = None, offer_refetch: bool = False) -> None:
         self.name = spec
+        # The tool-offering prompt is a separate instrument (A6, invariant 1).
+        self.offer_refetch = offer_refetch
         self.model = model_id(spec)
         self.provider = provider_of(spec)
         self.local = is_local_model(self.model)
@@ -129,7 +134,9 @@ class ModelAnswerer:
             self.budget.check(self.model, ESTIMATED_INPUT_TOKENS, ESTIMATED_OUTPUT_TOKENS)
         before = (self.client.usage.input_tokens, self.client.usage.output_tokens)
         try:
-            result = self.client.call_json(analyst_messages(question, records))
+            messages = (refetch_messages(question, records) if self.offer_refetch
+                        else analyst_messages(question, records))
+            result = self.client.call_json(messages)
         except Exception as exc:  # transport: the client already retried
             raise AnswererError(
                 f"{self.name} could not be reached ({type(exc).__name__}: {exc})"
@@ -163,9 +170,21 @@ def model_id(spec: str) -> str:
 
 
 def parse_answer(result: Any) -> AgentAnswer:
-    """A model's JSON, read the way the corpus agents read theirs."""
+    """A model's JSON, read the way the corpus agents read theirs.
+
+    One addition for A6: `{"action": "refetch", "ids": [...]}` is a request for a
+    fresh read rather than an answer. It is carried on the answer object and only
+    ever honoured in the agent-initiated condition; every other mode ignores it,
+    so a model that emits it elsewhere has simply not answered.
+    """
     if not isinstance(result, dict):
         return AgentAnswer(parse_failed=True)
+    if result.get("action") == "refetch":
+        ids = result.get("ids")
+        ids = tuple(str(i) for i in ids[:MAX_REFETCH_IDS]) if isinstance(ids, list) else ()
+        if not ids:
+            return AgentAnswer(parse_failed=True)
+        return AgentAnswer(refetch_ids=ids, text=str(result.get("why", ""))[:MAX_ANSWER_TEXT])
     plan = result.get("plan") if isinstance(result.get("plan"), dict) else None
     text = str(result.get("answer", ""))[:MAX_ANSWER_TEXT]
     if bool(result.get("abstain", False)):
@@ -177,7 +196,8 @@ def parse_answer(result: Any) -> AgentAnswer:
     return AgentAnswer(value=result.get("value"), plan=plan, text=text, confidence=confidence)
 
 
-def make_answerer(spec: str, budget: Budget | None = None) -> Answerer:
+def make_answerer(spec: str, budget: Budget | None = None,
+                  offer_refetch: bool = False) -> Answerer:
     """`literal`, `ollama/<name>`, or a hosted `<provider>/<model>`."""
     if spec == "literal":
         return LiteralAnswerer()
@@ -195,7 +215,7 @@ def make_answerer(spec: str, budget: Budget | None = None) -> Answerer:
         raise AnswererError(f"{spec} is a hosted model: it needs a spend cap. Pass a "
                             f"Budget, or use a local model (ollama/<name>, $0)")
     try:
-        return ModelAnswerer(spec, budget=budget)
+        return ModelAnswerer(spec, budget=budget, offer_refetch=offer_refetch)
     except UnpricedModel as exc:
         raise AnswererError(str(exc)) from None
 

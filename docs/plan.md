@@ -387,6 +387,28 @@ for the arm's agent-initiated condition. Tool-call accounting, loop termination,
 invariant 1 (the prompt never mentions faults), and the paired design preserved in batch
 mode — tested.
 
+> **Progress 18 Sep — A6 done (the loop; the arm's batch runner stays in W6).**
+> `analyst/loop.py`: `route` (admit / refetch / refuse), `Loop.ask` (one question end to
+> end), `Meter` (answered, refused, refetched, prevented, forfeited, live exchange rate),
+> reusing `gate.Controller` — one policy evaluator, and the Tick's `airs` block **is** the
+> gate's measurement. `airs analyst ask --policy --refetch gate|agent|off`. **Author
+> decisions 18 Sep:** a re-read is attempted only for rules it legitimately repairs —
+> `max_record_age_seconds`, `min_dimension.freshness` — because a re-read *bypasses* the
+> pipeline, and bypassing one that is renaming fields hides a contract violation instead
+> of fixing it, so drift and stripping refuse · the agent-initiated tool is a JSON action
+> in the answer schema, uniform across providers · a separate prompt for that condition
+> only, so invariant 1 holds everywhere else. **Live, $0, `llama3.1:8b`, the same 12
+> stale questions under both conditions:** gate-initiated re-read 12/12 → 11 correct, 1
+> silent failure; agent-initiated **asked for a re-read 0 times out of 12** → 10 correct,
+> 2 silent failures. Offered the ability to re-read, the model never took it — an
+> extension of the detectability null, and the first evidence for kill question 3 (one
+> model, 12 questions, demo source; the arm measures it properly). **Three bugs found by
+> running it:** the loop re-read upstream at the *end* of the stream, i.e. later than the
+> question's own answer key; agent mode refused every violation before the agent could
+> decide, so the condition measured nothing; and a wrong answer after a re-read was
+> labelled `corrupted_in_transit` because the verifier still compared against the
+> pre-refetch served state. 740 tests.
+
 ### A7 · The Analyst API and the firewalls · 8 h
 
 `GET /api/sources`, `POST /api/sources/{id}/test` (describe a *declared* source),

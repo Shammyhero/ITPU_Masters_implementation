@@ -51,7 +51,7 @@ with `run_arm(run)`.
 ## 3. Commands
 
 ```bash
-make test         # 711 tests, ~25 s
+make test         # 740 tests, ~26 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -63,6 +63,7 @@ make lock         # re-pin requirements-lock.txt
 .venv/bin/airs manifest [--sources f] propose <pair> [--model ollama/<name>] [--out m.yaml] | review m.yaml --source <pair> | show <pair>
 .venv/bin/airs analyst ask <pair> [--answerer literal|ollama/<n>|openai/<m>|anthropic/<m>|gemini/<m>]
     [--max-cost 0.50] [--max-cost-day 2.00] [--estimate] [--questions N] [--seed S]
+    [--policy p.json] [--refetch gate|agent|off]   # the router: admit / refetch / refuse
     [--plan JSON --question TEXT] [--json]     # Ollama here has llama3.1:8b, qwen2.5:14b-instruct
 .venv/bin/python -m airsbench.server.bake   # regenerate baked data (slice needs data/ecommerce)
 npm --prefix demo run data                  # regenerate demo/src/data/aist.json
@@ -144,6 +145,21 @@ corrupts `.next` · figures print recomputed vs published values.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
 
+**18 Sep (A6):**
+- **"Now" on a simulated source is the question's own moment**, not the end of the update
+  stream. A re-read without `as_of` reads later than the answer key — the future.
+- **Agent mode must ADMIT a repairable violation, not refuse it**, or the model is never
+  asked and the arm's condition measures nothing. The gate/agent contrast is *who
+  decides*, not *whether the question is asked*.
+- **After a re-read, the refreshed records are the delivery.** Keep comparing with the
+  pre-refetch served state and every repaired field reads as `corrupted_in_transit`.
+- **A re-read bypasses the pipeline**, so it is only offered for staleness rules; drift
+  and stripping refuse (`REPAIRABLE`).
+- `build_tick` needs a reason when nothing was verified — a gate refusal produces no
+  answer at all.
+- The corpus forbidden-word list bites here too: "a fresh read" fails it. The
+  tool-offering prompt says "read again".
+
 **18 Sep (A5):**
 - **A hosted model with no price is refused**, never billed at $0 (`require_price`).
   Ship only verified prices; anything else goes in `~/.airs/pricing.yaml`.
@@ -195,5 +211,5 @@ corrupts `.next` · figures print recomputed vs published values.
 
 > Read `docs/handoff/01_state_and_results.md`, `02_plan_and_next_steps.md`,
 > `03_operating_guide.md`, then `CLAUDE.md`, `docs/plan.md` and the header of
-> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (711
-> passing). Continue from 02 §1 (A6, the router and shared loop).
+> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (740
+> passing). Continue from 02 §1 (A7, the Analyst API and its firewalls).

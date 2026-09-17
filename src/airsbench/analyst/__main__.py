@@ -32,10 +32,12 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from ..gate.policy import Policy
 from ..probe import ProbeError
 from ..sources import SourceError
 from .answerers import AnswererError, make_answerer
 from .budget import DEFAULT_DAY_USD, DEFAULT_SESSION_USD, Budget, SpendRefused, usd
+from .loop import MODES, Loop
 from .plan import Plan, PlanError
 from .session import LIVE_SEED_BLOCK, Question, ask, demo_question
 
@@ -110,6 +112,11 @@ def _print_tick(tick: dict[str, Any], index: int, total: int) -> None:
         print(f"    {str(record_id):<13}{_fields(payload, names):<36}{then}"
               f"{_fields(upstream.get(record_id), names)}"
               f"{'   ← ' + '; '.join(marks) if marks else ''}")
+    gate_block = tick.get("gate") or {}
+    if gate_block.get("verdict") == "refuse":
+        print(f"\n  not asked: {gate_block['reason']}")
+        _print_gate(tick)
+        return
     if decision["parse_failed"]:
         answered = "unparseable output"
     elif decision["abstained"]:
@@ -132,6 +139,7 @@ def _print_tick(tick: dict[str, Any], index: int, total: int) -> None:
         for d, v in airs["dimensions"].items())
     total_score = "no score" if airs["airs"] is None else f"{airs['airs']:.1f} {airs['band']}"
     print(f"  AIRS at this moment: {dims} → {total_score}")
+    _print_gate(tick)
     for note in tick["notes"]:
         print(f"  note: {note}")
     print()
@@ -144,6 +152,35 @@ def _summary_line(summary: dict[str, Any]) -> str:
     return (f"{summary['questions']} questions, {summary['verified']} verified: {counts} · "
             f"abstained {summary['abstained']} · unparseable {summary['parse_failed']} · "
             f"silent failures {summary['silent_failures']} · {usd}")
+
+
+WOULD_HAVE = {
+    "correct": "a correct answer was forfeited — the records supported it",
+    "silent_failure": "a SILENT FAILURE was prevented — the records implied a "
+                      "confident wrong answer",
+    "wrong": "the records implied a wrong answer (not a silent failure)",
+    "abstained": "nothing was forfeited: the records did not support an answer",
+}
+
+
+def _print_gate(tick: dict[str, Any]) -> None:
+    gate, refetch = tick.get("gate"), tick.get("refetch")
+    if not gate:
+        return
+    airs = tick["airs"]
+    dims = " · ".join(
+        f"{DIMENSION_LABELS.get(d, d)} {'—' if v['score'] is None else format(v['score'], '.1f')}"
+        for d, v in airs["dimensions"].items())
+    if gate["verdict"] == "refuse":
+        print(f"  AIRS: {dims}")
+    print(f"  gate: {gate['verdict'].upper()} · {gate['reason']}")
+    if refetch and refetch["attempted"]:
+        print(f"  refetch ({refetch['initiated_by']}-initiated): {refetch['n_records']} "
+              f"records re-read → {refetch['verdict_after']}, AIRS "
+              f"{refetch['airs_after']:.1f}")
+    if gate.get("would_have"):
+        print(f"  the refusal cost: {WOULD_HAVE[gate['would_have']]}")
+    print()
 
 
 def _estimate(answerer, budget, questions: int) -> int:
@@ -190,6 +227,12 @@ def main(argv: list[str] | None = None) -> int:
     ask_parser.add_argument("--question", default=None, help="the question's wording")
     ask_parser.add_argument("--n", type=int, default=6, help="records per question")
     ask_parser.add_argument("--task", default="retrieval", help="AIRS weight profile")
+    ask_parser.add_argument("--policy", type=Path, default=None,
+                            help="a gate policy JSON: the router admits, refetches or "
+                                 "refuses each question before any model is called")
+    ask_parser.add_argument("--refetch", default="gate", choices=MODES,
+                            help="who may re-read upstream: gate (the router decides), "
+                                 "agent (the model may ask), or off")
     ask_parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
@@ -218,13 +261,26 @@ def main(argv: list[str] | None = None) -> int:
         else:
             raise PlanError(f"{pair.id} has no built-in question; give --plan (and --question)")
         budget = Budget(session_usd=args.max_cost, day_usd=args.max_cost_day)
-        answerer = make_answerer(args.answerer, budget=budget)
+        answerer = make_answerer(args.answerer, budget=budget,
+                                 offer_refetch=args.refetch == "agent")
         if args.estimate:
             return _estimate(answerer, budget, args.questions)
+        loop = None
+        if args.policy is not None:
+            policy = Policy.load(args.policy)
+            loop = Loop(pair=pair, policy=policy, answerer=answerer, mode=args.refetch,
+                        task=args.task)
+            print(f"policy {policy.describe()}\n")
+        elif args.refetch == "agent":
+            raise PlanError("--refetch agent needs --policy: the router runs the loop")
         session_id = None
         for index in range(args.questions):
-            tick = ask(pair, question, answerer, seed=args.seed + index, task=args.task,
-                       session_id=session_id)
+            seed = args.seed + index
+            if loop is not None:
+                tick = loop.ask(question, seed=seed)
+            else:
+                tick = ask(pair, question, answerer, seed=seed, task=args.task,
+                           session_id=session_id)
             session_id = tick["session_id"]
             ticks.append(tick)
             if not args.json:
@@ -245,6 +301,13 @@ def main(argv: list[str] | None = None) -> int:
                          indent=2, ensure_ascii=False, allow_nan=False))
         return 0
     print(_summary_line(summary))
+    meter = ticks[-1].get("running") if ticks else None
+    if meter:
+        rate = meter["exchange_rate"]
+        print(f"gate: answered {meter['answered']} · refused {meter['refused']} · "
+              f"refetched {meter['refetched']} · silent failures prevented "
+              f"{meter['prevented']} · correct answers forfeited {meter['forfeited']}"
+              + (f" · {rate} forfeited per failure prevented" if rate is not None else ""))
     return 0
 
 

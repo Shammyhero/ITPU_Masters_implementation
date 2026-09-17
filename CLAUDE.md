@@ -26,6 +26,7 @@ airs sources list | describe <id> | sample <id>   # declared sources; demo pairs
 airs manifest propose <src> | review <file> --source <src> | show <src>   # what fields mean; semantic UNMEASURED until reviewed
 airs analyst ask demo-stale [--answerer ollama/llama3.1:8b]   # verified, attributed answers ($0)
 airs analyst ask demo-stale --answerer openai/gpt-4o-mini --max-cost 0.01 [--estimate]   # hosted: capped before each call
+airs analyst ask demo-drift --policy p.json [--refetch gate|agent|off]   # router: admit / re-read / refuse ($0 to refuse)
 
 # Campaign — ALWAYS --dry-run first to see the cost estimate
 python -m airsbench.runner.run --main --n-queries 80 --limit 36 --dry-run
@@ -159,7 +160,8 @@ src/airsbench/gate/      admission control: Policy, Controller, offline policy r
 src/airsbench/server/    `airs serve`: FastAPI API (the only FastAPI importer) + baked data
 src/airsbench/sources/   declared read-only data sources: demo (study slice), files, inline, sources.yaml,
                          the semantic manifest (two-state rule) and `airs manifest`
-src/airsbench/analyst/   the Analyst: checkable plans, the verifier (4 labels), answerers, `airs analyst`
+src/airsbench/analyst/   the Analyst: checkable plans, the verifier (4 labels), answerers, spend caps,
+                         the router + two-step loop (loop.py, shared with the refetch arm)
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema
 src/airsbench/dataprep/  dataset prep (ESCI, BTS) + free sensitivity check
 demo/                    web console source (Next.js static export); `make web` builds it in
