@@ -7,24 +7,28 @@ Adversarial audit: **`REVIEW.md`** (Phase 3 is design history). This file is the
 
 ---
 
-## 1. Immediate next step: A5 + A6 — model options, then the router and shared loop
+## 1. Immediate next step: A6 — the router and the shared loop
 
-**A1, A3, A4 and A2 are done.** The Analyst can declare a source, say what its fields
-mean (`airs manifest`), measure semantics honestly (UNMEASURED until a person reviews a
-manifest that still matches the schema), answer a question with `literal` or a local
-Ollama model, verify it against upstream and attribute every wrong answer — and Fig 4.10
-shows that verifier reproducing all 6,714 corpus decisions.
+**A1, A2, A3, A4 and A5 are done.** The Analyst declares a source, says what its fields
+mean, measures semantics honestly, answers with `literal`, a local model, or a hosted one
+under a spend cap, verifies every answer against upstream and attributes the wrong ones —
+and Fig 4.10 shows that verifier reproducing all 6,714 corpus decisions.
 
-**A5 (8 h, 28 Sep–2 Oct)** — the second model option from the author's decision of
-14 Sep: an API key for **OpenAI, Anthropic or Gemini**, the model chosen from that
-provider's list, the key in process memory only. Two things must land *before* any
-hosted call: a per-session **spend cap enforced before the request**, and closing the
-`llm.py` hole where a model missing from `PRICING` is priced at $0. Gemini routing is new.
-Then `airs analyst ask --answerer openai/<model>` and `airs manifest propose --model …`
-drop their refusals. Read `docs/plan.md` Part 1b A5 first.
+**A6 (12 h, shared with the refetch arm — never cut)** — `src/airsbench/analyst/loop.py`,
+called by both the API and the batch runner:
 
-**A6 (12 h)** — the router (ANSWER / REFETCH / REFUSE from the gate policy) and the shared
-loop in `analyst/loop.py` that the API and the refetch arm both run.
+    sample → probe.measure → Controller.evaluate(policy)
+      ADMIT   answer
+      REFETCH re-read upstream, re-score, then answer   (the gate-initiated condition)
+      REFUSE  no model call: the rule and the observed value, $0
+
+The same loop offers the agent a `refetch(record_id)` tool for the arm's *agent-initiated*
+condition — the treatment that answers kill question 3. Tool-call accounting, loop
+termination, invariant 1 (the prompt never mentions faults) and the paired design in batch
+mode all need tests. Read `docs/plan.md` Part 1b A6, and reuse `gate/controller.py` rather
+than writing a second policy evaluator (no scoring rule implemented twice).
+
+Then **A7** (the API and its firewalls) in the week of 5 Oct.
 
 | Stage | h | State |
 |---|---|---|
@@ -32,8 +36,8 @@ loop in `analyst/loop.py` that the API and the refetch arm both run.
 | A3 verifier | 14 | **done 15 Sep** (`f5da23a`) |
 | A4 Fig 4.10 | 8 | **done 16 Sep** (`b2589da`) — gate Fri 2 Oct met early |
 | A2 manifest | 8 | **done 17 Sep** |
-| **A5** model options (free Ollama / OpenAI · Anthropic · Gemini key; close "unpriced = free") | 8 | 28 Sep–2 Oct — **next** |
-| **A6** router + shared loop | 12 | 28 Sep–2 Oct — after A5 |
+| A5 model options (Ollama / OpenAI · Anthropic · Gemini, caps, "unpriced = free" closed) | 8 | **done 18 Sep** |
+| **A6** router + shared loop | 12 | **next** — 28 Sep–2 Oct |
 | A7 API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | 5–9 Oct |
 | A8 console | 18 | 5–16 Oct |
 | A9 task switch, recommended policy, meter prior, report | 15 | 12–23 Oct |
@@ -47,6 +51,13 @@ free model · **Fri 16 Oct M1** · Fri 23 Oct arm dry-run · Fri 30 Oct arm runs
 A2 inference → A8 toggle.
 
 ## 2. Decisions made (do not re-litigate)
+
+**18 Sep, A5:** prices are **declared or refused** — only prices verified for the corpus
+models ship, anything else goes in `~/.airs/pricing.yaml`, and a hosted model with no
+price is refused rather than budgeted at $0 · caps are checked **before** the request
+(session + day, the day total in `~/.airs/spend.json`) and the call is charged what it
+actually used · every model is addressed `<provider>/<model>` · Gemini ships behind a
+`[gemini]` extra, routed and tested with a fake until a key exists.
 
 **17 Sep, A2:** the semantic score stays the calibrated **category** rule; field coverage
 is reported beside it, never folded in · reviewed = **stamp + schema fingerprint** (a

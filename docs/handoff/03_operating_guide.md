@@ -51,7 +51,7 @@ with `run_arm(run)`.
 ## 3. Commands
 
 ```bash
-make test         # 690 tests, ~26 s
+make test         # 711 tests, ~25 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -61,7 +61,8 @@ make lock         # re-pin requirements-lock.txt
 .venv/bin/airs serve [--records d.jsonl --source u.jsonl] [--sources sources.yaml] [--dev]
 .venv/bin/airs sources list | describe <id> | sample <id> [--seed N] [--json] [--sources f]
 .venv/bin/airs manifest [--sources f] propose <pair> [--model ollama/<name>] [--out m.yaml] | review m.yaml --source <pair> | show <pair>
-.venv/bin/airs analyst ask <pair> [--answerer literal|ollama/<name>] [--questions N] [--seed S]
+.venv/bin/airs analyst ask <pair> [--answerer literal|ollama/<n>|openai/<m>|anthropic/<m>|gemini/<m>]
+    [--max-cost 0.50] [--max-cost-day 2.00] [--estimate] [--questions N] [--seed S]
     [--plan JSON --question TEXT] [--json]     # Ollama here has llama3.1:8b, qwen2.5:14b-instruct
 .venv/bin/python -m airsbench.server.bake   # regenerate baked data (slice needs data/ecommerce)
 npm --prefix demo run data                  # regenerate demo/src/data/aist.json
@@ -143,6 +144,18 @@ corrupts `.next` · figures print recomputed vs published values.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
 
+**18 Sep (A5):**
+- **A hosted model with no price is refused**, never billed at $0 (`require_price`).
+  Ship only verified prices; anything else goes in `~/.airs/pricing.yaml`.
+- **Address every model as `<provider>/<model>`.** A bare `gemini-2.5-flash` would route
+  to the OpenAI client and try to bill an OpenAI key for it.
+- **Caps are checked before the request** with that request's projected cost, and the
+  call is charged what it actually used. Exit status 3 is "a cap refused a call".
+- The day ledger lives in `~/.airs/spend.json` — never `results/runs/` (invariant 7).
+- `langchain-openai` 1.4 / `openai` 2.48 work with the pinned client; one transient 404
+  appeared once and did not reproduce — retry before debugging the client.
+- Live A5 check cost **$0.0015** in total; the remaining OpenAI budget is ~$4.58.
+
 **17 Sep (A2):**
 - **The semantic score counts four context categories, not described fields.** A manifest
   with one definition scores the same as one with five; coverage is reported separately.
@@ -182,5 +195,5 @@ corrupts `.next` · figures print recomputed vs published values.
 
 > Read `docs/handoff/01_state_and_results.md`, `02_plan_and_next_steps.md`,
 > `03_operating_guide.md`, then `CLAUDE.md`, `docs/plan.md` and the header of
-> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (690
-> passing). Continue from 02 §1 (A5 model options, then A6).
+> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (711
+> passing). Continue from 02 §1 (A6, the router and shared loop).

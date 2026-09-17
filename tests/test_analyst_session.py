@@ -106,7 +106,8 @@ def test_a_demo_tick_is_json_safe_quarantined_and_exact_about_time():
     assert tick["airs"]["dimensions"]["consistency"]["score"] == pytest.approx(100.0)
     assert tick["question"]["plan"] == DEMO_PLAN.to_dict()
     assert "{query}" not in tick["question"]["text"]
-    assert tick["cost"] == {"model": "literal", "input_tokens": 0, "output_tokens": 0, "usd": 0.0}
+    assert tick["cost"] == {"model": "literal", "input_tokens": 0, "output_tokens": 0,
+                            "usd": 0.0, "provider": "none", "hosted": False, "budget": None}
 
 
 def test_no_credential_shaped_text_appears_in_a_tick():
@@ -173,7 +174,8 @@ def test_a_local_model_answer_is_parsed_verified_and_costs_nothing():
     answerer = OllamaAnswerer("ollama/test-model", client=FakeClient(reply))
     (tick,) = run("demo-healthy", answerer, seeds=[100_001])
     assert tick["cost"] == {"model": "ollama/test-model", "input_tokens": 120,
-                            "output_tokens": 30, "usd": 0.0}
+                            "output_tokens": 30, "usd": 0.0, "provider": "ollama",
+                            "hosted": False, "budget": None}
     assert tick["decision"]["plan_matches_question"] is True
     system, user = dict(answerer.client.messages)["system"], dict(answerer.client.messages)["user"]
     assert system == ANALYST_SYSTEM and tick["question"]["text"] in user
@@ -203,14 +205,23 @@ def test_model_output_is_read_the_way_the_corpus_agents_read_theirs(result, expe
 
 
 @pytest.mark.parametrize("spec", ["gpt-4o-mini", "claude-haiku-4-5", "gemini-2.5-flash"])
-def test_hosted_models_are_refused_until_spend_caps_exist(spec):
-    with pytest.raises(AnswererError, match="spend caps"):
+def test_a_model_must_name_its_provider(spec):
+    """A5 addresses every model as <provider>/<model>, so a bare id is ambiguous —
+    and a bare Gemini id would route to OpenAI."""
+    with pytest.raises(AnswererError, match="is not a model this tool can address"):
         make_answerer(spec)
 
 
-def test_an_empty_local_model_name_is_refused():
+@pytest.mark.parametrize("spec", ["openai/gpt-4o-mini", "anthropic/claude-haiku-4-5"])
+def test_a_hosted_model_without_a_spend_cap_is_refused(spec):
+    """The cap is not optional: `budget=None` means nobody set a ceiling."""
+    with pytest.raises(AnswererError, match="needs a spend cap"):
+        make_answerer(spec)
+
+
+def test_a_provider_without_a_model_is_refused():
     with pytest.raises(AnswererError, match="ollama/<name>"):
-        OllamaAnswerer("ollama/")
+        make_answerer("ollama/")
 
 
 # ---- invariant 1 --------------------------------------------------------------------
@@ -255,7 +266,8 @@ def test_airs_analyst_ask_prints_verified_ticks(capsys):
 @pytest.mark.parametrize("args, message", [
     (["analyst", "ask", "nope"], "no source 'nope'"),
     (["analyst", "ask", "demo-stale", "--question", "cheapest?"], "--question needs --plan"),
-    (["analyst", "ask", "demo-stale", "--answerer", "gpt-4o-mini"], "spend caps"),
+    (["analyst", "ask", "demo-stale", "--answerer", "gpt-4o-mini"],
+     "is not a model this tool can address"),
     (["analyst", "ask", "demo-stale", "--plan", "{not json"], "not valid JSON"),
     (["analyst", "ask", "demo-stale", "--plan", '{"type": "median"}'], "plan type"),
 ])

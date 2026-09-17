@@ -359,6 +359,24 @@ and stops UI work.
 - The console states where records go: "stays on this machine" (local) or "sent to
   <provider>" (hosted).
 
+> **Progress 18 Sep — A5 done.** `analyst/budget.py` (session and day ceilings, the day
+> total persisted in `~/.airs/spend.json`, checked **before** each request with that
+> request's projected cost), `ModelAnswerer` addressing every model as
+> `<provider>/<model>` (`ollama`, `openai`, `anthropic`, `gemini`), Gemini routing in
+> `llm.py` behind a `[gemini]` extra, `airs analyst ask --max-cost --max-cost-day
+> --estimate`, and the Tick recording the provider, the budget state and a note naming
+> where the records went. **The A5 trap is closed:** `require_price` refuses a hosted
+> model with no price instead of budgeting it at $0; local models stay free by
+> construction. **Author decision 17 Sep — declare or refuse:** only prices verified for
+> the corpus models ship; anything else is declared in `~/.airs/pricing.yaml`
+> (`input_per_mtok` / `output_per_mtok`), so no price here is a guess at a provider's
+> list. **Live, paid, $0.0010 total:** 3 questions on `gpt-4o-mini` through the real API
+> — 1 correct, 1 `answer_key_moved`, and 1 **`agent_impairment`** where the model picked a
+> $9.57 item over an intact $9.50 one; a $0.0004 cap then refused mid-run before the
+> second call, exit 3, with the questions already answered reported. Estimated 1,600
+> input tokens against 1,101 actual — over-estimating is the safe direction for a cap.
+> 711 tests.
+
 ### A6 · Router and the shared two-step loop · 12 h · shared with the refetch arm
 
 `src/airsbench/analyst/loop.py`, called by both the API and the batch runner: sample →

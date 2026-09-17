@@ -6,9 +6,14 @@
     ollama/<model>   a model in the user's local Ollama, through the corpus's own
                      `LLMClient` (same JSON parsing, same retry rule). $0, and the
                      records never leave the machine.
+    openai/<model>   a hosted model. THE RECORDS ARE SENT TO THAT PROVIDER, which
+    anthropic/<m>    the Tick records and the CLI says out loud. Every call passes a
+    gemini/<model>   spend cap first (`budget.py`), and a model with no declared
+                     price is refused rather than budgeted as free.
 
-Hosted models (OpenAI, Anthropic, Gemini) are refused here until per-session spend
-caps sit in the request path (plan stage A5).
+Keys come from the environment (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+`GEMINI_API_KEY`), never from a flag or a request, and never reach a Tick, a log
+or a URL — `tests/test_model_options.py` asserts it.
 
 Invariant 6 is kept: output that cannot be parsed as JSON is a parse failure — an
 agent failure, recorded and never retried. A transport failure (Ollama not
@@ -23,13 +28,24 @@ from typing import Any, Protocol, Sequence
 
 from agentic_faults import Record
 
+from ..agents.llm import UnpricedModel, is_local_model, require_price
 from ..runner.config import TASK_TEMPERATURE
+from .budget import Budget, SpendRefused
 from .plan import Plan, execute
 from .prompts import analyst_messages
 from .verifier import AgentAnswer, rows
 
 OLLAMA_PREFIX = "ollama/"
+# How a provider prefix maps to the model id `LLMClient` routes on: OpenAI ids
+# carry no prefix of their own, Anthropic ids start with `claude-`, and Gemini
+# keeps `gemini/` because its ids are otherwise unmarked.
+PROVIDERS = {"openai/": "", "anthropic/": "", "gemini/": "gemini/"}
 MAX_ANSWER_TEXT = 500
+# One question's prompt is the records plus the plan grammar. Measured on the
+# demo source at 6 records: ~1,500 in, ~90 out. The estimate only has to be
+# honest enough to cap spend before the call; `record` then charges the truth.
+ESTIMATED_INPUT_TOKENS = 1_600
+ESTIMATED_OUTPUT_TOKENS = 150
 
 
 class AnswererError(RuntimeError):
@@ -71,13 +87,23 @@ class LiteralAnswerer:
                            text=f"{plan.describe()}: {result.value!r}"), usage
 
 
-class OllamaAnswerer:
-    """A local model, through the corpus's LLMClient."""
+class ModelAnswerer:
+    """A model, local or hosted, through the corpus's LLMClient.
 
-    def __init__(self, model: str, client: Any | None = None) -> None:
-        if not model.startswith(OLLAMA_PREFIX) or len(model) == len(OLLAMA_PREFIX):
-            raise AnswererError(f"not a local model: {model!r}; use ollama/<name>")
-        self.name = model
+    Hosted calls are metered: `budget.check` runs before the request with the
+    projected cost, and `budget.record` charges what the response actually used.
+    A local model never consults the budget — nothing is billed for it.
+    """
+
+    def __init__(self, spec: str, client: Any | None = None,
+                 budget: Budget | None = None) -> None:
+        self.name = spec
+        self.model = model_id(spec)
+        self.provider = provider_of(spec)
+        self.local = is_local_model(self.model)
+        self.budget = budget if not self.local else None
+        if not self.local:
+            require_price(self.model)  # refuse before a key is even read
         if client is None:
             try:
                 from ..agents.llm import LLMClient
@@ -85,25 +111,55 @@ class OllamaAnswerer:
                 raise AnswererError('answering with a model needs the agents extra: '
                                     'pip install "airs-bench[agents]"') from None
             try:
-                client = LLMClient(model, temperature=TASK_TEMPERATURE["retrieval"])
-            except ImportError:
-                raise AnswererError('answering with a model needs the agents extra: '
-                                    'pip install "airs-bench[agents]"') from None
+                client = LLMClient(self.model, temperature=TASK_TEMPERATURE["retrieval"])
+            except (ImportError, RuntimeError) as exc:
+                raise AnswererError(str(exc)) from None
         self.client = client
+
+    def estimate_usd(self) -> float:
+        """What one question is projected to cost. 0.0 for a local model."""
+        from .budget import cost_of
+
+        return cost_of(self.model, ESTIMATED_INPUT_TOKENS, ESTIMATED_OUTPUT_TOKENS)
 
     def answer(self, question: str, plan: Plan,
                records: Sequence[Record]) -> tuple[AgentAnswer, Usage]:
+        if self.budget is not None:
+            # Before the request, not around it: a refusal costs nothing.
+            self.budget.check(self.model, ESTIMATED_INPUT_TOKENS, ESTIMATED_OUTPUT_TOKENS)
         before = (self.client.usage.input_tokens, self.client.usage.output_tokens)
         try:
             result = self.client.call_json(analyst_messages(question, records))
         except Exception as exc:  # transport: the client already retried
             raise AnswererError(
-                f"{self.name} could not be reached ({type(exc).__name__}: {exc}); "
-                f"is Ollama running? start it with `ollama serve`"
+                f"{self.name} could not be reached ({type(exc).__name__}: {exc})"
+                + ("; is Ollama running? start it with `ollama serve`" if self.local else
+                   f"; check {self.provider.upper()}_API_KEY and the network")
             ) from None
-        usage = Usage(self.name, self.client.usage.input_tokens - before[0],
-                      self.client.usage.output_tokens - before[1], 0.0)
-        return parse_answer(result), usage
+        used_in = self.client.usage.input_tokens - before[0]
+        used_out = self.client.usage.output_tokens - before[1]
+        usd = self.budget.record(self.model, used_in, used_out) if self.budget is not None \
+            else 0.0
+        return parse_answer(result), Usage(self.name, used_in, used_out, usd)
+
+
+# The old name, kept because A3's tests and docs use it.
+OllamaAnswerer = ModelAnswerer
+
+
+def provider_of(spec: str) -> str:
+    """Which provider a spec addresses: ollama, openai, anthropic or gemini."""
+    return spec.split("/", 1)[0] if "/" in spec else "openai"
+
+
+def model_id(spec: str) -> str:
+    """The model id `LLMClient` routes on, from an `<provider>/<model>` spec."""
+    if spec.startswith(OLLAMA_PREFIX):
+        return spec
+    for prefix, keep in PROVIDERS.items():
+        if spec.startswith(prefix):
+            return keep + spec[len(prefix):]
+    return spec
 
 
 def parse_answer(result: Any) -> AgentAnswer:
@@ -121,12 +177,29 @@ def parse_answer(result: Any) -> AgentAnswer:
     return AgentAnswer(value=result.get("value"), plan=plan, text=text, confidence=confidence)
 
 
-def make_answerer(spec: str) -> Answerer:
+def make_answerer(spec: str, budget: Budget | None = None) -> Answerer:
+    """`literal`, `ollama/<name>`, or a hosted `<provider>/<model>`."""
     if spec == "literal":
         return LiteralAnswerer()
-    if spec.startswith(OLLAMA_PREFIX):
-        return OllamaAnswerer(spec)
-    raise AnswererError(
-        f"{spec!r} is not available yet: hosted models (OpenAI, Anthropic, Gemini) need "
-        f"per-session spend caps first. Use literal, or a local model as ollama/<name>"
-    )
+    known = (OLLAMA_PREFIX,) + tuple(PROVIDERS)
+    if not spec.startswith(known):
+        raise AnswererError(
+            f"{spec!r} is not a model this tool can address. Use literal, a local model "
+            f"as ollama/<name>, or a hosted one as "
+            f"{', '.join(p + '<model>' for p in PROVIDERS)}")
+    if len(spec) == len(spec.split("/", 1)[0]) + 1:
+        raise AnswererError(f"{spec!r} names a provider but no model — "
+                            f"ollama/<name>, openai/<model>, anthropic/<model> or "
+                            f"gemini/<model>")
+    if not spec.startswith(OLLAMA_PREFIX) and budget is None:
+        raise AnswererError(f"{spec} is a hosted model: it needs a spend cap. Pass a "
+                            f"Budget, or use a local model (ollama/<name>, $0)")
+    try:
+        return ModelAnswerer(spec, budget=budget)
+    except UnpricedModel as exc:
+        raise AnswererError(str(exc)) from None
+
+
+__all__ = ["Answerer", "AnswererError", "Budget", "LiteralAnswerer", "ModelAnswerer",
+           "OllamaAnswerer", "SpendRefused", "Usage", "make_answerer", "model_id",
+           "parse_answer", "provider_of"]

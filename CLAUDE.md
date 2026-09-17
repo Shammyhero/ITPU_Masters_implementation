@@ -25,6 +25,7 @@ airs serve           # local web console + API on 127.0.0.1:8000 (probe/gate/rep
 airs sources list | describe <id> | sample <id>   # declared sources; demo pairs always available
 airs manifest propose <src> | review <file> --source <src> | show <src>   # what fields mean; semantic UNMEASURED until reviewed
 airs analyst ask demo-stale [--answerer ollama/llama3.1:8b]   # verified, attributed answers ($0)
+airs analyst ask demo-stale --answerer openai/gpt-4o-mini --max-cost 0.01 [--estimate]   # hosted: capped before each call
 
 # Campaign — ALWAYS --dry-run first to see the cost estimate
 python -m airsbench.runner.run --main --n-queries 80 --limit 36 --dry-run
@@ -43,6 +44,11 @@ spend exceeds it. **Never launch a paid run without a dry-run first.**
 
 Approximate costs: phase 1 (36 runs × 80q) $0.39 · phase 2 (108 runs) $1.17 ·
 freshness sweep $0.29 · Haiku cross-model arm $1.68.
+
+The Analyst's hosted answers are capped per session and per day in the request
+path (`analyst/budget.py`, `~/.airs/spend.json`), and a hosted model with no
+declared price is **refused, never budgeted as free** — local models are free by
+construction, which is why they carry no price.
 
 `AVG_INPUT_TOKENS` in `runner/run.py` is calibrated against measured usage. If
 prompts change materially, re-derive it from `results/runs/*.json` usage fields —

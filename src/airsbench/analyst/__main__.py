@@ -9,11 +9,18 @@
 The demo sources ask the corpus's own question — the cheapest product in stock —
 about a bundled customer query. Any other source needs --plan (and optionally
 --question for its wording). Answerers: `literal` (the plan over the delivered
-records at face value, $0) or a local model `ollama/<name>` ($0, records stay on
-this machine). Hosted models arrive with spend caps.
+records at face value, $0), a local model `ollama/<name>` ($0, records stay on this
+machine), or a hosted one — `openai/<model>`, `anthropic/<model>`, `gemini/<model>`,
+whose key comes from the environment and whose records are SENT TO THAT PROVIDER.
+
+Every hosted call passes a spend cap first: `--max-cost` for the session,
+`--max-cost-day` across today's sessions (kept in ~/.airs/spend.json). The cap is
+checked before the request, with the projected cost of that request, so a refusal
+costs nothing. `--estimate` prints the projection and calls nothing at all. A
+hosted model with no declared price is refused outright, never treated as free.
 
 Nothing is written: Ticks go to stdout. Exit status 0 when every question ran,
-2 when a source, plan or answerer is unusable.
+2 when a source, plan or answerer is unusable, 3 when a spend cap refused a call.
 """
 
 from __future__ import annotations
@@ -28,6 +35,7 @@ from typing import Any
 from ..probe import ProbeError
 from ..sources import SourceError
 from .answerers import AnswererError, make_answerer
+from .budget import DEFAULT_DAY_USD, DEFAULT_SESSION_USD, Budget, SpendRefused, usd
 from .plan import Plan, PlanError
 from .session import LIVE_SEED_BLOCK, Question, ask, demo_question
 
@@ -55,6 +63,7 @@ def summarise(ticks: list[dict[str, Any]]) -> dict[str, Any]:
         "parse_failed": sum(bool(d["parse_failed"]) for d in decisions),
         "silent_failures": sum(bool(d.get("silent_failure")) for d in decisions),
         "usd": round(sum(tick["cost"]["usd"] for tick in ticks), 6),
+        "hosted": any(tick["cost"].get("hosted") for tick in ticks),
     }
 
 
@@ -128,6 +137,33 @@ def _print_tick(tick: dict[str, Any], index: int, total: int) -> None:
     print()
 
 
+def _summary_line(summary: dict[str, Any]) -> str:
+    counts = " · ".join(f"{label} {count}" for label, count in summary["attribution"].items())
+    # Hosted spend is often fractions of a cent; $0.00 would read as "free".
+    usd = f"${summary['usd']:.4f}" if summary.get("hosted") else f"${summary['usd']:.2f}"
+    return (f"{summary['questions']} questions, {summary['verified']} verified: {counts} · "
+            f"abstained {summary['abstained']} · unparseable {summary['parse_failed']} · "
+            f"silent failures {summary['silent_failures']} · {usd}")
+
+
+def _estimate(answerer, budget, questions: int) -> int:
+    """What this run would cost, without calling anything (plan A5)."""
+    each = getattr(answerer, "estimate_usd", lambda: 0.0)()
+    total = each * questions
+    if not each:
+        print(f"{answerer.name}: $0.00 — nothing is billed for this answerer, and the "
+              f"records stay on this machine.")
+        return 0
+    remaining = budget.remaining()
+    print(f"{answerer.name}: about {usd(each)} per question, {usd(total)} for "
+          f"{questions} — an estimate from measured prompt sizes, not a quote.")
+    print(f"  caps: {usd(budget.session_usd)} this session ({usd(remaining['session'])} "
+          f"left), {usd(budget.day_usd)} today ({usd(remaining['day'])} left)")
+    if total > remaining["session"] or total > remaining["day"]:
+        print("  this run would be refused before the first call that crosses a cap")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="airs analyst", description=__doc__.splitlines()[0])
     parser.add_argument("--sources", type=Path, default=None,
@@ -136,7 +172,16 @@ def main(argv: list[str] | None = None) -> int:
     ask_parser = actions.add_parser("ask", help="ask, verify and attribute")
     ask_parser.add_argument("pair")
     ask_parser.add_argument("--answerer", default="literal",
-                            help="literal, or a local model as ollama/<name>")
+                            help="literal, a local model as ollama/<name>, or a hosted one "
+                                 "as openai/<model>, anthropic/<model>, gemini/<model>")
+    ask_parser.add_argument("--max-cost", type=float, default=DEFAULT_SESSION_USD,
+                            help=f"USD cap for this session (default {DEFAULT_SESSION_USD:.2f}); "
+                                 f"checked before every hosted call")
+    ask_parser.add_argument("--max-cost-day", type=float, default=DEFAULT_DAY_USD,
+                            help=f"USD cap across today's sessions (default "
+                                 f"{DEFAULT_DAY_USD:.2f}), kept in ~/.airs/spend.json")
+    ask_parser.add_argument("--estimate", action="store_true",
+                            help="print the projected cost and exit without calling anything")
     ask_parser.add_argument("--questions", type=int, default=5)
     ask_parser.add_argument("--seed", type=int, default=LIVE_SEED_BLOCK[0],
                             help="first sampling seed; question i uses seed + i")
@@ -148,6 +193,7 @@ def main(argv: list[str] | None = None) -> int:
     ask_parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
+    ticks: list[dict[str, Any]] = []
     try:
         from ..sources.config import load_sources
 
@@ -171,8 +217,11 @@ def main(argv: list[str] | None = None) -> int:
             question = demo_question(args.key)
         else:
             raise PlanError(f"{pair.id} has no built-in question; give --plan (and --question)")
-        answerer = make_answerer(args.answerer)
-        ticks, session_id = [], None
+        budget = Budget(session_usd=args.max_cost, day_usd=args.max_cost_day)
+        answerer = make_answerer(args.answerer, budget=budget)
+        if args.estimate:
+            return _estimate(answerer, budget, args.questions)
+        session_id = None
         for index in range(args.questions):
             tick = ask(pair, question, answerer, seed=args.seed + index, task=args.task,
                        session_id=session_id)
@@ -180,6 +229,12 @@ def main(argv: list[str] | None = None) -> int:
             ticks.append(tick)
             if not args.json:
                 _print_tick(tick, index + 1, args.questions)
+    except SpendRefused as exc:
+        # Mid-run: the questions already answered are real and are reported.
+        print(f"refused: {exc}", file=sys.stderr)
+        if ticks:
+            print(_summary_line(summarise(ticks)), file=sys.stderr)
+        return 3
     except (SourceError, ProbeError, PlanError, AnswererError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
@@ -189,10 +244,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"session_id": session_id, "ticks": ticks, "summary": summary},
                          indent=2, ensure_ascii=False, allow_nan=False))
         return 0
-    counts = " · ".join(f"{label} {count}" for label, count in summary["attribution"].items())
-    print(f"{summary['questions']} questions, {summary['verified']} verified: {counts} · "
-          f"abstained {summary['abstained']} · unparseable {summary['parse_failed']} · "
-          f"silent failures {summary['silent_failures']} · ${summary['usd']:.2f}")
+    print(_summary_line(summary))
     return 0
 
 

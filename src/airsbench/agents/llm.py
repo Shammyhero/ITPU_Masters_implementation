@@ -25,6 +25,7 @@ from typing import Any
 # model they do not price.
 ANTHROPIC_PREFIX = "claude-"
 OLLAMA_PREFIX = "ollama/"
+GEMINI_PREFIX = "gemini/"
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434/v1"
 # Local inference is far slower than a hosted API, especially on first load
 # while weights page in. A 60 s timeout fails runs that would have succeeded.
@@ -38,6 +39,19 @@ PRICING = {
     "claude-haiku-4-5": {"input": 1.00 / 1e6, "output": 5.00 / 1e6},
     "claude-sonnet-5": {"input": 2.00 / 1e6, "output": 10.00 / 1e6},
 }
+# Prices the user declares for models this table does not carry, so nothing here
+# is a guess at someone else's price list and no hosted call is ever budgeted at
+# $0 (author decision, 17 Sep; plan A5 "declare or refuse").
+#
+#     models:
+#       gpt-5-mini:      {input_per_mtok: 0.25, output_per_mtok: 2.00}
+#       gemini/gemini-2.5-flash: {input_per_mtok: 0.30, output_per_mtok: 2.50}
+PRICING_FILE = Path.home() / ".airs" / "pricing.yaml"
+_DECLARED: dict[str, dict[str, float]] | None = None
+
+
+class UnpricedModel(RuntimeError):
+    """A hosted model with no price: refused rather than budgeted as free."""
 JSON_BLOCK = re.compile(r"\{.*\}", re.DOTALL)
 
 
@@ -69,10 +83,68 @@ class LLMUsage:
         self.latencies_ms.append(latency_ms)
 
     def cost_usd(self, model: str) -> float:
-        price = PRICING.get(model)
+        price = price_of(model)
         if price is None:
             return 0.0
         return self.input_tokens * price["input"] + self.output_tokens * price["output"]
+
+
+def declared_prices(path: Path | str = PRICING_FILE,
+                    refresh: bool = False) -> dict[str, dict[str, float]]:
+    """Per-token prices the user declared for models `PRICING` does not carry."""
+    global _DECLARED
+    if _DECLARED is not None and not refresh:
+        return _DECLARED
+    path = Path(path)
+    prices: dict[str, dict[str, float]] = {}
+    if path.exists():
+        import yaml
+
+        document = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        models = document.get("models") if isinstance(document, dict) else None
+        if not isinstance(models, dict):
+            raise UnpricedModel(f"{path}: expected models: mapping each model to "
+                                f"{{input_per_mtok, output_per_mtok}}")
+        for model, spec in models.items():
+            try:
+                prices[str(model)] = {"input": float(spec["input_per_mtok"]) / 1e6,
+                                      "output": float(spec["output_per_mtok"]) / 1e6}
+            except (TypeError, KeyError, ValueError):
+                raise UnpricedModel(f"{path}: {model} needs input_per_mtok and "
+                                    f"output_per_mtok in USD per million tokens") from None
+    _DECLARED = prices
+    return prices
+
+
+def price_of(model: str) -> dict[str, float] | None:
+    """This model's per-token price: shipped, declared, or None for a local model."""
+    if is_local_model(model):
+        return None
+    return PRICING.get(model) or declared_prices().get(model)
+
+
+def require_price(model: str) -> dict[str, float] | None:
+    """The price, or a refusal. A hosted model is never budgeted as free.
+
+    Local models are free by construction — nothing is billed for them, and that
+    is why they are absent from `PRICING`. For anything else, an absent price
+    used to mean $0, which would have let a spend cap pass a call it could not
+    price (plan A5, "the trap to close").
+    """
+    if is_local_model(model):
+        return None
+    price = price_of(model)
+    if price is None:
+        raise UnpricedModel(
+            f"no price for {model!r}, so its spend cannot be capped. Declare it in "
+            f"{PRICING_FILE} as models: {{{model}: {{input_per_mtok: <usd>, "
+            f"output_per_mtok: <usd>}}}}, or use a local model (ollama/<name>), "
+            f"which is free")
+    return price
+
+
+def is_gemini_model(model: str) -> bool:
+    return model.startswith(GEMINI_PREFIX)
 
 
 def is_local_model(model: str) -> bool:
@@ -87,6 +159,10 @@ def is_anthropic_model(model: str) -> bool:
 def local_model_name(model: str) -> str:
     """Strip the routing prefix: 'ollama/llama3.1:8b' -> 'llama3.1:8b'."""
     return model[len(OLLAMA_PREFIX):] if is_local_model(model) else model
+
+
+def gemini_model_name(model: str) -> str:
+    return model[len(GEMINI_PREFIX):] if is_gemini_model(model) else model
 
 
 def ollama_base_url() -> str:
@@ -110,6 +186,11 @@ class LLMClient:
 
         if is_anthropic_model(model):
             self.chat = self._anthropic_chat(model, temperature, max_retries)
+            self.usage = LLMUsage()
+            return
+
+        if is_gemini_model(model):
+            self.chat = self._gemini_chat(model, temperature, max_retries)
             self.usage = LLMUsage()
             return
 
@@ -167,6 +248,30 @@ class LLMClient:
             max_tokens=1024,
         )
 
+    @staticmethod
+    def _gemini_chat(model: str, temperature: float, max_retries: int):
+        """Gemini on the same LangChain path as the rest (plan A5).
+
+        Addressed as `gemini/<model>` because Google's ids carry no prefix of
+        their own and the router has to tell providers apart from the id alone.
+        Like the Anthropic path it has no `response_format` knob here, so it is
+        held to the prompt plus `call_json`'s block extraction; unusable output
+        is a parse failure, which is an agent failure (invariant 6).
+        """
+        try:
+            from langchain_google_genai import ChatGoogleGenerativeAI
+        except ImportError:
+            raise RuntimeError('Gemini needs the gemini extra: '
+                               'pip install "airs-bench[gemini]"') from None
+
+        key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        if not key:
+            raise RuntimeError("GEMINI_API_KEY not set (put it in .env)")
+        return ChatGoogleGenerativeAI(
+            model=gemini_model_name(model), temperature=temperature,
+            max_retries=max_retries, timeout=60, google_api_key=key,
+        )
+
     def call_json(self, messages: list[tuple[str, str]]) -> dict[str, Any] | None:
         """Return parsed JSON, or None when the agent's output is unusable."""
         start = time.perf_counter()
@@ -197,7 +302,8 @@ class LLMClient:
 def estimate_cost_usd(
     model: str, n_calls: int, avg_input_tokens: int, avg_output_tokens: int
 ) -> float:
-    price = PRICING.get(model)
+    """Projected spend. Free for local models; refuses an unpriced hosted one."""
+    price = require_price(model)
     if price is None:
         return 0.0
     return n_calls * (

@@ -10,7 +10,7 @@ subject. Model, prompt, temperature, dataset, scoring and hardware are held
 constant — only infrastructure conditions vary.
 
 **Status:** six research questions answered. 302 benchmark runs, 24 270 agent
-decisions, 4 models, $5.15 of API spend, 690 tests green. Current work follows
+decisions, 4 models, $5.15 of API spend, 711 tests green. Current work follows
 the week-by-week plan in [`docs/plan.md`](docs/plan.md).
 
 ---
@@ -138,7 +138,10 @@ record as of the moment it was given, and every wrong one gets a label:
 transit* (fields the answer needs changed on the way), *agent impairment* (the records
 arrived intact and the model still got it wrong), or *both*. Answers come from a local
 model in your Ollama, or from `literal` — the question executed over the delivered
-records at face value. Hosted models arrive with spend caps.
+records at face value. A hosted model — `openai/<model>`, `anthropic/<model>` or
+`gemini/<model>`, key from your environment — sends the records to that provider and
+says so; every call passes a spend cap first, `--estimate` prices a run without calling
+anything, and a model with no known price is refused rather than treated as free.
 
 **`airs manifest`** — say what a source's fields mean. Semantic readiness is
 `UNMEASURED` until a person has reviewed a manifest for the source, because a tool that

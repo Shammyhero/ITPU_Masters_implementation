@@ -95,6 +95,7 @@ def ask(pair: SourcePair, question: Question, answerer: Answerer, *, seed: int |
                            truth=truth) if upstream is not None else None)
     return build_tick(
         pair=pair, question=question, text=text, sample=sample, answer=answer, usage=usage,
+        answerer_obj=answerer,
         airs=airs, verification=verification, served=served, truth=truth, as_of=as_of,
         semantic=layer,
         seed=seed, session_id=session_id or uuid.uuid4().hex[:12], answerer=answerer.name,
@@ -104,7 +105,7 @@ def ask(pair: SourcePair, question: Question, answerer: Answerer, *, seed: int |
 
 def build_tick(*, pair, question, text, sample, answer: AgentAnswer, usage, airs, verification,
                served, truth, as_of, seed, session_id, answerer, started, t0, t1,
-               semantic=None) -> dict[str, Any]:
+               semantic=None, answerer_obj=None) -> dict[str, Any]:
     staleness = sample.meta.get("staleness_seconds")
     notes = []
     if pair.upstream is None:
@@ -115,6 +116,11 @@ def build_tick(*, pair, question, text, sample, answer: AgentAnswer, usage, airs
                      "as values changed in transit rather than as the answer key moving")
     if semantic is not None and not semantic.measured:
         notes.append(semantic.reason)
+    provider = getattr(answerer_obj, "provider", None)
+    hosted = provider is not None and not getattr(answerer_obj, "local", True)
+    if hosted:
+        notes.append(f"these records were sent to {provider} to be answered by "
+                     f"{answerer}; everything else stayed on this machine")
     decision = {
         "answer": answer.text,
         "plan": answer.plan,
@@ -155,7 +161,10 @@ def build_tick(*, pair, question, text, sample, answer: AgentAnswer, usage, airs
             "t0_t1_gap_seconds": 0.0 if as_of else max(0.0, t1 - t0),
         },
         "decision": decision,
-        "cost": usage.to_dict(),
+        "cost": {**usage.to_dict(), "provider": provider if provider else "none",
+                 "hosted": bool(hosted),
+                 "budget": (answerer_obj.budget.to_dict(answerer_obj.model)
+                            if getattr(answerer_obj, "budget", None) is not None else None)},
         "notes": notes,
         "provenance": {"arm": "live", "seed_block": list(LIVE_SEED_BLOCK), "seed": seed,
                        "session_id": session_id},
