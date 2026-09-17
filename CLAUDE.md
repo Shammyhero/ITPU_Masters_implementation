@@ -63,7 +63,12 @@ wrong, not the test.
    — a function of `(task, replication)` **only**. Every condition within a
    replication must see identical inputs at identical simulated timestamps.
    `config.seed` drives the *injectors* (the fault realization is the treatment
-   and should vary). → `tests/test_paired_design.py`
+   and should vary). A **flat single-fault** condition is seeded with
+   `config.seed` itself; only the **nested/compound** shape splits into
+   per-component streams (`execute._injector_seed`). Deriving a component seed
+   for a solo made 88 runs unable to regenerate their own realization — the
+   defect A4 found (REVIEW F-E7). → `tests/test_paired_design.py`,
+   `tests/test_fault_realization.py`
 
 3. **Fault chain applied exactly once**, in the runner. Agents consume
    already-faulted records. Applying it in both places advances the injector RNG
@@ -119,6 +124,14 @@ wrong, not the test.
   inode. Apply `schema.sql` by piping from the host, not via the mount.
 - **Backgrounded Python buffers stdout.** Use `python -u`, or read progress from
   `results/runs/*.json` rather than the log.
+- **Run artifacts store no records.** Anything needing the records an agent was
+  actually shown must replay the fault chain from the config and then prove the
+  replay reproduced the run's logged consistency and semantic scores exactly
+  (`analysis/verifier_agreement.py`). A seeded-RNG test only proves today's code
+  is deterministic; it does not prove an artifact can be regenerated.
+- **Healthy consistency is 99.88, not 100.** Missing brands load as NaN and NaN
+  never equals itself, so `payload_consistency` counts them as altered. Under
+  0.2 points, identical across conditions; deliberately not fixed (F-B5).
 
 ## Citation hygiene
 

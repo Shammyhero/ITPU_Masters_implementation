@@ -1,7 +1,7 @@
 # Handoff 1/3 — Current state and results
 
-**Refreshed:** 15 Sep 2026 · **Last pushed commit:** `e78ab97` (A1 sources) · A3
-(the verifier) committed next
+**Refreshed:** 16 Sep 2026 · **Last pushed commit:** `f5da23a` (A3 the verifier) · A4
+(verifier agreement, Fig 4.10) committed next
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
 **Read next:** `02_plan_and_next_steps.md`, then `03_operating_guide.md`.
@@ -29,11 +29,11 @@ attributed to the pipeline or the model (`docs/analyst_brief.md`).
 
 | | |
 |---|---|
-| Tests | **652 passing**, lint clean (`make test`, `make lint`) |
+| Tests | **664 passing**, lint clean (`make test`, `make lint`) |
 | Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
 | Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
-| Figures | `make figures` builds all 9, deterministic |
+| Figures | `make figures` builds all 10, deterministic |
 | Runs on disk | 302 run artifacts in `results/runs/` (committed), 24 270 decisions |
 | Spend | $5.15 total — OpenAI ~$4.58 left, Anthropic ~$1.27 left. Nothing spent since |
 | CI | **None, deliberately.** `make ci` + `make dist-check` replace it |
@@ -48,7 +48,8 @@ attributed to the pipeline or the model (`docs/analyst_brief.md`).
 | **The Analyst adopted** — `docs/analyst_brief.md`, `docs/plan.md` Part 1b | 14 Sep | **done** |
 | **A1 sources** | 14–18 Sep | **done 14 Sep** |
 | **A3 verifier** — four labels, `airs analyst ask`, live on `llama3.1:8b` | by Fri 25 Sep | **done 15 Sep** |
-| A4 Fig 4.10 verifier agreement (+ fault realizations) | **Fri 2 Oct** | next |
+| **A4 Fig 4.10** — 6,714 decisions, 0 disagreements; 90/90 realizations | **Fri 2 Oct** | **done 16 Sep** |
+| A2 manifest (two-state semantic rule) | 21–25 Sep | next |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |
@@ -67,8 +68,13 @@ Capacity: 20 h/week. ~159 h of work scheduled into ~160 h to the freeze (02 §1)
 | RQ5 | Ranking transfers across 4 models, **inverts across tasks**. | `cross_model_findings.md` |
 | RQ6 | Two faults **never compound — they saturate**. | `interaction_findings.md`; Fig 4.6 |
 
-RQs v2 §9 declares three further analyses under the Analyst: verifier agreement (Fig
-4.10), the two-condition refetch arm (Fig 4.9), the live-source case study (Fig 4.11).
+RQs v2 §9 declares three further analyses under the Analyst. **Verifier agreement (Fig
+4.10) is done (16 Sep):** the live verifier reproduces all 6,714 logged retrieval
+decisions exactly — correctness, silent failure, the flip partition — and regenerates
+90/90 fault realizations; agent impairment is a 9.7% floor on a fault-free pipeline,
+while drift and stripping put 25.0% / 22.5% of decisions on records damaged in transit
+(`verifier_agreement_findings.md`). Still to come: the two-condition refetch arm (Fig
+4.9) and the live-source case study (Fig 4.11).
 
 ## 5. Other results that carry the thesis
 
@@ -99,7 +105,8 @@ RQs v2 §9 declares three further analyses under the Analyst: verifier agreement
 
 | Commit | What |
 |---|---|
-| *(next)* | A3 — the verifier |
+| *(next)* | A4 — verifier agreement, Fig 4.10, seed-rule fix (F-E7) |
+| `f5da23a` | A3 — the verifier |
 | `e78ab97` | A1 — sources |
 | `b691124` | The Analyst adopted; handoff notes refreshed |
 | `05d0ce3` | W3 step 6 — console in the wheel, `aist.json` committed |

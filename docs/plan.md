@@ -298,6 +298,23 @@ question types are answered and labelled unverified, never guessed at.
 > regeneration is itself checked: it must reproduce each run's logged consistency and
 > semantic scores exactly, which is record-level evidence for invariant 3.
 
+> **Progress 16 Sep — A4 done, gate met 16 days early.**
+> `analysis/verifier_agreement.py`, **Fig 4.10**, `docs/verifier_agreement_findings.md`,
+> `tests/test_verifier_agreement.py`, `make figures`. Over 90 retrieval runs (main +
+> sweep) and **6,714 decisions: zero disagreements** on verifiable, `correct`, silent
+> failure, `flipped` and the attribution partition; **90/90 fault realizations
+> regenerated** to their logged consistency and semantic scores (float equality); the
+> published RQ2 raw accuracies (0.812 / 0.774 / 0.689 / 0.729) and residuals (−0.003 /
+> −0.003 / −0.173 / −0.128) recomputed from the verifier's own correctness. **New
+> result** (Fig 4.10, right panel): agent impairment is a floor — 9.7% of decisions on a
+> fault-free pipeline and 9.7% under latency; freshness only moves the key (1.7% → 15.3%
+> across the sweep at flat impairment); drift and stripping put 25.0% and 22.5% of
+> decisions on records whose needed fields changed in transit. **Found and fixed on the
+> way (REVIEW F-E7):** 88 runs across the main and cross-model arms could not be replayed
+> from their own configs — they predate `_component_seed` — so the injector seed is now
+> keyed on the parameter shape; nothing published moves. Recorded, not fixed: NaN brands
+> cap healthy consistency at 99.88 (**F-B5**). 664 tests.
+
 Run the verifier over the retrieval runs of the main factorial and the freshness sweep:
 it must reproduce, **exactly**, each decision's correctness, the published silent-failure
 rates, and the flip-partition split (ANSWER KEY MOVED + BOTH = wrong on flipped queries;

@@ -234,6 +234,21 @@ claims. Add two sentences.
 `consistency_score` raises on `total<=0`. No adversarial-config test exists.
 1 h.
 
+**F-B5 (polish — recorded 2026-09-16, deliberately not fixed) — NaN brands make a
+healthy pipeline score 99.88 consistency, not 100.** `payload_consistency`
+compares field values with `==`; the ESCI catalog stores a missing brand as NaN,
+and NaN is not equal to itself, so an absent brand reads as an altered field on
+every record that has one. The effect is under 0.2 points and identical across
+conditions — the same products are sampled in every arm by the paired design — so
+no comparison, ranking or regression coefficient moves.
+
+**Left as is on purpose.** Changing the comparison would make recomputed scores
+disagree with the logged ones by up to 0.12, which would cost the exact
+realization check that F-E7 now rests on, in exchange for a cosmetic ceiling.
+Recorded here and as a Chapter 3 measurement note instead. The Analyst's demo
+source stores the same absences as `null` and so does reach 100.0 — the only
+place the bundled demo and the corpus disagree about a healthy pipeline's score.
+
 ## C. Experimental design
 
 Strong, and stronger than the brief assumes.
@@ -460,6 +475,37 @@ nowhere. 0.5 h.
 
 **F-E5 (polish) — no DOI.** A Zenodo release takes 30 min and gives a citable
 artifact. Do it the week of submission, not before.
+
+**F-E7 (serious — found and fixed 2026-09-16) — 88 runs could not be replayed
+from their own configs.** The fault realization is the treatment (invariant 2),
+and a run artifact stores only the AIRS dimensions measured from the delivered
+records, never the records. So "seeded determinism" in the table above was only
+true if `build_fault_chain(config)` still produces the realization that ran. It
+did not: the main factorial (26–28 Jul) and the cross-model arm (31 Jul) predate
+`_component_seed`, which arrived with the interaction arm on 17 Aug and derived a
+per-injector seed from `config.seed`. Every drift and stripping run of those two
+arms — 88 across both tasks — therefore regenerated a *different* random
+realization, detectable because it no longer reproduced the run's logged
+consistency and semantic scores.
+
+**Nothing published moves.** The artifacts are canonical (invariant 7); accuracy,
+silent failure, the flip partition and every AIRS number stand as recorded. What
+was broken was the ability to audit them afterwards — which is exactly what A4
+needed, and how this was found.
+
+**Fixed** by keying the seed on the parameter shape: a flat single-fault
+condition is seeded with `config.seed` (what the corpus ran), and per-component
+streams are reserved for the nested shape the interaction arm writes for every
+condition including its solos. All 124 drift/stripping runs on disk now
+regenerate their logged scores exactly, pinned by
+`tests/test_fault_realization.py` and, over the corpus,
+`tests/test_verifier_agreement.py`. Cost: 1.5 h.
+
+**Worth noting as a pattern:** the defect was invisible to `make test` for a
+month because nothing regenerated a realization until an analysis needed the
+delivered records. Reproducibility claims want a test that actually re-derives
+the artifact, not a seeded-RNG test that only proves the code is deterministic
+today.
 
 ## F. Engineering quality
 

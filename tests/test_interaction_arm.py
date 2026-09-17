@@ -55,12 +55,16 @@ def record(i: int) -> Record:
 
 
 def config_for(fault: str) -> RunConfig:
+    """A condition in the shape `build_interaction_arm` actually writes it.
+
+    Every condition in that arm — solos included — carries per-fault nested
+    parameters, which is also what gives each injector its own seed stream
+    (`execute._injector_seed`). Building the solos flat here instead would seed
+    them with `config.seed` and compare the compound against a DIFFERENT random
+    realization, so the marginals below would no longer be exact.
+    """
     components = fault_components(fault)
-    params = (
-        {f: SEVERITY_PARAMS[f][SEVERE] for f in components}
-        if len(components) > 1
-        else (SEVERITY_PARAMS[components[0]][SEVERE] if components else {})
-    )
+    params = {f: SEVERITY_PARAMS[f][SEVERE] for f in components}
     return RunConfig(
         pipeline="streaming", task="retrieval", fault_type=fault,
         severity="none" if not components else SEVERE, replication=1,

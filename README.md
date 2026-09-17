@@ -10,7 +10,7 @@ subject. Model, prompt, temperature, dataset, scoring and hardware are held
 constant — only infrastructure conditions vary.
 
 **Status:** six research questions answered. 302 benchmark runs, 24 270 agent
-decisions, 4 models, $5.15 of API spend, 652 tests green. Current work follows
+decisions, 4 models, $5.15 of API spend, 664 tests green. Current work follows
 the week-by-week plan in [`docs/plan.md`](docs/plan.md).
 
 ---
@@ -76,7 +76,8 @@ Start here if you are reviewing the research rather than the code.
 [AIRS curve sensitivity](docs/sensitivity_findings.md) ·
 [silent-failure definition](docs/silent_definition_findings.md) ·
 [query fragility](docs/fragility_findings.md) ·
-[power under clustering](docs/power_findings.md)
+[power under clustering](docs/power_findings.md) ·
+[verifier agreement](docs/verifier_agreement_findings.md)
 
 ---
 

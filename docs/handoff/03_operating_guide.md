@@ -16,7 +16,8 @@
 **`sources/{base,demo,files,inline,config,__main__}.py`** · `demo/src/` · tests
 `test_{server,replay_api,cli,probe,gate,sources,demo_source}.py` · `tests/dist_smoke.py`
 
-**For verifier agreement (A4):** `src/airsbench/analyst/{plan,verifier,session}.py`, `src/airsbench/agents/{retrieval,prompts,llm}.py`
+**For the Analyst's remaining stages** (A4 is done — `analysis/verifier_agreement.py`,
+`docs/verifier_agreement_findings.md`): `src/airsbench/analyst/{plan,verifier,session}.py`, `src/airsbench/agents/{retrieval,prompts,llm}.py`
 (`RetrievalAgent.ground_truth`; `llm.py` prices any model absent from `PRICING` at $0 — A5
 must close that for hosted models) · `src/airsbench/analysis/flip_partition.py` (`Replayer`,
 `QueryOutcome.flipped`, `followed served`) · `docs/flip_partition_findings.md` ·
@@ -49,12 +50,12 @@ with `run_arm(run)`.
 ## 3. Commands
 
 ```bash
-make test         # 652 tests, ~23 s
+make test         # 664 tests, ~25 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
 make dist-check   # wheel → clean install → airs probe/gate/sources + airs serve + console
-make figures      # all 9 figures
+make figures      # all 10 figures (needs data/ecommerce)
 make lock         # re-pin requirements-lock.txt
 .venv/bin/airs serve [--records d.jsonl --source u.jsonl] [--sources sources.yaml] [--dev]
 .venv/bin/airs sources list | describe <id> | sample <id> [--seed N] [--json] [--sources f]
@@ -122,6 +123,24 @@ corrupts `.next` · figures print recomputed vs published values.
 - Hosted answerers raise `AnswererError` until A5; a transport failure is an `AnswererError`,
   unparseable output is a parse failure (invariant 6).
 
+**16 Sep (A4):**
+- **A run artifact stores no records** — only the AIRS dimensions measured from them. Any
+  analysis needing the delivered records must replay the fault chain, and must then prove
+  the replay by reproducing that run's logged consistency and semantic scores exactly.
+- **Injector seeds are keyed on the parameter shape** (`execute._injector_seed`): flat
+  single fault → `config.seed`; nested/compound → per-component streams. The main and
+  cross-model arms predate `_component_seed`; the interaction arm writes even solos nested.
+  Get this wrong and 88 runs regenerate a different realization (F-E7).
+- **`tests/test_interaction_arm.py` builds its conditions the way the arm's grid does** —
+  nested for solos too. Built flat, its separability marginals compare different
+  realizations and fail by ~0.5–1.5 points.
+- **Healthy consistency is 99.88, not 100** — NaN brands never equal themselves (F-B5).
+  Do not "fix" it: recomputed scores would stop matching the logged ones.
+- `matplotlib` legends built from `label=` while drawing stacked bars only legend the
+  first bar's segments — build handles explicitly from every key present.
+- The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
+  run them. `make figures` does.
+
 ## 5. Working conventions the author expects
 
 - **Step by step.** Propose before code; surface decisions via questions; wait for approval.
@@ -142,5 +161,5 @@ corrupts `.next` · figures print recomputed vs published values.
 
 > Read `docs/handoff/01_state_and_results.md`, `02_plan_and_next_steps.md`,
 > `03_operating_guide.md`, then `CLAUDE.md`, `docs/plan.md` and the header of
-> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (652
-> passing). Continue from 02 §1 (A4, verifier agreement).
+> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (664
+> passing). Continue from 02 §1 (A2, the manifest).

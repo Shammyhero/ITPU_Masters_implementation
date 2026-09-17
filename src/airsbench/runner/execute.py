@@ -133,11 +133,45 @@ def build_fault_chain(config: RunConfig) -> FaultChain:
     """
     components = fault_components(config.fault_type)
     injectors = [
-        _build_injector(name, _component_seed(config.seed, name),
+        _build_injector(name, _injector_seed(config, name, len(components)),
                         _params_for(config, name, len(components)))
         for name in components
     ]
     return FaultChain(injectors)
+
+
+def _nested(config: RunConfig, name: str, n_components: int) -> bool:
+    """Is this condition written in the compound (per-fault) shape?
+
+    One detection for both the parameters and the seed, so the two can never
+    disagree about which shape a condition is in.
+    """
+    return n_components > 1 or isinstance(config.injector_params.get(name), dict)
+
+
+def _injector_seed(config: RunConfig, name: str, n_components: int) -> int:
+    """The RNG seed for one injector: `config.seed`, unless the run is compound.
+
+    Per-component streams exist to keep two injectors in one run off the same
+    draws (see `_component_seed`); a single injector cannot correlate with
+    anything, so a flat single-fault condition is seeded with `config.seed`
+    itself. That is also what the corpus did: the main factorial and the
+    cross-model arm (26 Jul – 31 Jul) predate `_component_seed`, which arrived
+    with the interaction arm. Deriving a component seed for them made their
+    recorded fault realizations irreproducible from their own configs — the
+    realization is the treatment, so that broke the artifact claim that any run
+    replays in isolation, while leaving every published number untouched
+    (artifacts are canonical, invariant 7).
+
+    Keyed on the parameter shape rather than on a date or an arm: the
+    interaction arm writes even its solo conditions in the nested shape, so the
+    shape separates the two seed regimes exactly. All 124 drift/stripping runs
+    on disk regenerate their logged consistency and semantic scores under this
+    rule. → `tests/test_fault_realization.py`, REVIEW F-E7.
+    """
+    if not _nested(config, name, n_components):
+        return config.seed
+    return _component_seed(config.seed, name)
 
 
 def _params_for(config: RunConfig, name: str, n_components: int) -> dict[str, Any]:
@@ -155,8 +189,7 @@ def _params_for(config: RunConfig, name: str, n_components: int) -> dict[str, An
     component at its injector default instead of the declared severity.
     """
     params = config.injector_params
-    nested = n_components > 1 or isinstance(params.get(name), dict)
-    if not nested:
+    if not _nested(config, name, n_components):
         return dict(params)
     entry = params.get(name)
     if entry is None:
@@ -169,7 +202,10 @@ def _params_for(config: RunConfig, name: str, n_components: int) -> dict[str, An
 
 
 def _component_seed(seed: int, name: str) -> int:
-    """A distinct, deterministic RNG stream per injector within one run.
+    """A distinct, deterministic RNG stream per injector within a COMPOUND run.
+
+    Only reached for conditions written in the nested shape (see
+    `_injector_seed`); a flat single-fault run uses `config.seed` directly.
 
     Handing both injectors `config.seed` would give them identical random draws,
     so schema drift and semantic stripping would hit a correlated subset of
