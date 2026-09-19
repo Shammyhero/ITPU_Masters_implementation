@@ -87,8 +87,14 @@ def main(airs: str, examples: Path) -> int:
             raise SystemExit("the installed package has no web console: "
                              "src/airsbench/web/ did not make it into the wheel")
         _, home = _get(f"{base}/")
-        if "Check my pipeline" not in home:
-            raise SystemExit("/ did not serve the Mode A console")
+        # `/` is the conversation (A8); the probe page moved to `/check/`. Assert
+        # what each ROUTE serves — "Check my pipeline" also appears in the nav on
+        # every page, so matching it alone would pass whatever is at `/`.
+        if "Ask your pipeline a question" not in home:
+            raise SystemExit("/ did not serve the conversation console")
+        _, check = _get(f"{base}/check/")
+        if "<h1>Check my pipeline</h1>" not in check:
+            raise SystemExit("/check/ did not serve the probe console")
         _, evidence = _get(f"{base}/evidence/")
         if "Your agent is not going to tell you" not in evidence:
             raise SystemExit("/evidence/ did not serve the evidence page")
@@ -100,7 +106,7 @@ def main(airs: str, examples: Path) -> int:
         print(f"airs serve: /api/meta v{meta['version']}, /api/score {result['band']} "
               f"{result['airs']:.1f}, /api/samples {len(samples['samples'])}, "
               f"/api/replay {rate:.2f} over {replayed['corpus']['runs']} runs; "
-              f"console / and /evidence/ served, {script.group(1).rsplit('/', 1)[-1]} "
+              f"console /, /check/ and /evidence/ served, {script.group(1).rsplit('/', 1)[-1]} "
               f"{script_status}")
         return 0
     finally:

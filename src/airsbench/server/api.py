@@ -36,6 +36,7 @@ from ..probe import (
     parse_records,
     score,
 )
+from ..sources import SourceError
 from .schemas import AskRequest, GateRequest, ReplayRequest, ScoreRequest, SessionRequest
 
 SAMPLES = Path(__file__).parent / "data" / "samples.json"
@@ -293,7 +294,7 @@ def open_session_route(body: SessionRequest, request: Request):
     from ..analyst.session import demo_question
     from ..analyst.sessions import open_session
 
-    pair = _pair(request, body.source)
+    pair = _inline_pair(body) if body.records else _pair(request, body.source)
     _weights(body.task)
     if body.refetch not in MODES:
         raise InputError("refetch", f"refetch must be one of {list(MODES)}")
@@ -305,10 +306,10 @@ def open_session_route(body: SessionRequest, request: Request):
     except AnswererError as exc:
         raise InputError("answerer", str(exc)) from None
     _require_key(body.answerer)
+    # Only the demo source ships a question of its own; everything else is asked
+    # with an explicit plan, because an answer is checked against the question's
+    # plan and the server must not invent one.
     question = demo_question() if pair.kind == "demo" else None
-    if question is None:
-        raise InputError("source", f"{pair.id} has no built-in question; send `plan` with "
-                                   f"each /api/ask request")
     try:
         session = open_session(pair, answerer, policy=policy, budget=budget,
                                question=question, mode=body.refetch, task=body.task)
@@ -316,6 +317,38 @@ def open_session_route(body: SessionRequest, request: Request):
         raise InputError("refetch", str(exc)) from None
     request.app.state.sessions[session.id] = session
     return session.to_dict()
+
+
+def _inline_pair(body: SessionRequest):
+    """A session over records pasted into the page.
+
+    This is the one source that may arrive in a request, and it is not an
+    exception to the firewall: the records ARE the request body. The server
+    still opens no file, path, DSN or URL because something asked it to
+    (author decision, 20 Sep). The pair is held for this session only and never
+    written anywhere.
+    """
+    from ..sources import SourcePair
+    from ..sources.inline import InlineSource
+
+    delivered = InlineSource("inline/delivered", body.records)
+    try:
+        delivered.entries()
+    except (SourceError, ProbeError) as exc:
+        raise InputError("records", str(exc)) from None
+    upstream = None
+    if body.upstream and body.upstream.strip():
+        upstream = InlineSource("inline/upstream", body.upstream, unique_ids=True)
+        try:
+            upstream.entries()
+        except (SourceError, ProbeError) as exc:
+            raise InputError("upstream", str(exc)) from None
+    return SourcePair(
+        id="inline", kind="inline", delivered=delivered, upstream=upstream,
+        description=("Records pasted into this page, held in memory for this session"
+                     + ("" if upstream else
+                        " — with no system of record, answers cannot be verified")),
+    )
 
 
 def _require_key(spec: str) -> None:
@@ -365,22 +398,28 @@ def ask(body: AskRequest, request: Request):
     from ..analyst.answerers import AnswererError
     from ..analyst.budget import SpendRefused
     from ..analyst.plan import Plan, PlanError
-    from ..analyst.session import Question
+    from ..analyst.session import DEFAULT_CANDIDATES, Question
     from ..analyst.sessions import SessionError
 
     session = _session(request, body.session_id)
     question = session.question
+    if question is None and body.plan is None:
+        raise InputError("plan", f"{session.loop.pair.id} has no built-in question: send "
+                                 f"`plan` (and `question` for its wording) with each ask. "
+                                 f"Plans are min_by, max_by, top_k, count_where, sum_where "
+                                 f"or lookup.")
     if body.plan is not None:
         try:
             plan = Plan.from_dict(body.plan)
         except PlanError as exc:
             raise InputError("plan", str(exc)) from None
         question = Question(body.question or f"What is {plan.describe()}?", plan,
-                            n=body.n or question.n)
+                            n=body.n or (question.n if question is not None
+                                         else DEFAULT_CANDIDATES))
     elif body.question is not None:
         raise InputError("question", "a question needs its plan: an answer is verified "
                                      "against the question's plan, never the answerer's")
-    elif body.n is not None:
+    elif body.n is not None and question is not None:
         question = Question(question.text, question.plan, key=question.key, n=body.n)
 
     def events():

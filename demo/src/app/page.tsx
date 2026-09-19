@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import CheckPipeline from "@/components/CheckPipeline";
+import Conversation from "@/components/Conversation";
 
 export const metadata: Metadata = {
-  title: "Check my pipeline — AIRS",
+  title: "Ask your pipeline — AIRS",
   description:
-    "Score how ready your data pipeline is for an AI agent, from a sample of its records. " +
-    "Runs on your machine; no model call, no API key.",
+    "Ask a question of your data pipeline and find out whether the answer was right — " +
+    "and if not, whether the pipeline or the model was at fault. Runs on your machine.",
 };
 
 export default function Page() {
   return (
     <main>
-      <CheckPipeline />
+      <Conversation />
     </main>
   );
 }

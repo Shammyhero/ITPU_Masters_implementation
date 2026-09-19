@@ -16,7 +16,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <nav className="topnav" aria-label="Site">
           <div className="topnav-inner">
             <Link href="/" className="brand">AIRS</Link>
-            <Link href="/">Check my pipeline</Link>
+            <Link href="/">Ask your pipeline</Link>
+            <Link href="/check/">Check my pipeline</Link>
             <Link href="/evidence/">Why trust the score</Link>
           </div>
         </nav>

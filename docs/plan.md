@@ -455,6 +455,25 @@ is a Tick feed from the corpus into the same renderer — Mode B without a bespo
 `ScoreView` is kept. Styling stays `globals.css`, no component library.
 *Cut gate:* drop the toggle, keep the trace.
 
+> **Progress 20 Sep — A8 step 1 of 4: the conversation.** `/` is now the conversation
+> (`Conversation.tsx` + `TickView.tsx`); the paste-first probe moved to `/check/`, keeping
+> `ScoreView` and its own tests. Source, answerer and policy pickers come from
+> `/api/sources` and `/api/models`; a question streams gate → refetch → answer → **then**
+> the verdict, rendered as each arrives and never batched, with the trace (delivered /
+> served / upstream on the fields the question reads, changed fields, lag, AIRS at that
+> moment) and the session meter. Confidence is greyed with "AUC 0.501" beside it, so the
+> screen cannot read as reassurance. **Author decisions 20 Sep:** pasted records may be
+> answered over — the records ARE the request body, so the declared-sources firewall
+> holds — and the manifest stays CLI-reviewed for M1, with the console showing the state
+> live. Verified in the browser against a running `airs serve`: a re-read then a correct
+> answer; a refusal that names the rule and says it cost nothing but forfeited a correct
+> answer; and a real **silent failure · the answer key moved** at confidence 1.00. Two
+> light-mode contrast defects found and fixed by measuring, not eyeballing (gate badge
+> 3.75, verdict title 4.36 → 4.97 / 5.78). `make web` exports both routes and
+> `make dist-check` passes; its console assertion now checks what each route serves
+> rather than a nav link that appears on every page. Still to come in A8: the meter's
+> replay feed, Mode B folded into this renderer, and the semantic toggle. 783 tests.
+
 ### A9 · Mode A, redesigned into the Analyst · 15 h
 
 - **Task-profile switch** (retrieval-like / classification-like), the weight inversion

@@ -45,7 +45,14 @@ class SessionRequest(_Request):
     which are), so no secret travels in a request body (author decision, 19 Sep).
     """
 
-    source: str = Field(description="id of a declared source, from GET /api/sources")
+    source: str = Field("inline", description="id of a declared source, from GET "
+                                              "/api/sources — or 'inline' with records")
+    records: str | None = Field(
+        None, description="JSONL: records as your pipeline delivers them. Makes an "
+                          "in-memory `inline` source for this session only.")
+    upstream: str | None = Field(
+        None, description="JSONL: the same records from the system of record. Without "
+                          "it, answers cannot be verified and the session says so.")
     answerer: str = Field("literal", description="literal, ollama/<name>, or a hosted "
                                                  "<provider>/<model> whose key is configured")
     policy: dict[str, Any] | None = Field(

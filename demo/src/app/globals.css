@@ -238,3 +238,74 @@ details.format .rec { margin-top: .9rem; overflow-x: auto; white-space: pre; }
 .format-notes li { margin: .3rem 0; }
 .format-notes b { color: var(--text); font-family: var(--mono); font-size: .82rem; font-weight: 600; }
 .link-cta { display: inline-block; text-decoration: none; }
+
+/* ---- the conversation (A8) ------------------------------------------------ */
+.talk { display: flex; flex-direction: column; gap: 1rem; }
+.setup { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-top: 1.25rem; }
+.field { display: flex; flex-direction: column; gap: .3rem; min-width: 190px; flex: 1 1 190px; }
+.field-label { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.field select { background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: .5rem .6rem; font: inherit; font-size: .9rem; }
+.setup .cta { flex: 0 0 auto; }
+.setup-notes { display: flex; flex-direction: column; gap: .2rem; }
+.warn-text { color: var(--warn); }
+
+.meter { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+.meter-cell.wide { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: .8rem; }
+.meter-v { font-family: var(--mono); font-size: 1.5rem; font-weight: 650; letter-spacing: -0.02em; }
+.meter-l { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.meter-n { font-size: .8rem; color: var(--muted); margin-top: .2rem; }
+
+.turns { display: flex; flex-direction: column-reverse; gap: 1rem; }
+.turn { display: flex; flex-direction: column; gap: .75rem; }
+.turn-q { font-size: 1.05rem; margin: 0; }
+.turn-plan { font-size: .82rem; color: var(--muted); margin: 0; font-family: var(--mono); }
+
+.gate-line { display: flex; gap: .6rem; align-items: baseline; flex-wrap: wrap; font-size: .85rem;
+  color: var(--muted); }
+.gate-badge { font-family: var(--mono); font-size: .72rem; font-weight: 700; letter-spacing: .06em;
+  padding: .15rem .5rem; border-radius: 999px; }
+.gate-badge.safe { background: color-mix(in srgb, var(--good) 20%, transparent); color: var(--good); }
+.gate-badge.warn { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
+.gate-badge.lie { background: color-mix(in srgb, var(--bad) 20%, transparent); color: var(--bad); }
+.gate-refetch, .gate-cost, .gate-bought, .gate-forfeit { font-size: .82rem; }
+.gate-cost { color: var(--muted); }
+.gate-bought { color: var(--good); }
+.gate-forfeit { color: var(--warn); }
+
+.answer { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+  padding: .8rem 1rem; }
+.answer-v { font-family: var(--mono); font-size: 1.25rem; font-weight: 650; }
+.answer-c { font-size: .82rem; color: var(--muted); margin-top: .25rem; }
+.answer .auc { opacity: .75; }
+.answer.abstained .answer-v { color: var(--muted); font-size: 1rem; }
+.verifying { font-size: .85rem; color: var(--muted); margin: 0; }
+.verifying::after { content: ""; animation: dots 1.2s steps(4, end) infinite; }
+@keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+
+.trace summary { cursor: pointer; font-size: .85rem; color: var(--muted); }
+.trace-table { margin-top: .75rem; font-size: .82rem; }
+.trace-table td.num { font-family: var(--mono); font-size: .78rem; }
+.trace-table .field-name { color: var(--muted); }
+.trace-table .absent { color: var(--warn); }
+.trace-table .mark { display: block; margin-top: .2rem; color: var(--warn); font-size: .72rem; }
+.trace-foot { display: flex; flex-direction: column; gap: .3rem; margin-top: .75rem;
+  font-size: .8rem; color: var(--muted); }
+.dim-chip { margin-left: .5rem; font-family: var(--mono); font-size: .74rem; }
+
+@media (prefers-color-scheme: light) {
+  /* Same reason as the .band pills above: a tinted fill drops small pill text
+     below 4.5:1 on white (the gate badge measured 3.75). Outline the badge and
+     let the text sit on the panel. The verdict title is 15px at weight 650 —
+     still "normal" text for contrast purposes — so it gets ink dark enough to
+     clear 4.5:1 over its own tint. */
+  --good-ink: #0b6b4c; --bad-ink: #a92222; --warn-ink: #7a4500;
+  .gate-badge.safe, .gate-badge.warn, .gate-badge.lie {
+    background: transparent; box-shadow: inset 0 0 0 1px currentColor;
+  }
+  .verdict.safe .t { color: var(--good-ink, #0b6b4c); }
+  .verdict.lie .t { color: var(--bad-ink, #a92222); }
+  .gate-badge.safe { color: var(--good-ink, #0b6b4c); }
+  .gate-badge.lie { color: var(--bad-ink, #a92222); }
+  .gate-badge.warn, .gate-forfeit { color: var(--warn-ink, #7a4500); }
+}

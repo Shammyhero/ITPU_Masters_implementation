@@ -51,7 +51,7 @@ than `unknown`. Always select runs with `run_arm(run)`, and never pool `live`.
 ## 3. Commands
 
 ```bash
-make test         # 779 tests, ~28 s
+make test         # 783 tests, ~29 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -144,6 +144,20 @@ corrupts `.next` · figures print recomputed vs published values.
   first bar's segments — build handles explicitly from every key present.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
+
+**20 Sep (A8 step 1):**
+- **`next lint` is not configured** in this project (it prompts interactively). Use
+  `npx tsc --noEmit` for the frontend, and `make web` to prove the export builds.
+- **`make web` refuses while `next dev` runs** — stop the dev server first.
+- **Measure contrast, don't eyeball it.** Two light-mode elements were under 4.5:1
+  (gate badge 3.75, verdict title 4.36). A tinted pill background is the usual cause;
+  the established fix here is to outline the pill and darken the ink.
+- **A contrast script must handle `color(srgb r g b / a)`**, which `color-mix` produces.
+  Parsing it as `rgb()` silently gives nonsense ratios (it read 0.06 as 6/255).
+- **The dev server needs `NEXT_PUBLIC_API_BASE=http://127.0.0.1:8000`** and
+  `airs serve --dev` for CORS; without it every fetch is same-origin to :3000.
+- **`dist_smoke.py` asserted "Check my pipeline" at `/`** — which the nav carries on
+  every page, so it would have passed whatever was served. Assert per route.
 
 **20 Sep (A7):**
 - **`TestClient` needs `base_url="http://127.0.0.1"`** or the Host allowlist answers

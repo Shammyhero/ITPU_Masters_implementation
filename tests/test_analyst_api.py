@@ -218,3 +218,61 @@ def test_a_supplied_plan_is_what_the_answer_is_checked_against(client):
 def test_an_unknown_route_still_answers_in_the_one_error_shape(client):
     response = client.post("/api/nope")
     assert response.status_code == 404 and response.json()["error"]["input"] is None
+
+
+# ---- pasted records: the one source that may arrive in a request ------------
+
+RECORDS = "\n".join([
+    '{"id": "A", "payload": {"sku": "A", "price": 9.5, "stock": 4}}',
+    '{"id": "B", "payload": {"sku": "B", "price": 3.0, "stock": 0}}',
+    '{"id": "C", "payload": {"sku": "C", "price": 7.25, "stock": 2}}',
+])
+UPSTREAM = "\n".join([
+    '{"id": "A", "payload": {"sku": "A", "price": 9.5, "stock": 4}}',
+    '{"id": "B", "payload": {"sku": "B", "price": 3.0, "stock": 6}}',
+    '{"id": "C", "payload": {"sku": "C", "price": 7.25, "stock": 2}}',
+])
+CHEAPEST = {"type": "min_by", "measure": "price",
+            "where": [{"field": "stock", "op": ">", "value": 0}]}
+
+
+def test_a_session_can_be_opened_over_pasted_records(client):
+    """The records ARE the request body, so no file or connection is opened for
+    a request — the firewall holds (author decision, 20 Sep)."""
+    session = open_session(client, source="inline", records=RECORDS, upstream=UPSTREAM)
+    assert session["source"] == "inline"
+    stream = dict(events(client, session["session_id"], plan=CHEAPEST,
+                         question="Which is cheapest in stock?"))
+    tick = stream["tick"]
+    decision = tick["decision"]
+    assert decision["value"] == "C"           # B is cheaper but out of stock here
+    assert decision["correct"] is False       # upstream says B is back in stock
+    # A pasted source has no history, so it cannot be read as of the moment the
+    # delivered values were true: pipeline lag necessarily shows up as values
+    # changed in transit rather than as the answer key moving (brief correction
+    # 15). The Tick says so rather than implying a partition it cannot make.
+    assert decision["attribution"] == "corrupted_in_transit"
+    assert any("as of a past time" in note for note in tick["notes"])
+    assert [change["field"] for change in decision["changed_fields"]] == ["stock"]
+
+
+def test_pasted_records_without_an_upstream_cannot_be_verified(client):
+    session = open_session(client, source="inline", records=RECORDS)
+    stream = dict(events(client, session["session_id"], plan=CHEAPEST))
+    tick = stream["tick"]
+    assert tick["decision"]["verifiable"] is False
+    assert any("no upstream" in note for note in tick["notes"])
+
+
+def test_malformed_pasted_records_name_the_line(client):
+    response = client.post("/api/session", json={"source": "inline", "records": "{oops"})
+    assert response.status_code == 422
+    error = response.json()["error"]
+    assert error["input"] == "records" and "line" in error["message"].lower() or error["line"]
+
+
+def test_a_source_with_no_built_in_question_asks_for_a_plan(client):
+    session = open_session(client, source="inline", records=RECORDS)
+    response = client.post("/api/ask", json={"session_id": session["session_id"]})
+    assert response.status_code == 422
+    assert "has no built-in question" in response.json()["error"]["message"]
