@@ -222,7 +222,9 @@ def cmd_show(args) -> int:
     print(f"  {layer.reason}")
     if layer.manifest is None:
         return 0
-    print(f"  manifest {report['manifest_path']} · id {report['manifest_id']}"
+    # The CLI prints the full path deliberately: it is this machine's own
+    # terminal, and the reader needs to know which file to edit.
+    print(f"  manifest {layer.path} · id {report['manifest_id']}"
           f" · proposed by {layer.manifest.proposed_by or 'hand'}")
     coverage = layer.coverage
     print(f"  described: {', '.join(coverage['described']) or 'none'}")

@@ -47,6 +47,8 @@ def load_runs(
     runs = []
     for path in sorted(results_dir.glob("*.json")):
         data = json.loads(path.read_text())
+        if run_arm(data) == "live":
+            continue  # never data, whatever was asked for — test_live_quarantine.py
         if not include_other_arms and run_arm(data) != "main":
             continue
         cfg, met = data["config"], data["metrics"]

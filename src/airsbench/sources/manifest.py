@@ -307,7 +307,10 @@ class SemanticLayer:
             "state": self.state,
             "manifest_approved": self.measured,
             "manifest_id": self.manifest.manifest_id if self.manifest else None,
-            "manifest_path": self.path,
+            # The FILE NAME, never the path. This dict travels into every live
+            # Tick, and a Tick written to disk must not carry the shape of
+            # someone's home directory (A7; tests/test_live_quarantine.py).
+            "manifest_file": Path(self.path).name if self.path else None,
             "reason": self.reason,
             "field_coverage": self.coverage,
         }

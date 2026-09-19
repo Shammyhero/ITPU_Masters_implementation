@@ -1,7 +1,7 @@
 # Handoff 1/3 — Current state and results
 
-**Refreshed:** 18 Sep 2026 · **Last pushed commit:** `f2c2b1f` (A5 model options) · A6
-(the router and the shared loop) committed next
+**Refreshed:** 20 Sep 2026 · **Last pushed commit:** `7d2cf0c` (A6 the router and loop) ·
+A7 (the API and its firewalls) committed next
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
 **Read next:** `02_plan_and_next_steps.md`, then `03_operating_guide.md`.
@@ -29,7 +29,7 @@ attributed to the pipeline or the model (`docs/analyst_brief.md`).
 
 | | |
 |---|---|
-| Tests | **740 passing**, lint clean (`make test`, `make lint`) |
+| Tests | **779 passing**, lint clean (`make test`, `make lint`) |
 | Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
 | Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
@@ -52,7 +52,8 @@ attributed to the pipeline or the model (`docs/analyst_brief.md`).
 | **A2 manifest** — two-state semantic rule, `airs manifest`, fingerprinted review | 21–25 Sep | **done 17 Sep** |
 | **A5 model options** — hosted keys, spend caps in the request path | 28 Sep–2 Oct | **done 18 Sep** |
 | **A6 router + shared loop** — admit/refetch/refuse, the session meter | 28 Sep–2 Oct | **done 18 Sep** |
-| A7 API + firewalls (`/api/ask`, live quarantine) | 5–9 Oct | next |
+| **A7 API + firewalls** — `/api/ask` SSE, live quarantine, no key in a request | 5–9 Oct | **done 20 Sep** |
+| A8 console — the M1 deliverable | 5–16 Oct | next |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |
@@ -97,7 +98,7 @@ while drift and stripping put 25.0% / 22.5% of decisions on records damaged in t
 |---|---|
 | `airs` command | `serve`, `probe`, `gate`, `sources`, `manifest`, `analyst` (`src/airsbench/cli.py`) |
 | Input contract | JSONL, `payload` required; timestamps epoch seconds or ISO-8601 **with zone**; ms refused; duplicate upstream ids refused; `opaque_map` accepted (consistency reverses stripped names) |
-| API (`server/`) | `/api/meta`, `/api/samples`, `/api/score`, `/api/gate`, `/api/replay` (180 baked runs); 422 `{error: {input, line, message}}` |
+| API (`server/`) | `/api/meta`, `/api/samples`, `/api/score`, `/api/gate`, `/api/replay` (180 baked runs); **A7:** `/api/sources`, `/api/sources/{id}/test`, `/api/models`, `/api/session`, `/api/ask` (SSE), `/api/session/{id}`; 422 `{error: {input, line, message}}` |
 | Security | 127.0.0.1; Host allowlist; CORS only with `--dev`; 64 MB cap; no outbound requests; files and sources only through CLI flags / `sources.yaml` |
 | Console (`demo/`) | `/` Mode A "Check my pipeline"; `/evidence/` the four-act argument; no scoring in TypeScript |
 | **Sources (`sources/`, A1)** | protocol `name / describe / sample / fetch(as_of)`; **`demo`** — seeded ESCI slice (200 queries, 1,129 products, 11,341 updates, 0.21 MB) served through the runner's own functions, four built-in pairs; **`files`** (JSONL, CSV, Parquet via `[parquet]`); **`inline`**; `sources.yaml` (PyYAML) refusing unknown keys, duplicate ids and inline credentials; `airs sources list/describe/sample`; `airs serve --sources` |
@@ -109,7 +110,8 @@ while drift and stripping put 25.0% / 22.5% of decisions on records damaged in t
 
 | Commit | What |
 |---|---|
-| *(next)* | A6 — the router and the shared loop |
+| *(next)* | A7 — the Analyst API and its firewalls |
+| `7d2cf0c` | A6 — the router and the shared loop |
 | `f2c2b1f` | A5 — model options and spend caps |
 | `477a8a5` | A2 — the semantic manifest |
 | `b2589da` | A4 — verifier agreement, Fig 4.10, seed-rule fix (F-E7) |

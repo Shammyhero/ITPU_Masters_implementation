@@ -1,0 +1,220 @@
+"""The Analyst API (plan A7): transport only, and three firewalls.
+
+The routes add HTTP to `analyst/loop.py` and nothing else — no scoring, no
+routing logic — so what the console shows is what the CLI and the corpus
+measured. What is actually pinned here:
+
+- **Sources are declared, never requested.** A request may name an id the server
+  already loaded; a path, DSN or URL in a request must be refused, because any
+  page in the browser can post to localhost.
+- **`/api/ask` streams the real order** — gate, then answer, then the verified
+  Tick — with the verification arriving strictly after the answer.
+- **A refusal costs nothing**, over HTTP as at the command line: no model call,
+  no spend.
+- **No key leaves the process.** `/api/models` says whether a provider is
+  configured, never what the key is.
+"""
+
+from __future__ import annotations
+
+import json
+
+import pytest
+from fastapi.testclient import TestClient
+
+from airsbench.server.app import create_app
+
+DEMO_PLAN = {"type": "min_by", "measure": "price",
+             "where": [{"field": "stock", "op": ">", "value": 0}]}
+STRICT = {"name": "intact", "min_dimension": {"consistency": 95.0}}
+
+
+@pytest.fixture
+def client(tmp_path, monkeypatch):
+    """A server whose live sessions write to a temporary directory."""
+    monkeypatch.setattr("airsbench.analyst.sessions.SESSIONS_DIR", tmp_path / "sessions")
+    return TestClient(create_app(web_dir=tmp_path / "no-web"),
+                      base_url="http://127.0.0.1")
+
+
+def open_session(client, **overrides):
+    body = {"source": "demo-stale", "answerer": "literal", **overrides}
+    response = client.post("/api/session", json=body)
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
+def events(client, session_id, **body):
+    """The SSE stream of one question, parsed into (stage, payload) pairs."""
+    with client.stream("POST", "/api/ask",
+                       json={"session_id": session_id, **body}) as response:
+        assert response.status_code == 200, response.read()
+        assert response.headers["content-type"].startswith("text/event-stream")
+        raw = "".join(response.iter_text())
+    out = []
+    for block in raw.strip().split("\n\n"):
+        lines = dict(line.split(": ", 1) for line in block.splitlines() if ": " in line)
+        out.append((lines["event"], json.loads(lines["data"])))
+    return out
+
+
+# ---- sources are declared, never requested ----------------------------------
+
+def test_the_bundled_sources_are_listed_with_their_semantic_state(client):
+    body = client.get("/api/sources").json()
+    ids = {source["id"] for source in body["sources"]}
+    assert {"demo-healthy", "demo-stale", "demo-drift", "demo-stripped"} <= ids
+    stale = next(s for s in body["sources"] if s["id"] == "demo-stale")
+    assert stale["verifiable"] is True and stale["supports_as_of"] is True
+    assert stale["semantic"]["state"] == "reviewed"
+
+
+@pytest.mark.parametrize("named", [
+    "/etc/passwd", "postgres://user:pw@host/db", "https://example.com/data.jsonl",
+    "../../secrets.jsonl",
+])
+def test_a_source_that_was_never_declared_is_refused(client, named):
+    """The W3 security property: any web page can post to localhost, so the
+    server must not open a file or a connection because a request asked it to."""
+    response = client.post(f"/api/sources/{named}/test".replace("//", "/"))
+    assert response.status_code in (404, 422)
+    if response.status_code == 422:
+        assert "declared" in response.json()["error"]["message"]
+
+    opened = client.post("/api/session", json={"source": named, "answerer": "literal"})
+    assert opened.status_code == 422
+    assert opened.json()["error"]["input"] == "source"
+
+
+def test_testing_a_source_returns_its_schema_and_a_sample(client):
+    body = client.post("/api/sources/demo-healthy/test").json()
+    assert [field["name"] for field in body["schema"]["fields"]][:2] == ["product_id", "title"]
+    assert len(body["sample"]) == 3 and "price" in body["sample"][0]
+
+
+# ---- models: what can answer, never a key -----------------------------------
+
+def test_models_reports_configured_providers_without_revealing_any_key(client, monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-NEVER-RETURNED-0123456789")
+    raw = client.get("/api/models").text
+    body = json.loads(raw)
+    assert "sk-test" not in raw and "NEVER_RETURNED" not in raw
+    openai = next(p for p in body["providers"] if p["provider"] == "openai")
+    assert openai == {"provider": "openai", "configured": True, "env": "OPENAI_API_KEY",
+                      "note": openai["note"]}
+    assert body["literal"]["note"].endswith("$0")
+
+
+# ---- one question, streamed in the order it happens -------------------------
+
+def test_ask_streams_gate_then_answer_then_the_verified_tick(client):
+    session = open_session(client)
+    stages = [stage for stage, _ in events(client, session["session_id"])]
+    assert stages == ["gate", "answer", "tick"]
+
+
+def test_the_answer_arrives_before_any_verdict_about_it(client):
+    """The pause between answering and verifying is the demonstration."""
+    session = open_session(client)
+    stream = dict(events(client, session["session_id"]))
+    answer_keys = set(stream["answer"]["answer"])
+    assert "value" in answer_keys
+    assert not {"correct", "silent_failure", "attribution"} & answer_keys
+    assert {"correct", "silent_failure", "attribution"} <= set(stream["tick"]["decision"])
+
+
+def test_a_stale_pipeline_under_an_age_budget_re_reads_before_answering(client):
+    session = open_session(client, policy={"name": "fresh", "max_record_age_seconds": 2.0})
+    stages = [stage for stage, _ in events(client, session["session_id"])]
+    assert stages == ["gate", "refetch", "answer", "tick"]
+
+
+def test_a_refusal_reaches_no_model_and_costs_nothing(client):
+    session = open_session(client, source="demo-drift", policy=STRICT)
+    stream = dict(events(client, session["session_id"]))
+    assert "answer" not in stream
+    assert stream["gate"]["verdict"] == "refuse"
+    tick = stream["tick"]
+    assert tick["decision"]["refused"] is True and tick["cost"]["usd"] == 0.0
+    assert client.get(f"/api/session/{session['session_id']}").json()["meter"]["refused"] == 1
+
+
+# ---- the session and its meter ----------------------------------------------
+
+def test_a_session_reports_its_caps_policy_and_quarantine(client):
+    session = open_session(client, max_cost=0.25)
+    assert session["arm"] == "live" and session["seed_block"] == [100000, 110000]
+    assert session["budget"]["session_cap_usd"] == 0.25
+    assert session["policy_description"].startswith("open")
+
+
+def test_the_meter_accumulates_across_questions(client):
+    session = open_session(client)
+    for _ in range(3):
+        events(client, session["session_id"])
+    meter = client.get(f"/api/session/{session['session_id']}").json()["meter"]
+    assert meter["asked"] == 3 and meter["answered"] == 3
+    assert meter["correct"] + meter["silent_failures"] <= 3
+
+
+def test_every_tick_of_a_session_is_written_to_the_users_own_directory(client, tmp_path):
+    from airsbench.analyst.sessions import read_session
+
+    session = open_session(client)
+    events(client, session["session_id"])
+    events(client, session["session_id"])
+    ticks = read_session(session["session_id"], tmp_path / "sessions")
+    assert len(ticks) == 2
+    assert all(tick["provenance"]["arm"] == "live" for tick in ticks)
+    assert 100_000 <= ticks[1]["provenance"]["seed"] < 110_000
+
+
+def test_asking_on_a_session_that_was_never_opened_says_how_to_open_one(client):
+    response = client.post("/api/ask", json={"session_id": "0" * 12})
+    assert response.status_code == 422
+    assert "POST /api/session" in response.json()["error"]["message"]
+
+
+# ---- refusals keep the one error shape --------------------------------------
+
+@pytest.mark.parametrize("body, field, fragment", [
+    ({"source": "demo-stale", "answerer": "openai/gpt-4o-mini"}, "answerer",
+     "OPENAI_API_KEY"),
+    ({"source": "demo-stale", "answerer": "nonsense"}, "answerer", "not a model"),
+    ({"source": "demo-stale", "refetch": "sometimes"}, "refetch", "refetch must be one of"),
+    ({"source": "demo-stale", "task": "sentiment"}, "task", "calibrated profile"),
+    ({"source": "demo-stale", "policy": {"min_airs": 300}}, "policy", "0-100"),
+])
+def test_a_session_that_cannot_be_opened_names_the_input_and_the_fix(
+        client, body, field, fragment, monkeypatch):
+    # A machine with no key at all: the env is empty AND .env is not consulted,
+    # or this author's own .env would quietly supply one.
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setattr("airsbench.agents.llm.load_dotenv", lambda *a, **k: None)
+    response = client.post("/api/session", json=body)
+    assert response.status_code == 422
+    error = response.json()["error"]
+    assert error["input"] == field and fragment in error["message"]
+
+
+def test_a_question_without_its_plan_is_refused(client):
+    session = open_session(client)
+    response = client.post("/api/ask", json={"session_id": session["session_id"],
+                                             "question": "which is cheapest?"})
+    assert response.status_code == 422
+    assert "never the answerer's" in response.json()["error"]["message"]
+
+
+def test_a_supplied_plan_is_what_the_answer_is_checked_against(client):
+    session = open_session(client, source="demo-healthy")
+    stream = dict(events(client, session["session_id"],
+                         plan={"type": "count_where",
+                               "where": [{"field": "stock", "op": "==", "value": 0}]},
+                         question="How many are out of stock?"))
+    assert stream["tick"]["question"]["plan"]["type"] == "count_where"
+    assert isinstance(stream["tick"]["decision"]["value"], (int, float))
+
+
+def test_an_unknown_route_still_answers_in_the_one_error_shape(client):
+    response = client.post("/api/nope")
+    assert response.status_code == 404 and response.json()["error"]["input"] is None

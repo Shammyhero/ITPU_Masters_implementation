@@ -61,6 +61,13 @@ SWEEP_SEED_RANGE = (50_000, 60_000)
 DETECTABILITY_SEED_RANGE = (60_000, 70_000)
 CROSS_MODEL_SEED_RANGE = (70_000, 80_000)
 INTERACTION_SEED_RANGE = (80_000, 90_000)
+# Reserved, and registered here so a stray artifact from either is ATTRIBUTED
+# rather than "unknown": the refetch arm (W6) and the Analyst's live sessions.
+# Live traffic never enters results/runs/ at all (analyst/sessions.py), but if a
+# Tick is ever copied in by hand, every analysis selects by arm and none accepts
+# `live`. → tests/test_live_quarantine.py
+REFETCH_SEED_RANGE = (90_000, 100_000)
+LIVE_SEED_RANGE = (100_000, 110_000)
 
 SEED_BLOCKS = {
     "main": MAIN_SEED_RANGE,
@@ -68,6 +75,8 @@ SEED_BLOCKS = {
     "detectability": DETECTABILITY_SEED_RANGE,
     "cross_model": CROSS_MODEL_SEED_RANGE,
     "interaction": INTERACTION_SEED_RANGE,
+    "refetch": REFETCH_SEED_RANGE,
+    "live": LIVE_SEED_RANGE,
 }
 
 # ---- fault composition -----------------------------------------------------

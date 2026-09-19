@@ -233,6 +233,11 @@ def load_retrieval_runs(
         data = json.loads(path.read_text())
         if data["config"]["task"] != "retrieval":
             continue
+        if run_arm(data) == "live":
+            # Live Analyst traffic is never data, whatever the caller asked for:
+            # unpaired, unreplicated, and chosen by whoever was holding the mouse
+            # (invariant 7). → tests/test_live_quarantine.py
+            continue
         if not include_other_arms and run_arm(data) != "main":
             continue
         runs.append(data)

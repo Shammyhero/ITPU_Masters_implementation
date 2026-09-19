@@ -79,6 +79,7 @@ def create_app(
     allowed_hosts: tuple[str, ...] = LOOPBACK_HOSTS,
     dev: bool = False,
     preloaded: dict[str, Any] | None = None,
+    sources: dict[str, Any] | None = None,
     max_body_bytes: int = MAX_BODY_BYTES,
 ) -> FastAPI:
     app = FastAPI(title="AIRS", version=__version__, docs_url="/api/docs",
@@ -86,6 +87,10 @@ def create_app(
     web_dir = Path(web_dir)
     app.state.frontend_built = (web_dir / "index.html").is_file()
     app.state.preloaded = preloaded
+    # Declared on this machine, by the person who started the server. A request
+    # may name one of these ids; it may never name a path, DSN or URL.
+    app.state.sources = sources if sources is not None else {}
+    app.state.sessions = {}
 
     @app.exception_handler(InputError)
     async def refused_input(request: Request, exc: InputError):

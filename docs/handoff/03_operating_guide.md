@@ -16,10 +16,10 @@
 **`sources/{base,demo,files,inline,config,__main__}.py`** · `demo/src/` · tests
 `test_{server,replay_api,cli,probe,gate,sources,demo_source}.py` · `tests/dist_smoke.py`
 
-**For the Analyst's remaining stages** (A4 is done — `analysis/verifier_agreement.py`,
-`docs/verifier_agreement_findings.md`): `src/airsbench/analyst/{plan,verifier,session}.py`, `src/airsbench/agents/{retrieval,prompts,llm}.py`
-(`RetrievalAgent.ground_truth`; `llm.py` prices any model absent from `PRICING` at $0 — A5
-must close that for hosted models) · `src/airsbench/analysis/flip_partition.py` (`Replayer`,
+**For the console (A8, next):** `src/airsbench/server/api.py` (the A7 routes the page
+calls: `/api/sources`, `/api/models`, `/api/session`, `/api/ask` SSE, `/api/session/{id}`) ·
+`src/airsbench/analyst/{loop,sessions}.py` (`Loop.stream` yields gate → refetch → answer →
+tick; the page renders those in order) · `demo/src/` · `docs/analyst_brief.md` §6 · `src/airsbench/analysis/flip_partition.py` (`Replayer`,
 `QueryOutcome.flipped`, `followed served`) · `docs/flip_partition_findings.md` ·
 `src/airsbench/runner/{config,execute,scoring}.py` (`run_arm`, `_airs_components`,
 `is_silent_failure`)
@@ -38,20 +38,20 @@ must close that for hosted models) · `src/airsbench/analysis/flip_partition.py`
 | `src/airsbench/server/` | `airs serve` FastAPI API (the only FastAPI importer); `data/` baked |
 | `src/airsbench/sources/` | **A1** declared read-only sources; `data/esci_slice.json.gz` baked |
 | `src/airsbench/sources/manifest*.py` | **A2** semantic manifest, the two-state rule, `airs manifest` |
-| `src/airsbench/analyst/` | **A3** plans, verifier (four labels), answerers, prompt, session → Tick, `airs analyst` |
+| `src/airsbench/analyst/` | **A3–A7** plans, verifier (four labels), answerers, spend caps (`budget.py`), the router and two-step loop (`loop.py`), live sessions (`sessions.py`) |
 | `src/airsbench/analysis/` | one module per result, all $0 |
 | `demo/` | console source (Next.js export) → `src/airsbench/web/` via `make web` |
 | `results/runs/` | 302 JSON artifacts — **canonical dataset** (invariant 7) |
 
 **Seed blocks:** main <50 000 · freshness_sweep 50–60k · detectability 60–70k · cross_model
-70–80k · interaction 80–90k · refetch (planned) 90–100k · **live sessions (reserved, A7)
-100–110k** — the demo source already seeds its fault chain from 100 000. Always select runs
-with `run_arm(run)`.
+70–80k · interaction 80–90k · refetch (reserved) 90–100k · **live sessions 100–110k**. All
+seven are registered in `SEED_BLOCKS`, so `run_arm(run)` names a live Tick as `live` rather
+than `unknown`. Always select runs with `run_arm(run)`, and never pool `live`.
 
 ## 3. Commands
 
 ```bash
-make test         # 740 tests, ~26 s
+make test         # 779 tests, ~28 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -145,6 +145,23 @@ corrupts `.next` · figures print recomputed vs published values.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
 
+**20 Sep (A7):**
+- **`TestClient` needs `base_url="http://127.0.0.1"`** or the Host allowlist answers
+  "Invalid host header" in plain text and every assertion reads as a JSON error.
+- **A dataclass default captures the module constant at import**, so monkeypatching
+  `SESSIONS_DIR` did nothing and tests wrote into the author's real `~/.airs/sessions`.
+  Resolve the directory when writing, not when the class is defined.
+- **`include_other_arms=True` meant "all arms" — including live.** Loaders now drop
+  `arm == "live"` unconditionally (`flip_partition`, `phase1_check`).
+- **Anything that travels into a Tick must not carry a path.** `SemanticLayer.to_dict`
+  emitted the manifest's absolute path; a written Tick then contained `/Users/<name>/…`.
+- **A hosted model must be checked for its key when the session opens**, not at the
+  first question — failing mid-stream is the worst moment to learn the key is missing.
+- **`load_dotenv()` restores keys a test deleted**, so a "no key configured" test must
+  stub it out as well as calling `monkeypatch.delenv`.
+- Substring credential checks are unreliable against real catalogs: a product title
+  containing "desk-projector" matches a naive search for `sk-proj`.
+
 **18 Sep (A6):**
 - **"Now" on a simulated source is the question's own moment**, not the end of the update
   stream. A re-read without `as_of` reads later than the answer key — the future.
@@ -211,5 +228,5 @@ corrupts `.next` · figures print recomputed vs published values.
 
 > Read `docs/handoff/01_state_and_results.md`, `02_plan_and_next_steps.md`,
 > `03_operating_guide.md`, then `CLAUDE.md`, `docs/plan.md` and the header of
-> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (740
-> passing). Continue from 02 §1 (A7, the Analyst API and its firewalls).
+> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (779
+> passing). Continue from 02 §1 (A8, the console — the M1 deliverable).

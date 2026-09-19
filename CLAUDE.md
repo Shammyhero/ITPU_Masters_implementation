@@ -22,6 +22,7 @@ make demo            # Next.js dev server for the console on :3000 (pair with `a
 make web             # build the console into src/airsbench/web/ — required before a wheel
 make dist-check      # build the wheel, install it clean, run the installed airs + airs serve
 airs serve           # local web console + API on 127.0.0.1:8000 (probe/gate/replay, no model)
+airs serve --sources sources.yaml   # adds /api/sources, /api/session, /api/ask (SSE) over declared sources
 airs sources list | describe <id> | sample <id>   # declared sources; demo pairs always available
 airs manifest propose <src> | review <file> --source <src> | show <src>   # what fields mean; semantic UNMEASURED until reviewed
 airs analyst ask demo-stale [--answerer ollama/llama3.1:8b]   # verified, attributed answers ($0)
@@ -137,6 +138,11 @@ wrong, not the test.
   replay reproduced the run's logged consistency and semantic scores exactly
   (`analysis/verifier_agreement.py`). A seeded-RNG test only proves today's code
   is deterministic; it does not prove an artifact can be regenerated.
+- **Live traffic is quarantined, and the quarantine is tested.** Analyst sessions
+  write to `~/.airs/sessions/`, carry `arm: "live"` and a seed from the registered
+  live block, and every analysis loader drops them — including under
+  `include_other_arms=True`, which means other *research* arms.
+  → `tests/test_live_quarantine.py`
 - **Healthy consistency is 99.88, not 100.** Missing brands load as NaN and NaN
   never equals itself, so `payload_consistency` counts them as altered. Under
   0.2 points, identical across conditions; deliberately not fixed (F-B5).

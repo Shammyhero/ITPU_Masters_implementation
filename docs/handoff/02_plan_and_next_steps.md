@@ -7,27 +7,32 @@ Adversarial audit: **`REVIEW.md`** (Phase 3 is design history). This file is the
 
 ---
 
-## 1. Immediate next step: A7 — the Analyst API and its firewalls
+## 1. Immediate next step: A8 — the console, and the M1 deliverable
 
-**A1–A6 are done.** The loop runs end to end: a question is sampled, scored, routed
-(admit / re-read / refuse), answered by `literal`, a local model or a hosted one under a
-spend cap, verified against upstream and attributed — with a session meter pricing what
-enforcement bought. Fig 4.10 shows that verifier reproducing all 6,714 corpus decisions.
+**A1–A7 are done.** The whole answering path exists and is exercised over real HTTP:
+`airs serve --sources` offers declared sources, opens a session under a policy and a
+spend cap, and streams one question as gate → refetch → answer → verified Tick, with the
+meter accumulating and every Tick quarantined in `~/.airs/sessions/`.
 
-**A7 (8 h, week of 5 Oct)** — `GET /api/sources`, `POST /api/sources/{id}/test`,
-`POST /api/session`, and **`POST /api/ask` streaming Ticks over SSE**, all calling
-`analyst/loop.py` — the API adds transport, never a second copy of the logic. Read
-`docs/plan.md` Part 1b A7 and `docs/analyst_brief.md` §5 before starting. The firewalls
-are the point of the stage, and each needs its own test:
+**A8 (18 h, 5–16 Oct) is now the only thing between here and M1.** It is the interface
+your supervisor sees on 16 October, and it consumes A7's routes without adding logic:
 
-- **sources are declared, never named in a request** (the W3 security property);
-- **live traffic never reaches `results/runs/`** — `~/.airs/sessions/`, `arm: "live"`,
-  seed block 100 000–110 000, and `tests/test_live_quarantine.py` asserting every
-  analysis entry point excludes it (brief correction 9);
-- **no key, DSN or record path in any response, log or URL**;
-- the existing Host-header allowlist and 127.0.0.1 binding still hold.
+- **source picker** from `GET /api/sources` (name, whether it can be verified, semantic
+  state) and **model picker** from `GET /api/models` (`literal`, local Ollama, providers
+  whose key is configured — the page never sends a key);
+- **the conversation**: one renderer for the Tick, fed by the SSE stages, so the gate's
+  verdict, the answer and *then* the verification appear in that order — the pause is the
+  demonstration, so do not batch the events;
+- **the meter**: answered / refused / refetched / prevented / forfeited and the live
+  exchange rate, from `GET /api/session/{id}`;
+- **the semantic toggle** (drop the manifest mid-session; runs the real injector, brief
+  correction 3) — first thing to cut if the week runs short;
+- Mode B's walkthrough becomes the same renderer fed from `/api/replay`, so delete the
+  bespoke six-step UI rather than maintaining two.
 
-Then **A8** (the console) from 5 Oct, which is the M1 deliverable on 16 Oct.
+Read `docs/analyst_brief.md` §6 and `docs/plan.md` Part 1b A8 before starting. `make demo`
+runs the Next.js dev server on :3000 against `airs serve --dev`; `make web` builds it into
+the package, and `make dist-check` must stay green because the console ships in the wheel.
 
 | Stage | h | State |
 |---|---|---|
@@ -37,8 +42,8 @@ Then **A8** (the console) from 5 Oct, which is the M1 deliverable on 16 Oct.
 | A2 manifest | 8 | **done 17 Sep** |
 | A5 model options (Ollama / OpenAI · Anthropic · Gemini, caps, "unpriced = free" closed) | 8 | **done 18 Sep** |
 | A6 router + shared loop | 12 | **done 18 Sep** |
-| **A7** API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | **next** — 5–9 Oct |
-| A8 console | 18 | 5–16 Oct |
+| A7 API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | **done 20 Sep** |
+| **A8 console** | 18 | **next** — 5–16 Oct · the M1 deliverable |
 | A9 task switch, recommended policy, meter prior, report | 15 | 12–23 Oct |
 | Refetch arm (two conditions, ~$2.20, Fig 4.9) | 28 | 19–30 Oct, hard cut 30 Oct |
 | A10 postgres/duckdb/http | 8 | cut first |
@@ -50,6 +55,12 @@ free model · **Fri 16 Oct M1** · Fri 23 Oct arm dry-run · Fri 30 Oct arm runs
 A2 inference → A8 toggle.
 
 ## 2. Decisions made (do not re-litigate)
+
+**19–20 Sep, A7:** keys stay in the **environment** — no secret travels in a request body,
+and `/api/models` reports only whether a provider is configured · live Ticks persist to
+`~/.airs/sessions/`, one per line, never `results/runs/` · the manifest endpoints are
+deferred to A8 · `Loop.stream` is the real path (stages when they happen) and `Loop.ask`
+drains it, so CLI, API and the arm keep one loop.
 
 **18 Sep, A6:** a re-read is offered only for rules it legitimately repairs (record age,
 freshness) — drift and stripping refuse, because a re-read bypasses the pipeline and

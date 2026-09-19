@@ -119,7 +119,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"warning: binding {args.host} makes the console, and every record pasted "
               f"into it, reachable from other machines on this network", file=sys.stderr)
     app = create_app(allowed_hosts=LOOPBACK if loopback else ("*",),
-                     dev=args.dev, preloaded=preloaded)
+                     dev=args.dev, preloaded=preloaded, sources=declared)
 
     shown_host = "127.0.0.1" if args.host in ("0.0.0.0", "::") else args.host
     url = f"http://{shown_host}:{args.port}/"

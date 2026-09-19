@@ -421,6 +421,26 @@ manifest propose/approve, `GET /api/models` (Ollama + configured providers),
 in any Tick, artifact, log line or URL). One error shape throughout; connection failures
 name the adapter and the fix.
 
+> **Progress 20 Sep — A7 done.** `GET /api/sources`, `POST /api/sources/{id}/test`,
+> `GET /api/models`, `POST /api/session`, `POST /api/ask` (**SSE**: gate → refetch →
+> answer → tick), `GET /api/session/{id}`; `analyst/sessions.py` (live sessions, one Tick
+> per line in `~/.airs/sessions/`). `Loop.stream` is now the real path and `Loop.ask`
+> drains it, so the stream's stages are when the work actually happened, not a timer —
+> and the CLI, the API and the arm still share one loop. **Author decisions 19 Sep:**
+> keys stay in the environment (no secret in a request body; `/api/models` reports only
+> whether a provider is configured) · live Ticks persist to `~/.airs/sessions/` · manifest
+> endpoints deferred to A8. **Quarantine, asserted not assumed** (`test_live_quarantine.py`):
+> `session_path` refuses any destination under `results/runs/`; every Tick carries
+> `arm: "live"` and a seed from the registered live block; each analysis loader drops a
+> live artifact planted in a corpus; a Tick that looks like it carries a credential is
+> refused rather than written. **Three defects the tests and the live run found:** the
+> `include_other_arms=True` flag in `flip_partition` and `phase1_check` admitted live
+> traffic (now never); a Tick carried `manifest_path` as an absolute path, leaking the
+> user's home directory (now the file name); and a hosted model could open a session with
+> no key present, failing mid-stream instead of at the door. Verified over real HTTP
+> against `airs serve`: refuse emits no answer event, a path as a source id is refused,
+> and the meter accumulates. 779 tests.
+
 ### A8 · The conversation console · 18 h
 
 Replaces the paste-first page as `/` (paste remains the `inline` source): **source picker**

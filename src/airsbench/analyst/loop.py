@@ -166,6 +166,7 @@ class Loop:
     # Set by a re-read: from then on, THESE records are what the pipeline
     # delivered, so the verifier's in-transit comparison must move with them.
     _refreshed: list[Record] | None = None
+    _seed: int | None = None
     clock: Callable[[], float] = None  # type: ignore[assignment]
 
     def __post_init__(self) -> None:
@@ -184,7 +185,26 @@ class Loop:
     # ---- one question -------------------------------------------------------
 
     def ask(self, question: Question, *, seed: int | None = None) -> dict[str, Any]:
+        """One question, start to finish. The Tick of the last stage."""
+        tick = None
+        for event in self.stream(question, seed=seed):
+            if event["stage"] == "tick":
+                tick = event["tick"]
+        return tick
+
+    def stream(self, question: Question, *, seed: int | None = None):
+        """The same question, emitted stage by stage as each one actually happens.
+
+        `/api/ask` streams these so a viewer watches the gate decide, the agent
+        answer, and only then the verifier resolve. The pause between the last
+        two is where an expectation forms that the verdict then breaks, and it
+        has to be real: this generator yields when the work is done, not on a
+        timer (plan A7).
+        """
         started = self.clock()
+        # Kept so the Tick records which seed drew this question — a live Tick's
+        # provenance has to name the seed, not just its block.
+        self._seed = seed
         sample = self.pair.delivered.sample(question.n, key=question.key, seed=seed)
         sample.records = self.layer.apply(sample.records)
         text = question.text.replace("{query}", str(sample.meta.get("query", "")))
@@ -202,10 +222,18 @@ class Loop:
                 sample, ids, verdict, initiated_by="gate")
             decision = "admit" if verdict.admitted else "refuse"
 
+        yield {"stage": "gate", "verdict": decision, "question": text,
+               "gate": self._gate_block(verdict, decision, question, records, sample, ids),
+               "source": self.pair.id, "n_records": len(records)}
+        if refetch["attempted"]:
+            yield {"stage": "refetch", "refetch": dict(refetch)}
+
         gate = self._gate_block(verdict, decision, question, records, sample, ids)
         if decision == "refuse":
-            return self._tick(question, text, sample, records, ids, gate, refetch,
+            tick = self._tick(question, text, sample, records, ids, gate, refetch,
                               answer=None, usage=None, started=started)
+            yield {"stage": "tick", "tick": tick}
+            return
 
         answer, usage = self.answerer.answer(text, question.plan, records)
         if self.mode == "agent" and getattr(answer, "refetch_ids", None) \
@@ -214,10 +242,18 @@ class Loop:
                 sample, ids, verdict, initiated_by="agent",
                 asked_for=answer.refetch_ids)
             gate = self._gate_block(verdict, "admit", question, records, sample, ids)
+            yield {"stage": "refetch", "refetch": dict(refetch)}
             answer, second = self.answerer.answer(text, question.plan, records)
             usage = _add_usage(usage, second)
-        return self._tick(question, text, sample, records, ids, gate, refetch,
+        # Answered, not yet checked: everything the agent said, and nothing the
+        # verifier will say about it.
+        yield {"stage": "answer", "answer": {
+            "value": answer.value, "text": answer.text, "confidence": answer.confidence,
+            "abstained": answer.abstained, "parse_failed": answer.parse_failed,
+            "plan": answer.plan}, "cost": usage.to_dict()}
+        tick = self._tick(question, text, sample, records, ids, gate, refetch,
                           answer=answer, usage=usage, started=started)
+        yield {"stage": "tick", "tick": tick}
 
     # ---- the pieces ---------------------------------------------------------
 
@@ -354,7 +390,8 @@ class Loop:
         tick = build_tick(
             pair=self.pair, question=question, text=text, sample=sample, answer=answer,
             usage=usage, airs=self._airs(gate), verification=verification, served=served,
-            truth=truth, as_of=as_of, seed=None, session_id=self.session_id,
+            truth=truth, as_of=as_of, seed=getattr(self, "_seed", None),
+            session_id=self.session_id,
             answerer=self.answerer.name, started=started, t0=t0, t1=t1,
             semantic=self.layer, answerer_obj=self.answerer,
         )
