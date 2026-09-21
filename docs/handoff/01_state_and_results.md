@@ -1,7 +1,7 @@
 # Handoff 1/3 — Current state and results
 
-**Refreshed:** 21 Sep 2026 · **Last pushed commit:** `2b137ab` (A8 step 3, paste) ·
-A8 step 4 (the semantic toggle) committed next — **A8 complete**
+**Refreshed:** 21 Sep 2026 · **Last pushed commit:** `eb03731` (A8 complete) · A9
+(task switch, recommended policy, report) committed next
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
 **Read next:** `02_plan_and_next_steps.md`, then `03_operating_guide.md`.
@@ -29,7 +29,7 @@ attributed to the pipeline or the model (`docs/analyst_brief.md`).
 
 | | |
 |---|---|
-| Tests | **797 passing**, lint clean (`make test`, `make lint`) |
+| Tests | **801 passing**, lint clean (`make test`, `make lint`) |
 | Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
 | Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
@@ -54,7 +54,8 @@ attributed to the pipeline or the model (`docs/analyst_brief.md`).
 | **A6 router + shared loop** — admit/refetch/refuse, the session meter | 28 Sep–2 Oct | **done 18 Sep** |
 | **A7 API + firewalls** — `/api/ask` SSE, live quarantine, no key in a request | 5–9 Oct | **done 20 Sep** |
 | **A8 console** — all four steps done 20–21 Sep (conversation, replay feed, paste + question builder, semantic toggle) | 5–16 Oct | **done 21 Sep** |
-| A9 task switch, recommended policy, meter prior, printable report | 12–23 Oct | next |
+| **A9** task switch · recommended policy priced on the corpus · meter prior · printable report | 12–23 Oct | **done 21 Sep** |
+| Refetch arm (the last experiment, ~$2.20) | 19–30 Oct | next |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |
@@ -111,7 +112,8 @@ while drift and stripping put 25.0% / 22.5% of decisions on records damaged in t
 
 | Commit | What |
 |---|---|
-| *(next)* | A8 step 4 — the semantic toggle (A8 complete) |
+| *(next)* | A9 — Mode A redesigned into the Analyst |
+| `eb03731` | A8 step 4 — the semantic toggle (A8 complete) |
 | `2b137ab` | A8 step 3 — paste and the question builder |
 | `ce1fcb1` | A8 step 2 — the replay feed |
 | `0d0d89c` | A8 step 1 — the conversation console |

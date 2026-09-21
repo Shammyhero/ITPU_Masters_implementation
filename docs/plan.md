@@ -536,6 +536,29 @@ is a Tick feed from the corpus into the same renderer — Mode B without a bespo
 - **Printable readiness report:** AIRS, coverage, the policy, and the session's
   attribution split — one page, print-to-PDF (6 h). *Cut gate:* a print stylesheet only.
 
+> **Progress 21 Sep — A9 done, all three pieces.** **Task-profile switch:** retrieval-like
+> or classification-like weights, switched when asked and stated out loud — the same
+> question on `demo-stale` reads 89.6 READY under retrieval and **83.0 WATCH** under
+> classification, and the console says the ranking inverts across tasks (RQ5), because it
+> cannot know which task a user's pipeline serves and refusing would be a guess dressed as
+> a safeguard (author decision). **Recommended policy** (`POST /api/recommend`): every
+> policy in the existing sweeps is replayed over the baked corpus — the accounting behind
+> `gate_findings.md` — and the cheapest by exchange rate among those that refuse something
+> and still answer is offered, one click to the router. For retrieval it lands on
+> **consistency ≥ 90 at 2.26 raw**, the published trade; switch to classification and it
+> becomes `age ≤ 10 s`, the inversion showing up in the advice itself. What the session has
+> measured only *filters* that list (a floor its pipeline never clears is a refusal
+> machine, not advice) and never invents a floor. **The meter's prior** shows the predicted
+> rate beside the live one with both costs labelled — 2.26 raw against 7.0 attribution true
+> cost, and the ~14% fault-free floor stated, so no reader takes the cheaper number for the
+> real one. **Printable report:** one page — dimensions and weights, AIRS and its coverage,
+> the policy, every outcome including refusals, predicted against observed cost, and the
+> provenance (session id, arm `live`, seed block) so a printout cannot be mistaken for
+> corpus data. **Found while building:** the outcome dict's own `policy` key (a name) was
+> overwriting the structured policy the console applies; and the report counted only
+> verified answers, so three refusals rendered as "no verified answers yet" — a refusal is
+> the outcome enforcement exists to produce. 801 tests, wheel green.
+
 ### A10 · `postgres`, `duckdb`/`sqlite`, `http` adapters · 8 h · cut first
 
 Declared, read-only, each tested against a real instance (a local Postgres, a DuckDB

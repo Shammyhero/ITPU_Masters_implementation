@@ -93,6 +93,10 @@ class Session:
     # destination can be configured (and a test can point it somewhere else).
     directory: Path | None = None
     ticks: int = 0
+    # Every AIRS dimension this session has actually observed. A recommended
+    # policy is filtered against these: a floor this pipeline never clears is
+    # not advice, it is a refusal machine.
+    observed: dict[str, list[float]] = field(default_factory=dict)
     _asked: int = field(default=0, repr=False)
 
     @property
@@ -119,6 +123,9 @@ class Session:
             raise SessionError(
                 f"refusing to write this Tick: it contains something shaped like a "
                 f"credential ({leaked}). Nothing was written; report this as a bug")
+        for dimension, value in (tick.get("airs", {}).get("dimensions") or {}).items():
+            if value.get("score") is not None:
+                self.observed.setdefault(dimension, []).append(float(value["score"]))
         path = session_path(self.id, self.directory or SESSIONS_DIR)
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("a", encoding="utf-8") as handle:
@@ -139,6 +146,9 @@ class Session:
             "budget": self.budget.to_dict(),
             "meter": self.meter.to_dict(),
             "ticks": self.ticks,
+            "observed": {dimension: {"n": len(scores), "min": min(scores),
+                                     "mean": sum(scores) / len(scores)}
+                         for dimension, scores in self.observed.items()},
             "arm": "live",
             "seed_block": list(LIVE_SEED_BLOCK),
         }

@@ -345,3 +345,39 @@ export async function ask(
     }
   }
 }
+
+
+/* ---- A9: a policy to start from, priced on the study's own runs ---------- */
+
+export type PolicyOutcome = {
+  policy: Record<string, unknown>;
+  policy_name: string;
+  description: string;
+  feasible_here: boolean;
+  coverage: number;
+  prevented_share: number;
+  forfeited_share: number;
+  residual_silent_rate: number;
+  baseline_silent_rate: number;
+  exchange_rate: number | null;
+  refused_batches: number;
+  admitted_decisions: number;
+};
+
+export type Recommendation = {
+  task: string;
+  recommended: PolicyOutcome | null;
+  considered: PolicyOutcome[];
+  filtered_by_session: boolean;
+  observed: Record<string, { n: number; min: number; mean: number }>;
+  fault_free: { rate: number; min: number; max: number; pipelines: number } | null;
+  corpus: { runs: number; decisions: number; models: string[]; arms: string[] };
+  note: string;
+};
+
+export const recommendPolicy = (body: { task: string; session_id?: string | null }) =>
+  request<Recommendation>("/api/recommend", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });

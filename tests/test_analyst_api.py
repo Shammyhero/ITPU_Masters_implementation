@@ -292,3 +292,51 @@ def test_a_session_can_run_the_semantic_stripping_injector(client):
 def test_the_toggle_defaults_to_off(client):
     session = open_session(client, source="demo-healthy")
     assert session["strip_semantics"] is False
+
+
+# ---- the recommended policy (A9) --------------------------------------------
+
+def test_the_recommendation_is_the_cheapest_real_trade_on_the_corpus(client):
+    """Not a heuristic: every policy is replayed over the runs the gate findings
+    were computed from, and the recommendation is the cheapest by exchange rate
+    among those that actually refuse something and still answer."""
+    body = client.post("/api/recommend", json={"task": "retrieval"}).json()
+    best = body["recommended"]
+    assert best["exchange_rate"] == min(row["exchange_rate"] for row in body["considered"])
+    assert best["refused_batches"] > 0 and best["admitted_decisions"] > 0
+    # The published trade for retrieval (docs/gate_findings.md).
+    assert best["policy"]["min_dimension"] == {"consistency": 90.0}
+    assert best["exchange_rate"] == pytest.approx(2.26, abs=0.01)
+
+
+def test_the_recommendation_states_both_costs_and_the_floor_it_cannot_reach(client):
+    body = client.post("/api/recommend", json={"task": "retrieval"}).json()
+    assert "2.26" in body["note"] and "7.0" in body["note"]
+    assert "agent-intrinsic" in body["note"]
+    assert body["fault_free"]["rate"] == pytest.approx(0.1417, abs=0.001)
+
+
+def test_a_session_filters_the_list_but_never_invents_a_floor(client):
+    """What the session measured may only REMOVE policies its pipeline could
+    never clear; the floors themselves always come from the corpus sweep."""
+    session = open_session(client, source="demo-drift", policy=None)
+    for _ in range(2):
+        events(client, session["session_id"])
+    body = client.post("/api/recommend",
+                       json={"task": "retrieval",
+                             "session_id": session["session_id"]}).json()
+    assert body["filtered_by_session"] is True
+    assert body["observed"]["consistency"]["n"] == 2
+    # demo-drift delivers consistency well below 90, so that policy is marked
+    # unusable here even though it is the corpus's best trade.
+    by_name = {row["description"]: row for row in body["considered"]}
+    drifted = [row for row in by_name.values()
+               if row["policy"]["min_dimension"].get("consistency", 0) >= 90]
+    assert drifted and all(row["feasible_here"] is False for row in drifted)
+    assert body["recommended"]["feasible_here"] is True
+
+
+def test_recommending_for_a_task_with_no_runs_is_refused(client):
+    response = client.post("/api/recommend", json={"task": "sentiment"})
+    assert response.status_code == 422
+    assert response.json()["error"]["input"] == "task"

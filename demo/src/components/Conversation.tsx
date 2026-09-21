@@ -31,7 +31,20 @@ import QuestionBuilder, {
   EMPTY_PLAN, type PlanDraft, describe, fieldsOf, toPlan,
 } from "@/components/QuestionBuilder";
 import RecordsInput, { type FieldError } from "@/components/RecordsInput";
+import PolicyAdvice from "@/components/PolicyAdvice";
+import Report from "@/components/Report";
 import TickView from "@/components/TickView";
+
+// RQ5: the calibrated weights INVERT across tasks, so a profile borrowed from
+// the wrong one describes neither. The console cannot know which task a
+// pipeline serves — only the user does — so it switches when asked and says
+// what changed (author decision, 21 Sep).
+const TASKS = [
+  { id: "retrieval", label: "retrieval-like", note: "finding or ranking records — the " +
+    "weights lean on consistency and the semantic layer" },
+  { id: "classification", label: "classification-like", note: "judging one record — the " +
+    "weights lean the other way; the ranking inverts across tasks (RQ5)" },
+];
 
 // The paste box as a source: the records travel in the request body, so the
 // server still opens no file or connection because a request asked it to.
@@ -75,6 +88,12 @@ export default function Conversation() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, FieldError>>({});
   const [draft, setDraft] = useState<PlanDraft>(EMPTY_PLAN);
   const [stripped, setStripped] = useState(false);
+  const [task, setTask] = useState("retrieval");
+  const [applied, setApplied] = useState<{ policy: Record<string, unknown>;
+                                           description: string } | null>(null);
+  const [predicted, setPredicted] = useState<{ description: string; raw: number | null;
+                                               trueCost: number | null } | null>(null);
+  const [showReport, setShowReport] = useState(false);
   const nextKey = useRef(0);
 
   useEffect(() => {
@@ -84,13 +103,18 @@ export default function Conversation() {
   }, []);
 
   const source = sources?.find((entry) => entry.id === sourceId) ?? null;
-  const policy = POLICIES.find((entry) => entry.id === policyId) ?? POLICIES[0];
+  const chosen = POLICIES.find((entry) => entry.id === policyId) ?? POLICIES[0];
+  // An applied recommendation replaces the menu choice until the menu changes.
+  const policy = applied
+    ? { id: "applied", label: applied.description.split(":")[0], policy: applied.policy,
+        note: `suggested by the study's own runs: ${applied.description}` }
+    : chosen;
   // Changing any of these makes a new session: the meter below counts one
   // configuration, and mixing two would make its exchange rate meaningless.
   useEffect(() => {
     setSession(null);
     setTurns([]);
-  }, [sourceId, answerer, policyId, delivered, upstream, stripped]);
+  }, [sourceId, answerer, policyId, delivered, upstream, stripped, task, applied]);
 
   const pasting = sourceId === INLINE;
   // A pasted sample rarely carries timestamps, and a freshness budget then
@@ -118,7 +142,7 @@ export default function Conversation() {
       if (!current) {
         current = await openSession({
           source: sourceId, answerer, policy: policy.policy, refetch: "gate",
-          strip_semantics: stripped,
+          strip_semantics: stripped, task,
           ...(pasting ? { records: delivered, upstream: upstream || null } : {}),
         });
         setSession(current);
@@ -206,8 +230,20 @@ export default function Conversation() {
           </select>
         </label>
         <label className="field">
+          <span className="field-label">Task profile</span>
+          <select value={task} onChange={(event) => setTask(event.target.value)}>
+            {TASKS.map((entry) => (
+              <option key={entry.id} value={entry.id}>{entry.label}</option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
           <span className="field-label">Policy</span>
-          <select value={policyId} onChange={(event) => setPolicyId(event.target.value)}>
+          <select value={applied ? "applied" : policyId}
+                  onChange={(event) => { setApplied(null); setPolicyId(event.target.value); }}>
+            {applied && (
+              <option value="applied">{applied.description.split(":")[0]} (suggested)</option>
+            )}
             {POLICIES.map((entry) => (
               <option key={entry.id} value={entry.id}>{entry.label}</option>
             ))}
@@ -261,6 +297,16 @@ export default function Conversation() {
       )}
 
       <div className="setup-notes">
+        <p className="hint">
+          {TASKS.find((entry) => entry.id === task)?.note}.{" "}
+          {task === "classification" && (
+            <span className="warn-text">
+              These weights were calibrated on the study&rsquo;s classification task and
+              rank faults in the opposite order to the retrieval ones — the score below
+              is computed with them.
+            </span>
+          )}
+        </p>
         {stripped && (
           <p className="hint warn-text">
             This runs the study&rsquo;s own semantic-stripping injector over the records
@@ -309,7 +355,32 @@ export default function Conversation() {
 
       {error && <div className="callout error"><b>Refused.</b> {error}</div>}
 
-      {session && <Meter session={session} />}
+      <PolicyAdvice
+        task={task}
+        sessionId={session?.session_id ?? null}
+        onApply={(policy, description) => setApplied({ policy, description })}
+        onPredicted={setPredicted}
+      />
+
+      {session && (
+        <>
+          <Meter session={session} />
+          <div className="report-bar">
+            <button className="tab" onClick={() => setShowReport(!showReport)}>
+              {showReport ? "Hide" : "Show"} readiness report
+            </button>
+            {showReport && (
+              <button className="tab" onClick={() => window.print()}>Print it</button>
+            )}
+          </div>
+          {showReport && (
+            <Report
+              session={session} task={task} predicted={predicted}
+              ticks={turns.map((entry) => entry.tick).filter(Boolean) as Tick[]}
+            />
+          )}
+        </>
+      )}
 
       <div className="turns">
         {turns.map((turn) => (

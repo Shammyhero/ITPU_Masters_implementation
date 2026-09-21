@@ -73,3 +73,12 @@ class AskRequest(_Request):
                                                    "has a built-in question")
     plan: dict[str, Any] | None = Field(None, description="the question's checkable plan")
     n: int | None = Field(None, description="records to draw for this question")
+
+
+class RecommendRequest(_Request):
+    """Ask for a policy to start from, priced on the study's runs."""
+
+    task: str = Field("retrieval", description="calibrated weight profile to price against")
+    session_id: str | None = Field(
+        None, description="an open session, so policies its pipeline could never clear "
+                          "are filtered out. The floors themselves never come from it.")

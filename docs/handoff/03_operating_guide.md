@@ -51,7 +51,7 @@ than `unknown`. Always select runs with `run_arm(run)`, and never pool `live`.
 ## 3. Commands
 
 ```bash
-make test         # 791 tests, ~29 s
+make test         # 801 tests, ~30 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -144,6 +144,36 @@ corrupts `.next` · figures print recomputed vs published values.
   first bar's segments — build handles explicitly from every key present.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
+
+**21 Sep (A9):**
+- **`Outcome.to_dict()` carries its own `policy` key — the NAME.** Spreading it after a
+  structured policy silently replaced the object the console applies with a string.
+- **A report must count refusals.** Counting only verified answers made three refused
+  questions render as "no verified answers yet", which reads as a bug and hides the
+  outcome enforcement exists to produce.
+- **Recommendations come from the corpus sweep, never from the session.** What the
+  session measured may only remove policies its pipeline could never clear
+  (`_feasible`); inventing a floor from live data would be a heuristic pretending to be
+  evidence.
+- **Two exchange rates, never blended:** raw (2.26 on retrieval) credits a gate with
+  every silent failure in a refused batch; attribution true cost (7.0) credits only the
+  excess over a fault-free pipeline. Show both or neither.
+- Switching the task profile visibly moves the score (89.6 READY → 83.0 WATCH on the same
+  question) and changes the recommendation — that is RQ5's inversion, not a bug.
+
+**21 Sep (A8 step 4):**
+- **The semantic toggle must run the injector, not hide the manifest.** Measured:
+  stripping takes semantic 100 → 25 and leaves consistency at 100 (the opaque map
+  reverses the names — invariant 5). Hiding the manifest alone moves nothing, because
+  `price` and `stock` describe themselves.
+- **Say who applied a fault.** The console strips; the user's pipeline did not. Every
+  Tick of such a session carries that sentence, or a demonstration reads as a
+  measurement of someone's own system.
+- A stripped session makes the literal answerer abstain (the fields its plan needs are
+  gone), which is the honest outcome, not a bug.
+- **An edit helper that writes only after every replacement succeeds loses the whole
+  file's edits when one anchor is stale** — that is how these two blocks went missing
+  once. Check the file after a failed batch.
 
 **21 Sep (A8 step 3):**
 - **`useCallback` deps must list every value the request is built from.** `askOne` left
@@ -272,5 +302,5 @@ corrupts `.next` · figures print recomputed vs published values.
 
 > Read `docs/handoff/01_state_and_results.md`, `02_plan_and_next_steps.md`,
 > `03_operating_guide.md`, then `CLAUDE.md`, `docs/plan.md` and the header of
-> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (797
-> passing). Continue from 02 §1 (A9, Mode A redesigned into the Analyst).
+> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (801
+> passing). Continue from 02 §1 (the refetch arm — the last experiment).

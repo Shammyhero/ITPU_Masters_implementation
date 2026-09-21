@@ -37,7 +37,14 @@ from ..probe import (
     score,
 )
 from ..sources import SourceError
-from .schemas import AskRequest, GateRequest, ReplayRequest, ScoreRequest, SessionRequest
+from .schemas import (
+    AskRequest,
+    GateRequest,
+    RecommendRequest,
+    ReplayRequest,
+    ScoreRequest,
+    SessionRequest,
+)
 
 SAMPLES = Path(__file__).parent / "data" / "samples.json"
 REPLAY = Path(__file__).parent / "data" / "replay_corpus.json"
@@ -438,6 +445,91 @@ def ask(body: AskRequest, request: Request):
     return StreamingResponse(events(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-store",
                                       "X-Accel-Buffering": "no"})
+
+
+def _corpus_batches(task: str):
+    corpus = _replay_corpus()
+    batches = [Batch(**row) for row in corpus["batches"] if row["task"] == task]
+    if not batches:
+        raise InputError("task", f"the replay corpus has no runs for task {task!r}")
+    return batches, corpus
+
+
+def _feasible(policy: Policy, observed: dict[str, dict[str, float]]) -> bool:
+    """Would this policy admit anything on what this session has measured?
+
+    A recommendation the user's own pipeline fails on every question is not
+    advice; it is a refusal machine. Judged on the WORST value seen, because a
+    gate refuses per batch, not on average.
+    """
+    for dimension, floor in policy.min_dimension.items():
+        seen = observed.get(dimension)
+        if seen and seen["min"] < floor:
+            return False
+    if policy.min_airs is not None:
+        seen = observed.get("airs")
+        if seen and seen["min"] < policy.min_airs:
+            return False
+    return True
+
+
+@router.post("/recommend")
+def recommend(body: RecommendRequest, request: Request):
+    """A policy to start from, priced on the study's own runs.
+
+    Not a heuristic: every policy in the sweep is replayed over the corpus the
+    gate findings were computed from, and the one recommended is the cheapest by
+    exchange rate among those that actually refuse something and still answer.
+    What the session has measured only FILTERS that list — it never invents a
+    floor (author decision, 21 Sep).
+
+    The two costs are reported separately and labelled, because they are not the
+    same number: the sweep's raw rate credits a policy with every silent failure
+    in a refused batch, while the attribution rate credits only the excess over
+    what a fault-free pipeline produces anyway — 2.26 against 7.0 on retrieval.
+    """
+    from ..gate.replay import SWEEPS, fault_free_baseline, replay
+
+    weights, _meta = _weights(body.task)
+    batches, corpus = _corpus_batches(body.task)
+    observed: dict[str, dict[str, float]] = {}
+    if body.session_id:
+        observed = _session(request, body.session_id).to_dict()["observed"]
+
+    rows = []
+    for sweep in SWEEPS.values():
+        for policy in sweep(body.task):
+            outcome = replay(batches, policy, weights)
+            if not (outcome.refused_batches and outcome.admitted_decisions):
+                continue  # refuses nothing, or refuses everything: not a trade
+            # The outcome carries its own `policy` (the name), so it is spread
+            # FIRST and the structured policy overrides it — the console applies
+            # this object to the router, and a name is not applicable.
+            rows.append({**outcome.to_dict(),
+                         "policy_name": outcome.policy,
+                         "policy": policy.to_dict(),
+                         "description": policy.describe(),
+                         "feasible_here": _feasible(policy, observed)})
+
+    priced = [row for row in rows if row["exchange_rate"] is not None]
+    affordable = [row for row in priced if row["feasible_here"]] or priced
+    best = min(affordable, key=lambda row: row["exchange_rate"]) if affordable else None
+    return {
+        "task": body.task,
+        "recommended": best,
+        "considered": sorted(priced, key=lambda row: row["exchange_rate"]),
+        "filtered_by_session": bool(observed),
+        "observed": observed,
+        "fault_free": fault_free_baseline(batches),
+        "corpus": {key: corpus[key] for key in ("runs", "decisions", "models", "arms")},
+        "note": ("Priced on the study's own runs, not on your data. `exchange_rate` is "
+                 "the sweep's raw rate: correct answers forfeited per silent failure "
+                 "prevented, crediting the gate with every silent failure inside a "
+                 "refused batch. The attribution 'true cost' is higher — it credits only "
+                 "the excess over what a fault-free pipeline produces anyway (2.26 "
+                 "against 7.0 on retrieval), because ~75% of silent failure is "
+                 "agent-intrinsic and no gate can reach it."),
+    }
 
 
 @router.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"],

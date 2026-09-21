@@ -7,30 +7,29 @@ Adversarial audit: **`REVIEW.md`** (Phase 3 is design history). This file is the
 
 ---
 
-## 1. Immediate next step: A9 — Mode A, redesigned into the Analyst
+## 1. Immediate next step: the refetch arm — the last experiment
 
-**A1–A8 are done, and the M1 deliverable exists**: `airs serve` opens a console where a
-question is asked of a declared source or of pasted records, gated, answered by nothing,
-a local model or a hosted one under a spend cap, verified against the system of record
-and attributed — with the study's own recorded decisions playing through the same
-renderer at `/replay/`, and a toggle that runs the real stripping injector.
+**A1–A9 are done.** The product is complete as planned: declared sources and pasted
+records, the semantic manifest, the verifier and its four labels, spend caps, the
+admit/re-read/refuse loop, the API, the console (conversation, replay, paste, semantic
+toggle), the task-profile switch, a policy recommended from the study's own accounting,
+and a printable readiness report. Everything M1 asks for exists, three weeks early.
 
-**A9 (15 h, 12–23 Oct)** — three pieces, in this order, each independently cuttable:
+**The refetch arm (28 h, 19–30 Oct, ~$2.20 — the only paid work left).** Two conditions
+on one loop, which `analyst/loop.py` already runs:
 
-1. **Task-profile switch** (3 h): retrieval-like or classification-like weights, with the
-   inversion stated out loud where it changes a score — RQ5 found the ranking inverts
-   across tasks, so a silent switch would be the most misleading control in the product.
-2. **Recommended policy** (6 h): generated from the calibration and the attribution
-   table plus the session's own measured AIRS, applied to the router in one click.
-3. **The meter's prior and the printable report** (6 h): `/api/replay` supplies the
-   predicted exchange rate before the session has evidence of its own, labelled *raw
-   sweep rate* against *attribution true cost* (2.26 vs 7.0 on retrieval — they are not
-   the same number and the report must not blur them).
+- **gate-initiated:** the router re-reads on a repairable violation, no model involved;
+- **agent-initiated:** the same violation is admitted with a re-read offered, and the
+  model decides. This is the treatment that answers **kill question 3** ("is this
+  agentic?") and extends the detectability null.
 
-Read `docs/plan.md` Part 1b A9 and `docs/analyst_brief.md` §6 first. The cut order from
-the plan still stands: **A10 adapters → A11 case study → A9's report → A2 inference →
-A8's toggle** — the last of which is now built, so the next thing to give up is A9's
-report.
+What is still to build is the **batch runner**: seed block 90 000–100 000 (registered),
+`--dry-run` before anything paid, `--max-cost`, the paired design preserved, and an
+analysis emitting **Fig 4.9**. First live evidence already exists and is worth designing
+against: offered a re-read, `llama3.1:8b` asked **0 times in 12** stale questions.
+
+Read `docs/plan.md` "Refetch arm" and `docs/analyst_brief.md` §7 before starting. Budget:
+~$4.58 OpenAI and ~$1.27 Anthropic remain.
 
 | Stage | h | State |
 |---|---|---|
@@ -42,8 +41,8 @@ report.
 | A6 router + shared loop | 12 | **done 18 Sep** |
 | A7 API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | **done 20 Sep** |
 | A8 console | 18 | **done 21 Sep** — conversation, replay, paste, toggle |
-| **A9** task switch, recommended policy, meter prior, report | 15 | **next** — 12–23 Oct |
-| Refetch arm (two conditions, ~$2.20, Fig 4.9) | 28 | 19–30 Oct, hard cut 30 Oct |
+| A9 task switch, recommended policy, meter prior, report | 15 | **done 21 Sep** |
+| **Refetch arm** (two conditions, ~$2.20, Fig 4.9) | 28 | **next** — 19–30 Oct, hard cut 30 Oct |
 | A10 postgres/duckdb/http | 8 | cut first |
 | A11 live case study (Fig 4.11) | 6 | cut second |
 
@@ -53,6 +52,13 @@ free model · **Fri 16 Oct M1** · Fri 23 Oct arm dry-run · Fri 30 Oct arm runs
 A2 inference → A8 toggle.
 
 ## 2. Decisions made (do not re-litigate)
+
+**21 Sep, A9:** the task profile switches when asked and the console states RQ5's
+inversion rather than overriding the choice · the recommended policy is the cheapest real
+trade from the **corpus sweep**, with the session only filtering out floors its pipeline
+could never clear · both exchange rates are always shown together (raw 2.26 vs
+attribution true cost 7.0) with the ~14% fault-free floor stated · the report prints
+provenance so it cannot be mistaken for corpus data.
 
 **20–21 Sep, A8:** `/` is the conversation and `/check/` keeps the probe · pasted records
 may be answered over, with the question assembled from the six checkable plan types and
