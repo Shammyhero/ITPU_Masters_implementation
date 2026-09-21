@@ -14,6 +14,8 @@ fresh bake — so the data is never hand-edited and never stale.
                                    update stream, for the bundled demo source
   sources/data/demo_manifest.yaml  the reviewed manifest describing that slice,
                                    built from the study's own semantic context
+  demo/src/data/replay_ticks.json  real decisions from the corpus, as Ticks, for
+                                   the console's replay page (server/replay_bake.py)
 
 Numbers in the prose come from the files they describe (the calibrated weights,
 the policy itself, the runs), not from memory.
@@ -39,6 +41,10 @@ ROOT = Path(__file__).parents[3]
 DATA = Path(__file__).parent / "data"
 OUT = DATA / "samples.json"
 REPLAY_OUT = DATA / "replay_corpus.json"
+# The replay feed is imported by the page at BUILD time, so the replay works
+# with no server at all — like /evidence/, it opens from a file server years
+# from now, archived beside the Zenodo DOI.
+REPLAY_TICKS_OUT = ROOT / "demo" / "src" / "data" / "replay_ticks.json"
 ESCI_DATA = ROOT / "data" / "ecommerce"
 # The arms `docs/gate_findings.md` replays: the fault factorial and the freshness
 # sweep, on the primary model. Other arms change the treatment (metadata shown
@@ -226,8 +232,16 @@ def main(argv: list[str] | None = None) -> int:
     print(f"wrote {DEMO_MANIFEST}")
 
     if not (args.data_dir / "updates.jsonl").exists():
-        print(f"kept {SLICE}: {args.data_dir} is not prepared (make data-ecommerce)")
+        print(f"kept {SLICE} and {REPLAY_TICKS_OUT.name}: {args.data_dir} is not "
+              f"prepared (make data-ecommerce)")
         return 0
+
+    from .replay_bake import build_replay_ticks
+
+    feed = build_replay_ticks(args.results, args.data_dir)
+    _write(REPLAY_TICKS_OUT, feed)
+    print(f"wrote {REPLAY_TICKS_OUT}: {len(feed['ticks'])} ticks from "
+          f"{len(feed['runs'])} runs")
     esci = build_esci_slice(args.data_dir)
     raw = json.dumps(esci, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     SLICE.parent.mkdir(parents=True, exist_ok=True)

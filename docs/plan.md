@@ -474,6 +474,25 @@ is a Tick feed from the corpus into the same renderer — Mode B without a bespo
 > rather than a nav link that appears on every page. Still to come in A8: the meter's
 > replay feed, Mode B folded into this renderer, and the semantic toggle. 783 tests.
 
+> **Progress 21 Sep — A8 step 2 of 4: the replay feed.** `/replay/` plays **seven real
+> decisions from five main-arm runs** through the same `TickView` the live conversation
+> uses — correct, agent impairment on a fault-free pipeline, the answer key moving,
+> corruption in transit under drift and under stripping, and a genuine abstention. It
+> needs **no server**: `server/replay_bake.py` regenerates each run's records by replaying
+> its fault chain, accepts them only when they reproduce that run's logged consistency and
+> semantic scores exactly (the A4 rule), and writes `demo/src/data/replay_ticks.json`,
+> which the page imports at build time — so the route opens from a file server, like
+> `/evidence/`. **Author decisions 21 Sep:** real logged decisions curated to span the
+> four outcomes; its own route; one renderer, two feeds. **Found by building it:** stopping
+> the bake early checked a fragment of a run's realization against its whole-run AIRS (the
+> check caught it); abstention under stripping is rare enough on the streaming pipeline
+> (0, 0, 0, 1 across replications) that the feed searches a condition's runs for each
+> outcome rather than taking the first; the `Tick` TypeScript type wrongly claimed a gate,
+> session and meter are always present, and that the AIRS block always carries the
+> calibration stamp — the router's own block never did; and an abstention rendered no
+> verdict at all, though declining is the outcome a gate exists to produce. 791 tests,
+> `make dist-check` green with the new route.
+
 ### A9 · Mode A, redesigned into the Analyst · 15 h
 
 - **Task-profile switch** (retrieval-like / classification-like), the weight inversion

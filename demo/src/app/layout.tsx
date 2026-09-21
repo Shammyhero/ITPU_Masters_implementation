@@ -18,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/" className="brand">AIRS</Link>
             <Link href="/">Ask your pipeline</Link>
             <Link href="/check/">Check my pipeline</Link>
+            <Link href="/replay/">Recorded runs</Link>
             <Link href="/evidence/">Why trust the score</Link>
           </div>
         </nav>

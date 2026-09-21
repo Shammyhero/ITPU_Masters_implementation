@@ -107,9 +107,11 @@ export default function Conversation() {
           update({ answer: event.answer, verifying: true });
         } else if (event.stage === "tick") {
           update({ tick: event.tick, verifying: false });
+          const running = event.tick.running;
           setSession((previous) =>
-            previous ? { ...previous, meter: event.tick.running, ticks: previous.ticks + 1 }
-                     : previous);
+            previous && running
+              ? { ...previous, meter: running, ticks: previous.ticks + 1 }
+              : previous);
         } else if (event.stage === "error") {
           update({ error: event.error.message, verifying: false });
         }

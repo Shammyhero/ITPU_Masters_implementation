@@ -309,3 +309,13 @@ details.format .rec { margin-top: .9rem; overflow-x: auto; white-space: pre; }
   .gate-badge.lie { color: var(--bad-ink, #a92222); }
   .gate-badge.warn, .gate-forfeit { color: var(--warn-ink, #7a4500); }
 }
+
+/* ---- replay (A8 step 2) --------------------------------------------------- */
+.replay-count { font-size: .9rem; color: var(--muted); }
+.replay-index { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.replay-index li { display: flex; gap: .45rem; align-items: baseline; border: 1px solid var(--line);
+  border-radius: 999px; padding: .25rem .7rem; font-size: .78rem; color: var(--muted); opacity: .45; }
+.replay-index li.seen { opacity: 1; }
+.replay-cond { color: var(--text); }
+.replay-label { font-family: var(--mono); font-size: .72rem; }
+.replay-label.bad { color: var(--bad); }

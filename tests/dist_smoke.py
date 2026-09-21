@@ -95,6 +95,11 @@ def main(airs: str, examples: Path) -> int:
         _, check = _get(f"{base}/check/")
         if "<h1>Check my pipeline</h1>" not in check:
             raise SystemExit("/check/ did not serve the probe console")
+        _, replay = _get(f"{base}/replay/")
+        # The replay feed is baked into the page at build time, so this route
+        # must work with no API call at all — it is the offline half of the demo.
+        if "the study&#x27;s own runs" not in replay and "study" not in replay:
+            raise SystemExit("/replay/ did not serve the recorded-runs console")
         _, evidence = _get(f"{base}/evidence/")
         if "Your agent is not going to tell you" not in evidence:
             raise SystemExit("/evidence/ did not serve the evidence page")
@@ -106,7 +111,7 @@ def main(airs: str, examples: Path) -> int:
         print(f"airs serve: /api/meta v{meta['version']}, /api/score {result['band']} "
               f"{result['airs']:.1f}, /api/samples {len(samples['samples'])}, "
               f"/api/replay {rate:.2f} over {replayed['corpus']['runs']} runs; "
-              f"console /, /check/ and /evidence/ served, {script.group(1).rsplit('/', 1)[-1]} "
+              f"console /, /check/, /replay/ and /evidence/ served, {script.group(1).rsplit('/', 1)[-1]} "
               f"{script_status}")
         return 0
     finally:

@@ -108,6 +108,21 @@ export default function TickView({ turn }: { turn: Turn }) {
           <div className="d">{verdict.detail}</div>
         </div>
       )}
+      {/* Declining is an outcome, not the absence of one: a verified question the
+          agent refused to answer is exactly what a gate is trying to produce, and
+          it carries no attribution because nothing was claimed. */}
+      {tick && decision?.verifiable && !attribution &&
+        (decision.abstained || decision.parse_failed) && (
+        <div className="verdict">
+          <div className="t">{decision.abstained ? "Declined to answer" : "No usable answer"}</div>
+          <div className="d">
+            {decision.abstained
+              ? "Nothing was claimed, so nothing can be silently wrong — the outcome a " +
+                "gate is trying to produce, reached by the agent itself."
+              : "Unparseable output is a failure, not an error: it is never retried."}
+          </div>
+        </div>
+      )}
       {tick && !decision?.verifiable && !decision?.refused && (
         <div className="verdict">
           <div className="t">Not verified</div>

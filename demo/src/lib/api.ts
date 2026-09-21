@@ -198,16 +198,28 @@ export type ChangedField = {
 export type Attribution =
   | "correct" | "answer_key_moved" | "both" | "corrupted_in_transit" | "agent_impairment";
 
+/* The AIRS block inside a Tick. `probe.score()` adds the calibration stamp and
+ * the held-out validation; the router's own block (`analyst/loop.py`) and the
+ * baked replay feed carry the scores without them, because they are describing
+ * one question rather than answering `airs probe`. Optional here, so the
+ * renderer has to handle their absence instead of assuming it. */
+export type TickAirs = Omit<ScoreResult, "calibration" | "validation"> &
+  Partial<Pick<ScoreResult, "calibration" | "validation">>;
+
+/* A Tick comes from two places, and the nulls below say which: a live answer
+ * carries a session, a gate verdict and the running meter; a Tick replayed from
+ * the corpus carries a run_id instead, because those runs had no gate in the
+ * path and no session around them. */
 export type Tick = {
-  t: number;
+  t: number | null;
   mode: string;
-  session_id: string;
+  session_id: string | null;
   source: { pair: string; kind: string; delivered: string; upstream: string | null;
             supports_as_of: boolean; condition: string | null; semantic: SemanticState | null };
   question: { text: string; plan: Record<string, unknown>; describe: string;
               key: string | null; query: string | null };
   answerer: string;
-  airs: ScoreResult;
+  airs: TickAirs;
   records: {
     ids: (string | null)[];
     delivered: Record<string, unknown>[];
@@ -228,14 +240,15 @@ export type Tick = {
     attribution: Attribution | null; changed_fields?: ChangedField[];
     plan_matches_question?: boolean | null; agent_plan_agrees?: boolean | null;
   };
-  gate: GateBlock;
+  gate: GateBlock | null;
   refetch: { attempted: boolean; initiated_by: "gate" | "agent" | null; n_records: number;
              verdict_after: string | null; airs_after: number | null; reason: string | null };
   cost: { model: string; input_tokens: number; output_tokens: number; usd: number;
           provider: string; hosted: boolean };
-  running: Meter;
+  running: Meter | null;
   notes: string[];
-  provenance: { arm: string; seed_block: number[]; seed: number | null; session_id: string };
+  provenance: { arm: string; seed_block: number[] | null; seed: number | null;
+                run_id?: string; session_id: string | null };
 };
 
 /** What `/api/ask` streams, in the order the work actually happened. */
