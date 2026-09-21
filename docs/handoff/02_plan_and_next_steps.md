@@ -61,6 +61,13 @@ A2 inference → A8 toggle.
 
 ## 2. Decisions made (do not re-litigate)
 
+**22 Sep, the title:** *An Experimental Study of the Effect of Selected Data Infrastructure
+Faults on Silent Failures in Agentic AI Systems*, in title case (supervisor's wording). He
+asked that the title state the relation between faults and failures; "the effect of … on
+…" does, and the design supports it — faults injected with everything else held constant,
+conditions paired. It replaces "Detectability Determines Danger…", which made a claim part
+of the evidence runs against. Reasons and history: `research_questions_v2.md` §1.
+
 **21 Sep, A9:** the task profile switches when asked and the console states RQ5's
 inversion rather than overriding the choice · the recommended policy is the cheapest real
 trade from the **corpus sweep**, with the session only filtering out floors its pipeline

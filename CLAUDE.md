@@ -1,8 +1,9 @@
 # CLAUDE.md
 
-Master's thesis implementation: **Detectability Determines Danger — How Data
-Infrastructure Faults Cause Silent Failure in Agentic AI Systems**
-(Shamsiddin Khamidov, IT Park University, 2026).
+Master's thesis implementation: **An Experimental Study of the Effect of Selected
+Data Infrastructure Faults on Silent Failures in Agentic AI Systems**
+(Shamsiddin Khamidov, IT Park University, 2026; title adopted 22 Sep on the
+supervisor's advice — see `docs/research_questions_v2.md` §1).
 
 This is a **scientific instrument**, not an application. Code correctness is
 necessary but not sufficient — a change can pass every test and still invalidate

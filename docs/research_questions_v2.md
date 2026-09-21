@@ -18,7 +18,23 @@ Everything here is implemented and testable with the code as it stands.
 
 ## 1. Title
 
-**Proposed:**
+**Adopted 22 Sep 2026, on the supervisor's advice:**
+
+> **An Experimental Study of the Effect of Selected Data Infrastructure Faults
+> on Silent Failures in Agentic AI Systems**
+
+Why this wording. The supervisor asked that the title state a *relation* between the
+faults and the failures, not two subjects side by side. "The effect of … on …" does
+that, and the design supports it: the faults are injected deliberately, with the agent,
+prompt, data and scoring held constant and conditions paired (invariants 1–2), so the
+comparison is experimental rather than observational. "Selected" says four faults were
+tested, not every fault. A measured null (latency) is still an estimate of an effect.
+The earlier proposed title below made a claim, and part of the evidence runs against it
+(the detectability arm is a null; the fault ranking inverts across tasks, RQ5).
+
+*Superseded — kept as the record of how the title evolved:*
+
+**Proposed (Sep 2026):**
 
 > **Detectability Determines Danger: How Data Infrastructure Faults Cause
 > Silent Failure in Agentic AI Systems**

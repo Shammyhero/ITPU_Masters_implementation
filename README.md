@@ -1,7 +1,8 @@
-# AIRS-Bench — Characterizing the Data Infrastructure Gap for Agentic AI Systems
+# AIRS-Bench
 
-Master's thesis implementation — Shamsiddin Khamidov, M.Sc. Software Engineering
-(Data Engineering & AI), IT Park University, 2026.
+Master's thesis implementation — *An Experimental Study of the Effect of Selected Data
+Infrastructure Faults on Silent Failures in Agentic AI Systems*. Shamsiddin Khamidov,
+M.Sc. Software Engineering (Data Engineering & AI), IT Park University, 2026.
 
 **The claim under study:** agentic AI systems fail in production because of the
 data infrastructure feeding them, not the model. This repository measures that

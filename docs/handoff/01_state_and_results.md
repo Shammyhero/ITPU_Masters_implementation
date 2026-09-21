@@ -1,8 +1,8 @@
 # Handoff 1 of 2 — Where the project stands
 
-**Refreshed:** 21 Sep 2026 · **Last pushed commit:** `53ea7ad` (A9 — the product is
-complete as planned). The only change after it is this handoff, consolidated from
-three files into two on 21 Sep.
+**Refreshed:** 22 Sep 2026 · **Last pushed commit:** `75fa839` (the handoff, on top of
+`53ea7ad`, A9 — the product is complete as planned). Since then: the thesis title
+changed (22 Sep, supervisor's advice), recorded in `docs/research_questions_v2.md` §1.
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
 **Read next:** `02_plan_and_next_steps.md` — what to do next, the traps, and
@@ -17,8 +17,9 @@ change they describe (author's standing instruction, 14 Sep).
 ## 1. The project in one paragraph
 
 Master's thesis (Shamsiddin Khamidov, IT Park University, M.Sc. Software
-Engineering). **"Detectability Determines Danger — How Data Infrastructure Faults
-Cause Silent Failure in Agentic AI Systems."** A benchmark injects four data faults
+Engineering). **"An Experimental Study of the Effect of Selected Data Infrastructure
+Faults on Silent Failures in Agentic AI Systems"** (adopted 22 Sep on the supervisor's
+advice; it replaces "Detectability Determines Danger…"). A benchmark injects four data faults
 (freshness, latency, schema drift, semantic stripping) into records served to an
 LLM agent (retrieval over an e-commerce catalog; classification of flight delays),
 measures *silent failure* (committed, parseable, wrong), and builds **AIRS** — a

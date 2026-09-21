@@ -59,8 +59,8 @@ export default function Evidence() {
         <p>
           <b>AIST</b> — Agentic Infrastructure Stress Test. Companion to{" "}
           <em>
-            Detectability Determines Danger: How Data Infrastructure Faults Cause
-            Silent Failure in Agentic AI Systems
+            An Experimental Study of the Effect of Selected Data Infrastructure
+            Faults on Silent Failures in Agentic AI Systems
           </em>
           , Shamsiddin Khamidov, IT Park University, 2026.
         </p>
