@@ -1,13 +1,16 @@
-# Handoff 1/3 — Current state and results
+# Handoff 1 of 2 — Where the project stands
 
-**Refreshed:** 21 Sep 2026 · **Last pushed commit:** `eb03731` (A8 complete) · A9
-(task switch, recommended policy, report) committed next
+**Refreshed:** 21 Sep 2026 · **Last pushed commit:** `53ea7ad` (A9 — the product is
+complete as planned). The only change after it is this handoff, consolidated from
+three files into two on 21 Sep.
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
-**Read next:** `02_plan_and_next_steps.md`, then `03_operating_guide.md`.
+**Read next:** `02_plan_and_next_steps.md` — what to do next, the traps, and
+the working conventions. These two files replace the three-file set of 14 Sep
+(the operating guide is now Part B of file 2).
 
-Keep these three files current: update them in the same step, and the same commit,
-as any change they describe (author's standing instruction, 14 Sep).
+Keep both files current: update them in the same step, and the same commit, as any
+change they describe (author's standing instruction, 14 Sep).
 
 ---
 
@@ -20,10 +23,12 @@ Cause Silent Failure in Agentic AI Systems."** A benchmark injects four data fau
 LLM agent (retrieval over an e-commerce catalog; classification of flight delays),
 measures *silent failure* (committed, parseable, wrong), and builds **AIRS** — a
 pipeline readiness score computable from telemetry without running an agent. The
-product is an installable tool (`pip install .` after `make web`; `airs serve`,
-`airs probe`, `airs gate`, `airs sources`), now being extended into **the Analyst**:
-live, gated question answering over declared data sources, with every wrong answer
-attributed to the pipeline or the model (`docs/analyst_brief.md`).
+product is an installable tool (`pip install .` after `make web`): `airs probe`,
+`airs gate`, `airs sources`, `airs manifest`, `airs analyst`, `airs serve`. **The
+Analyst** — live, gated question answering over declared sources or pasted records,
+with every wrong answer attributed to the pipeline or the model — is **built**
+(A1–A9, `docs/analyst_brief.md`). What remains is one experiment (the refetch arm)
+and the thesis document.
 
 ## 2. Health right now
 
@@ -61,7 +66,7 @@ attributed to the pipeline or the model (`docs/analyst_brief.md`).
 | Thesis writing | 9 Nov – 4 Dec | |
 | **M2 — submission** | ~Fri 4 Dec · defence December, TBC | |
 
-Capacity: 20 h/week. ~159 h of work scheduled into ~160 h to the freeze (02 §1).
+Capacity: 20 h/week. ~159 h of work scheduled into ~160 h to the freeze (handoff 2, Part A §1).
 
 ## 4. The six research questions — answered
 
@@ -112,7 +117,7 @@ while drift and stripping put 25.0% / 22.5% of decisions on records damaged in t
 
 | Commit | What |
 |---|---|
-| *(next)* | A9 — Mode A redesigned into the Analyst |
+| `53ea7ad` | A9 — task profile, recommended policy, readiness report |
 | `eb03731` | A8 step 4 — the semantic toggle (A8 complete) |
 | `2b137ab` | A8 step 3 — paste and the question builder |
 | `ce1fcb1` | A8 step 2 — the replay feed |

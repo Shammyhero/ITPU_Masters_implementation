@@ -179,8 +179,8 @@ results/discarded/       runs from superseded designs — evidence, not data
 
 ## Start here
 
-`docs/handoff/01_state_and_results.md` → `02_plan_and_next_steps.md` →
-`03_operating_guide.md`, then `docs/plan.md`. They carry the current state, the
+`docs/handoff/01_state_and_results.md` → `02_plan_and_next_steps.md` (Part A: the
+next step; Part B: the operating guide), then `docs/plan.md`. They carry the current state, the
 next step, the traps and the working conventions, and are kept current after
 every step. (`docs/campaign_status.md` is the old campaign log; its roadmap is
 superseded.)
