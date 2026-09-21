@@ -111,8 +111,8 @@ def main(airs: str, examples: Path) -> int:
         print(f"airs serve: /api/meta v{meta['version']}, /api/score {result['band']} "
               f"{result['airs']:.1f}, /api/samples {len(samples['samples'])}, "
               f"/api/replay {rate:.2f} over {replayed['corpus']['runs']} runs; "
-              f"console /, /check/, /replay/ and /evidence/ served, {script.group(1).rsplit('/', 1)[-1]} "
-              f"{script_status}")
+              f"console /, /check/, /replay/ and /evidence/ served, "
+              f"{script.group(1).rsplit('/', 1)[-1]} {script_status}")
         return 0
     finally:
         process.terminate()

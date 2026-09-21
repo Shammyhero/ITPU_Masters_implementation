@@ -160,6 +160,9 @@ class Loop:
     answerer: Answerer
     mode: str = "gate"
     task: str = "retrieval"
+    # The semantic toggle: run the study's own stripping injector over the
+    # records this session answers from. See `_strip`.
+    strip_semantics: bool = False
     max_refetches: int = MAX_REFETCHES
     meter: Meter = field(default_factory=Meter)
     session_id: str | None = None
@@ -181,6 +184,7 @@ class Loop:
         weights, _meta = load_weights(DEFAULT_WEIGHTS, self.task)
         self.controller = Controller(self.policy, weights)
         self.layer = semantic_layer(self.pair)
+        self.stripper = _stripper() if self.strip_semantics else None
 
     # ---- one question -------------------------------------------------------
 
@@ -206,7 +210,7 @@ class Loop:
         # provenance has to name the seed, not just its block.
         self._seed = seed
         sample = self.pair.delivered.sample(question.n, key=question.key, seed=seed)
-        sample.records = self.layer.apply(sample.records)
+        sample.records = self._strip(self.layer.apply(sample.records))
         text = question.text.replace("{query}", str(sample.meta.get("query", "")))
         ids = [record_id for record_id in sample.ids if record_id is not None]
 
@@ -256,6 +260,25 @@ class Loop:
         yield {"stage": "tick", "tick": tick}
 
     # ---- the pieces ---------------------------------------------------------
+
+    def _strip(self, records: Sequence[Record]) -> list[Record]:
+        """The semantic toggle: the study's own fault, on the user's own data.
+
+        Dropping the manifest alone would move nothing — `price` and `stock`
+        describe themselves, which is the trap CLAUDE.md records ("without
+        opacity the fault measurably does nothing"). So this runs the real
+        `SemanticStrippingInjector`: the context block goes, field names become
+        opaque tokens, and the opaque map is recorded so the consistency measure
+        can reverse it and only the semantic dimension moves (invariant 5).
+
+        It is applied by THIS CONSOLE, not by the user's pipeline, and the Tick
+        says so — a demonstration must not be mistaken for a measurement of
+        someone's own system. Whether abstention moves on their data is an
+        observation, not a promise: OR 51.9 is gpt-4o-mini on ESCI.
+        """
+        if self.stripper is None:
+            return list(records)
+        return [self.stripper.apply(record) for record in records]
 
     def _entries(self, records: Sequence[Record], ids: Sequence[str | None]):
         return [to_probe_entry(record, record_id)
@@ -399,6 +422,11 @@ class Loop:
         tick["mode"] = f"analyst/{self.mode}"
         tick["gate"] = gate
         tick["refetch"] = refetch
+        if self.strip_semantics:
+            tick["notes"].append(
+                "the semantic layer was stripped by this console, not by your pipeline: "
+                "context removed and field names made opaque, the study's severe "
+                "condition, to show what that fault does to an answer")
         if gate["verdict"] == "refuse":
             tick["decision"]["refused"] = True
             tick["decision"]["reason"] = (
@@ -428,6 +456,17 @@ class Loop:
             "band": label,
             "band_note": note,
         }
+
+
+def _stripper():
+    """The severe condition from the study's own grid, seeded from the live block."""
+    from agentic_faults import SemanticStrippingInjector
+
+    from ..runner.config import SEVERITY_PARAMS
+    from .session import LIVE_SEED_BLOCK
+
+    return SemanticStrippingInjector(seed=LIVE_SEED_BLOCK[0],
+                                     **SEVERITY_PARAMS["semantic_stripping"]["severe"])
 
 
 def _add_usage(first, second):

@@ -134,6 +134,7 @@ class Session:
             "policy": self.loop.policy.to_dict(),
             "policy_description": self.loop.policy.describe(),
             "refetch": self.loop.mode,
+            "strip_semantics": self.loop.strip_semantics,
             "task": self.loop.task,
             "budget": self.budget.to_dict(),
             "meter": self.meter.to_dict(),
@@ -146,10 +147,10 @@ class Session:
 def open_session(pair: SourcePair, answerer: Answerer, *, policy: Policy,
                  budget: Budget, question: Question, mode: str = "gate",
                  task: str = "retrieval", directory: Path | None = None,
-                 session_id: str | None = None) -> Session:
+                 session_id: str | None = None, strip_semantics: bool = False) -> Session:
     session_id = session_id or new_session_id()
     loop = Loop(pair=pair, policy=policy, answerer=answerer, mode=mode, task=task,
-                session_id=session_id)
+                session_id=session_id, strip_semantics=strip_semantics)
     return Session(id=session_id, loop=loop, budget=budget, question=question,
                    directory=directory)
 

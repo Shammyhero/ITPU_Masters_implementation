@@ -272,5 +272,5 @@ corrupts `.next` · figures print recomputed vs published values.
 
 > Read `docs/handoff/01_state_and_results.md`, `02_plan_and_next_steps.md`,
 > `03_operating_guide.md`, then `CLAUDE.md`, `docs/plan.md` and the header of
-> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (779
-> passing). Continue from 02 §1 (A8, the console — the M1 deliverable).
+> `docs/analyst_brief.md`. Confirm the state: `git log --oneline -3` and `make test` (797
+> passing). Continue from 02 §1 (A9, Mode A redesigned into the Analyst).

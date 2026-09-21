@@ -511,6 +511,19 @@ is a Tick feed from the corpus into the same renderer — Mode B without a bespo
 > refused every batch (correct, but a poor first minute) — pasted sessions now start with
 > no policy and say what a timestamp-checking policy would need. 791 tests, wheel green.
 
+> **Progress 21 Sep — A8 step 4 of 4: the semantic toggle. A8 is done.** A checkbox in the
+> console runs the study's **own** `SemanticStrippingInjector` (severe, `strip_rate` 0.80)
+> over the records the session reads: the context block goes and field names become opaque
+> tokens. Dropping the manifest alone would move nothing — `price` and `stock` describe
+> themselves (the CLAUDE.md trap) — which is exactly why correction 3 required the real
+> injector. Measured live on `demo-healthy`, same question and seed: **semantic 100 → 25,
+> consistency stays 100** (the opaque map lets the consistency measure reverse the names,
+> invariant 5), AIRS 100 → 87.4, and the answer goes from **correct** to **abstained**.
+> Every Tick of such a session says the stripping was done *by this console, not by your
+> pipeline*, and the UI says whether it moves an answer on your data is an observation,
+> not a promise (OR 51.9 is gpt-4o-mini on ESCI). 797 tests, `make dist-check` green.
+> **A8 complete: conversation, replay feed, paste + question builder, toggle.**
+
 ### A9 · Mode A, redesigned into the Analyst · 15 h
 
 - **Task-profile switch** (retrieval-like / classification-like), the weight inversion

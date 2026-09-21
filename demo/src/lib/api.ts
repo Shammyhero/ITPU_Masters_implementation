@@ -165,6 +165,7 @@ export type SessionInfo = {
   policy: Record<string, unknown>;
   policy_description: string;
   refetch: "off" | "gate" | "agent";
+  strip_semantics: boolean;
   task: string;
   budget: { session_cap_usd: number; day_cap_usd: number; session_spent_usd: number;
             day_spent_usd: number; calls: number; free: boolean };
@@ -275,7 +276,7 @@ export const testSource = (id: string) =>
 export const openSession = (body: {
   source: string; answerer: string; policy?: Record<string, unknown> | null;
   refetch?: string; task?: string; max_cost?: number | null;
-  records?: string | null; upstream?: string | null;
+  records?: string | null; upstream?: string | null; strip_semantics?: boolean;
 }) =>
   request<SessionInfo>("/api/session", {
     method: "POST",

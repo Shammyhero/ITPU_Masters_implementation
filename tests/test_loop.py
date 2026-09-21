@@ -291,3 +291,51 @@ def test_a_record_is_never_invented_when_upstream_has_no_answer():
     assert all(isinstance(payload, dict) and payload
                for payload in tick["records"]["delivered"])
     assert all(isinstance(r, Record) for r in [Record(payload={"a": 1})])
+
+
+# ---- the semantic toggle -----------------------------------------------------
+
+def test_the_toggle_runs_the_real_injector_and_only_semantic_moves():
+    """Invariant 5, demonstrated live: stripping opaquifies the field names, and
+    the opaque map it records lets the consistency measure reverse them — so the
+    fault moves the semantic dimension and nothing else.
+
+    Dropping the manifest alone would move nothing at all: `price` and `stock`
+    describe themselves (CLAUDE.md, "without opacity the fault measurably does
+    nothing"), which is why the toggle runs the injector.
+    """
+    intact = Loop(pair=pair("demo-healthy"), policy=OPEN, answerer=LiteralAnswerer())
+    stripped = Loop(pair=pair("demo-healthy"), policy=OPEN, answerer=LiteralAnswerer(),
+                    strip_semantics=True)
+    before = intact.ask(question(), seed=100_001)["airs"]["dimensions"]
+    after = stripped.ask(question(), seed=100_001)["airs"]["dimensions"]
+
+    assert before["semantic"]["score"] == 100.0
+    assert after["semantic"]["score"] < 50.0
+    assert after["consistency"]["score"] == before["consistency"]["score"] == 100.0
+    assert after["freshness"]["score"] == before["freshness"]["score"]
+
+
+def test_a_stripped_session_hides_the_fields_the_question_needs():
+    loop = Loop(pair=pair("demo-healthy"), policy=OPEN, answerer=LiteralAnswerer(),
+                strip_semantics=True)
+    tick = loop.ask(question(), seed=100_001)
+    assert all(key.startswith("f") for key in tick["records"]["delivered"][0])
+    # Nothing was claimed, so nothing can be silently wrong.
+    assert tick["decision"]["abstained"] is True
+    assert tick["decision"]["silent_failure"] is False
+
+
+def test_every_tick_of_a_stripped_session_says_the_console_did_it():
+    """A demonstration must not be mistaken for a measurement of someone's pipeline."""
+    loop = Loop(pair=pair("demo-healthy"), policy=OPEN, answerer=LiteralAnswerer(),
+                strip_semantics=True)
+    notes = loop.ask(question(), seed=100_001)["notes"]
+    assert any("stripped by this console, not by your pipeline" in note for note in notes)
+
+
+def test_the_toggle_is_off_unless_asked_for():
+    loop = Loop(pair=pair("demo-healthy"), policy=OPEN, answerer=LiteralAnswerer())
+    assert loop.strip_semantics is False and loop.stripper is None
+    assert not any("stripped" in note
+                   for note in loop.ask(question(), seed=100_001)["notes"])

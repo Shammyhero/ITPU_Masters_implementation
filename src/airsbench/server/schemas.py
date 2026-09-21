@@ -61,6 +61,10 @@ class SessionRequest(_Request):
     task: str = Field("retrieval", description="calibrated weight profile to apply")
     max_cost: float | None = Field(None, description="USD cap for this session")
     max_cost_day: float | None = Field(None, description="USD cap across today's sessions")
+    strip_semantics: bool = Field(
+        False, description="run the study's semantic-stripping injector over this "
+                           "session's records: context removed, field names made opaque. "
+                           "Applied by the server, not by your pipeline; every Tick says so.")
 
 
 class AskRequest(_Request):

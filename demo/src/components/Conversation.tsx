@@ -74,6 +74,7 @@ export default function Conversation() {
   const [upstream, setUpstream] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, FieldError>>({});
   const [draft, setDraft] = useState<PlanDraft>(EMPTY_PLAN);
+  const [stripped, setStripped] = useState(false);
   const nextKey = useRef(0);
 
   useEffect(() => {
@@ -89,7 +90,7 @@ export default function Conversation() {
   useEffect(() => {
     setSession(null);
     setTurns([]);
-  }, [sourceId, answerer, policyId, delivered, upstream]);
+  }, [sourceId, answerer, policyId, delivered, upstream, stripped]);
 
   const pasting = sourceId === INLINE;
   // A pasted sample rarely carries timestamps, and a freshness budget then
@@ -117,6 +118,7 @@ export default function Conversation() {
       if (!current) {
         current = await openSession({
           source: sourceId, answerer, policy: policy.policy, refetch: "gate",
+          strip_semantics: stripped,
           ...(pasting ? { records: delivered, upstream: upstream || null } : {}),
         });
         setSession(current);
@@ -160,7 +162,8 @@ export default function Conversation() {
     // Every value the request is built from belongs here. Without `delivered`
     // the callback kept the empty initial text, sent no records, and the server
     // rightly refused `inline` as a source nobody declared.
-  }, [answerer, delivered, draft, pasting, plan, policy, session, sourceId, upstream]);
+  }, [answerer, delivered, draft, pasting, plan, policy, session, sourceId, stripped,
+      upstream]);
 
   const answerers = [
     { id: "literal", label: "No model", note: models?.literal.note ?? "the question executed over the delivered records, $0" },
@@ -210,6 +213,14 @@ export default function Conversation() {
             ))}
           </select>
         </label>
+        <label className="field narrow check">
+          <span className="field-label">Semantic layer</span>
+          <span className="checkline">
+            <input type="checkbox" checked={stripped}
+                   onChange={(event) => setStripped(event.target.checked)} />
+            <span>strip it</span>
+          </span>
+        </label>
         <button className="cta" onClick={askOne} disabled={busy || !sources || !ready}>
           {busy ? "asking…" : turns.length ? "Ask another" : "Ask a question"}
         </button>
@@ -250,6 +261,16 @@ export default function Conversation() {
       )}
 
       <div className="setup-notes">
+        {stripped && (
+          <p className="hint warn-text">
+            This runs the study&rsquo;s own semantic-stripping injector over the records
+            <span> </span><b>this console</b> reads — the context block is removed and field
+            names become opaque tokens. Nothing about your pipeline is changed. Dropping
+            the descriptions alone would move nothing, because <b>price</b> and
+            <span> </span><b>stock</b> describe themselves; whether it changes the
+            answer on your data is an observation, not a promise.
+          </p>
+        )}
         {pasting && policy.policy?.max_record_age_seconds !== undefined &&
           !delivered.includes("event_timestamp") && (
           <p className="hint warn-text">

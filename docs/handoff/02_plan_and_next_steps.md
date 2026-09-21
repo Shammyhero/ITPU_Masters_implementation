@@ -7,32 +7,30 @@ Adversarial audit: **`REVIEW.md`** (Phase 3 is design history). This file is the
 
 ---
 
-## 1. Immediate next step: A8 — the console, and the M1 deliverable
+## 1. Immediate next step: A9 — Mode A, redesigned into the Analyst
 
-**A1–A7 are done.** The whole answering path exists and is exercised over real HTTP:
-`airs serve --sources` offers declared sources, opens a session under a policy and a
-spend cap, and streams one question as gate → refetch → answer → verified Tick, with the
-meter accumulating and every Tick quarantined in `~/.airs/sessions/`.
+**A1–A8 are done, and the M1 deliverable exists**: `airs serve` opens a console where a
+question is asked of a declared source or of pasted records, gated, answered by nothing,
+a local model or a hosted one under a spend cap, verified against the system of record
+and attributed — with the study's own recorded decisions playing through the same
+renderer at `/replay/`, and a toggle that runs the real stripping injector.
 
-**A8 (18 h, 5–16 Oct) is now the only thing between here and M1.** It is the interface
-your supervisor sees on 16 October, and it consumes A7's routes without adding logic:
+**A9 (15 h, 12–23 Oct)** — three pieces, in this order, each independently cuttable:
 
-- **source picker** from `GET /api/sources` (name, whether it can be verified, semantic
-  state) and **model picker** from `GET /api/models` (`literal`, local Ollama, providers
-  whose key is configured — the page never sends a key);
-- **the conversation**: one renderer for the Tick, fed by the SSE stages, so the gate's
-  verdict, the answer and *then* the verification appear in that order — the pause is the
-  demonstration, so do not batch the events;
-- **the meter**: answered / refused / refetched / prevented / forfeited and the live
-  exchange rate, from `GET /api/session/{id}`;
-- **the semantic toggle** (drop the manifest mid-session; runs the real injector, brief
-  correction 3) — first thing to cut if the week runs short;
-- Mode B's walkthrough becomes the same renderer fed from `/api/replay`, so delete the
-  bespoke six-step UI rather than maintaining two.
+1. **Task-profile switch** (3 h): retrieval-like or classification-like weights, with the
+   inversion stated out loud where it changes a score — RQ5 found the ranking inverts
+   across tasks, so a silent switch would be the most misleading control in the product.
+2. **Recommended policy** (6 h): generated from the calibration and the attribution
+   table plus the session's own measured AIRS, applied to the router in one click.
+3. **The meter's prior and the printable report** (6 h): `/api/replay` supplies the
+   predicted exchange rate before the session has evidence of its own, labelled *raw
+   sweep rate* against *attribution true cost* (2.26 vs 7.0 on retrieval — they are not
+   the same number and the report must not blur them).
 
-Read `docs/analyst_brief.md` §6 and `docs/plan.md` Part 1b A8 before starting. `make demo`
-runs the Next.js dev server on :3000 against `airs serve --dev`; `make web` builds it into
-the package, and `make dist-check` must stay green because the console ships in the wheel.
+Read `docs/plan.md` Part 1b A9 and `docs/analyst_brief.md` §6 first. The cut order from
+the plan still stands: **A10 adapters → A11 case study → A9's report → A2 inference →
+A8's toggle** — the last of which is now built, so the next thing to give up is A9's
+report.
 
 | Stage | h | State |
 |---|---|---|
@@ -43,8 +41,8 @@ the package, and `make dist-check` must stay green because the console ships in 
 | A5 model options (Ollama / OpenAI · Anthropic · Gemini, caps, "unpriced = free" closed) | 8 | **done 18 Sep** |
 | A6 router + shared loop | 12 | **done 18 Sep** |
 | A7 API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | **done 20 Sep** |
-| **A8 console** | 18 | **next** — 5–16 Oct · the M1 deliverable |
-| A9 task switch, recommended policy, meter prior, report | 15 | 12–23 Oct |
+| A8 console | 18 | **done 21 Sep** — conversation, replay, paste, toggle |
+| **A9** task switch, recommended policy, meter prior, report | 15 | **next** — 12–23 Oct |
 | Refetch arm (two conditions, ~$2.20, Fig 4.9) | 28 | 19–30 Oct, hard cut 30 Oct |
 | A10 postgres/duckdb/http | 8 | cut first |
 | A11 live case study (Fig 4.11) | 6 | cut second |
@@ -55,6 +53,12 @@ free model · **Fri 16 Oct M1** · Fri 23 Oct arm dry-run · Fri 30 Oct arm runs
 A2 inference → A8 toggle.
 
 ## 2. Decisions made (do not re-litigate)
+
+**20–21 Sep, A8:** `/` is the conversation and `/check/` keeps the probe · pasted records
+may be answered over, with the question assembled from the six checkable plan types and
+the fields found in those records · `/replay/` plays real corpus decisions through the
+same renderer and needs no server · the semantic toggle runs the **real** injector and
+every Tick says the console applied it, not the user's pipeline.
 
 **19–20 Sep, A7:** keys stay in the **environment** — no secret travels in a request body,
 and `/api/models` reports only whether a provider is configured · live Ticks persist to

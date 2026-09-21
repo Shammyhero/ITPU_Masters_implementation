@@ -312,7 +312,8 @@ def open_session_route(body: SessionRequest, request: Request):
     question = demo_question() if pair.kind == "demo" else None
     try:
         session = open_session(pair, answerer, policy=policy, budget=budget,
-                               question=question, mode=body.refetch, task=body.task)
+                               question=question, mode=body.refetch, task=body.task,
+                               strip_semantics=body.strip_semantics)
     except LoopError as exc:
         raise InputError("refetch", str(exc)) from None
     request.app.state.sessions[session.id] = session

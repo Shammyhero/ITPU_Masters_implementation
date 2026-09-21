@@ -276,3 +276,19 @@ def test_a_source_with_no_built_in_question_asks_for_a_plan(client):
     response = client.post("/api/ask", json={"session_id": session["session_id"]})
     assert response.status_code == 422
     assert "has no built-in question" in response.json()["error"]["message"]
+
+
+def test_a_session_can_run_the_semantic_stripping_injector(client):
+    """The toggle the console offers: the study's own fault, on the chosen source."""
+    session = open_session(client, source="demo-healthy", strip_semantics=True)
+    assert session["strip_semantics"] is True
+    stream = dict(events(client, session["session_id"]))
+    tick = stream["tick"]
+    assert tick["airs"]["dimensions"]["semantic"]["score"] < 50.0
+    assert tick["airs"]["dimensions"]["consistency"]["score"] == 100.0
+    assert any("not by your pipeline" in note for note in tick["notes"])
+
+
+def test_the_toggle_defaults_to_off(client):
+    session = open_session(client, source="demo-healthy")
+    assert session["strip_semantics"] is False
