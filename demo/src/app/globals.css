@@ -319,3 +319,13 @@ details.format .rec { margin-top: .9rem; overflow-x: auto; white-space: pre; }
 .replay-cond { color: var(--text); }
 .replay-label { font-family: var(--mono); font-size: .72rem; }
 .replay-label.bad { color: var(--bad); }
+
+/* ---- paste as a source, and the question builder (A8 step 3) -------------- */
+.paste { display: flex; flex-direction: column; gap: 1.1rem; }
+.builder { display: flex; gap: .8rem; align-items: flex-end; flex-wrap: wrap;
+  border-top: 1px solid var(--line); padding-top: 1rem; }
+.field.narrow { min-width: 90px; flex: 0 0 auto; }
+.field input { background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: .5rem .6rem; font: inherit; font-size: .9rem; }
+.field.check .checkline { display: flex; gap: .4rem; align-items: center; font-size: .9rem;
+  color: var(--muted); padding: .5rem 0; }

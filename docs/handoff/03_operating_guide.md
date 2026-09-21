@@ -145,6 +145,19 @@ corrupts `.next` · figures print recomputed vs published values.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
 
+**21 Sep (A8 step 3):**
+- **`useCallback` deps must list every value the request is built from.** `askOne` left
+  out the pasted records, sent the stale empty string, and the server refused `inline`
+  as an undeclared source — which looked like a firewall bug and was a stale closure.
+- **Pasted records carry no timestamps**, so any policy with `max_record_age_seconds`
+  refuses every batch ("we did not look" is not "it is fine"). Pasted sessions default
+  to no policy and explain what such a policy needs.
+- **Mode B's six-step walkthrough was only ever planned** — there was no bespoke UI to
+  delete, and `Stress`/`Inversion` on /evidence/ are aggregate arguments, not
+  per-decision walkthroughs. Check before scheduling a deletion.
+- The demo has **no JS test runner**; frontend logic is covered by typecheck, the
+  browser pass, and the Python contract tests. Keep pure helpers small and obvious.
+
 **21 Sep (A8 step 2):**
 - **A partial realization cannot be checked against a whole-run AIRS.** The replay bake
   stopped as soon as it had the decisions it wanted, then compared a fragment with the

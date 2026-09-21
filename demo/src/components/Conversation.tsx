@@ -12,7 +12,7 @@
  * is where a viewer forms an expectation that the verdict can break. Collapsing
  * that into one update would throw away the only thing the stream is for. */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   ApiError,
@@ -27,7 +27,15 @@ import {
   getSources,
   openSession,
 } from "@/lib/api";
+import QuestionBuilder, {
+  EMPTY_PLAN, type PlanDraft, describe, fieldsOf, toPlan,
+} from "@/components/QuestionBuilder";
+import RecordsInput, { type FieldError } from "@/components/RecordsInput";
 import TickView from "@/components/TickView";
+
+// The paste box as a source: the records travel in the request body, so the
+// server still opens no file or connection because a request asked it to.
+const INLINE = "inline";
 
 type Turn = {
   key: number;
@@ -62,6 +70,10 @@ export default function Conversation() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [delivered, setDelivered] = useState("");
+  const [upstream, setUpstream] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, FieldError>>({});
+  const [draft, setDraft] = useState<PlanDraft>(EMPTY_PLAN);
   const nextKey = useRef(0);
 
   useEffect(() => {
@@ -77,7 +89,19 @@ export default function Conversation() {
   useEffect(() => {
     setSession(null);
     setTurns([]);
-  }, [sourceId, answerer, policyId]);
+  }, [sourceId, answerer, policyId, delivered, upstream]);
+
+  const pasting = sourceId === INLINE;
+  // A pasted sample rarely carries timestamps, and a freshness budget then
+  // refuses every batch — correctly ("we did not look" is not "it is fine"),
+  // but it is a poor first minute. Start pasted sessions with no policy; the
+  // user can add one and will be told what it needs.
+  useEffect(() => {
+    if (sourceId === INLINE) setPolicyId("open");
+  }, [sourceId]);
+  const fields = useMemo(() => (pasting ? fieldsOf(delivered) : []), [delivered, pasting]);
+  const plan = pasting ? toPlan(draft) : null;
+  const ready = !pasting || (delivered.trim().length > 0 && plan !== null);
 
   const askOne = useCallback(async () => {
     setBusy(true);
@@ -93,10 +117,15 @@ export default function Conversation() {
       if (!current) {
         current = await openSession({
           source: sourceId, answerer, policy: policy.policy, refetch: "gate",
+          ...(pasting ? { records: delivered, upstream: upstream || null } : {}),
         });
         setSession(current);
+        setFieldErrors({});
       }
-      await ask({ session_id: current.session_id }, (event: AskEvent) => {
+      const question = pasting && plan
+        ? { plan, question: describe(draft) }
+        : {};
+      await ask({ session_id: current.session_id, ...question }, (event: AskEvent) => {
         if (event.stage === "gate") {
           update({ gate: event.gate, question: event.question });
         } else if (event.stage === "refetch") {
@@ -118,12 +147,20 @@ export default function Conversation() {
       });
     } catch (exc) {
       const message = exc instanceof ApiError ? exc.message : String(exc);
+      // A refusal about the records belongs beside the box they were typed in,
+      // with the line the server named.
+      if (exc instanceof ApiError && (exc.input === "records" || exc.input === "upstream")) {
+        setFieldErrors({ [exc.input]: { line: exc.line, message: exc.message } });
+      }
       update({ error: message, verifying: false });
       setError(message);
     } finally {
       setBusy(false);
     }
-  }, [answerer, policy, session, sourceId]);
+    // Every value the request is built from belongs here. Without `delivered`
+    // the callback kept the empty initial text, sent no records, and the server
+    // rightly refused `inline` as a source nobody declared.
+  }, [answerer, delivered, draft, pasting, plan, policy, session, sourceId, upstream]);
 
   const answerers = [
     { id: "literal", label: "No model", note: models?.literal.note ?? "the question executed over the delivered records, $0" },
@@ -154,6 +191,7 @@ export default function Conversation() {
             {(sources ?? []).map((entry) => (
               <option key={entry.id} value={entry.id}>{entry.id}</option>
             ))}
+            <option value={INLINE}>paste my own records</option>
           </select>
         </label>
         <label className="field">
@@ -172,12 +210,62 @@ export default function Conversation() {
             ))}
           </select>
         </label>
-        <button className="cta" onClick={askOne} disabled={busy || !sources}>
+        <button className="cta" onClick={askOne} disabled={busy || !sources || !ready}>
           {busy ? "asking…" : turns.length ? "Ask another" : "Ask a question"}
         </button>
       </div>
 
+      {pasting && (
+        <div className="paste panel">
+          <RecordsInput
+            id="delivered" title="Records as your pipeline delivers them"
+            hint="One JSON object per line. Each needs an id and a payload."
+            value={delivered} origin={null}
+            onChange={(text) => setDelivered(text)}
+            error={fieldErrors.records ?? null}
+          />
+          <RecordsInput
+            id="source" title="The same records from your system of record"
+            hint="Optional. Without it an answer cannot be verified, and the session says so."
+            value={upstream} origin={null}
+            onChange={(text) => setUpstream(text)}
+            error={fieldErrors.upstream ?? null}
+            optional
+          />
+          {fields.length > 0 && (
+            <>
+              <QuestionBuilder fields={fields} draft={draft} onChange={setDraft} />
+              <p className="hint">
+                Your question: <b>{describe(draft)}</b>{" "}
+                {plan === null && <span className="warn-text">— choose a field to finish it.</span>}
+              </p>
+            </>
+          )}
+          {delivered.trim() && fields.length === 0 && (
+            <p className="hint warn-text">
+              No fields found yet. Each line is one JSON object with a payload.
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="setup-notes">
+        {pasting && policy.policy?.max_record_age_seconds !== undefined &&
+          !delivered.includes("event_timestamp") && (
+          <p className="hint warn-text">
+            This policy checks how old the records are, and pasted records carry no
+            <span> </span><b>event_timestamp</b> — so the budget cannot be shown to hold and
+            every batch is refused. Add timestamps, or choose <b>No policy</b>.
+          </p>
+        )}
+        {pasting && (
+          <p className="hint">
+            Your records are sent to <b>airs serve</b> on this machine and held in memory
+            for this session only. Nothing is written, and a pasted source has no history,
+            so pipeline lag shows up as values changed in transit rather than as the answer
+            key moving.
+          </p>
+        )}
         {source && (
           <p className="hint">
             <b>{source.id}</b> — {source.description}{" "}

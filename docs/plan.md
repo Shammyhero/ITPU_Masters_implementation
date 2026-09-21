@@ -184,7 +184,8 @@ external validity.
 
 **What it replaces:** Mode A's paste box as the headline input (paste stays as an
 inline source); Mode B's planned six-step walkthrough (replay becomes a feed into the
-same renderer); Mode C (absorbed). **What it keeps:** every W3 property — no scoring rule
+same renderer — **it was never built, so A8 had nothing to delete**, recorded 21 Sep);
+Mode C (absorbed). **What it keeps:** every W3 property — no scoring rule
 implemented twice, no file or connection opened on an HTTP request, one error shape,
 the approved Tick extension.
 
@@ -492,6 +493,23 @@ is a Tick feed from the corpus into the same renderer — Mode B without a bespo
 > calibration stamp — the router's own block never did; and an abstention rendered no
 > verdict at all, though declining is the outcome a gate exists to produce. 791 tests,
 > `make dist-check` green with the new route.
+
+> **Progress 21 Sep — A8 step 3 of 4: your own records, in the conversation.** Step 3 was
+> planned as "delete the bespoke walkthrough"; that UI was only ever *planned*, so the
+> step was re-scoped (author decision) to the gap A7's backend had already opened: the
+> console could not paste. `/` now offers **paste my own records** beside the declared
+> sources — delivered records, optionally the system of record — with a
+> **question builder** (`QuestionBuilder.tsx`) that offers the six checkable plan types
+> and takes the measure and filter fields from the pasted records themselves, so every
+> question a visitor can ask is verifiable by construction and no free text reaches the
+> verifier. Verified in the browser: pasted records → a question built from their fields →
+> answered `SKU-3` → **silent failure, corrupted in transit**, which is the honest label
+> for a source with no history (brief correction 15). **Found by driving it:** `askOne`
+> omitted the pasted text from its dependency list, so it sent the empty initial value and
+> the server rightly refused `inline` as an undeclared source — a stale closure, not a
+> firewall bug; and a pasted sample carries no timestamps, so the default freshness policy
+> refused every batch (correct, but a poor first minute) — pasted sessions now start with
+> no policy and say what a timestamp-checking policy would need. 791 tests, wheel green.
 
 ### A9 · Mode A, redesigned into the Analyst · 15 h
 
