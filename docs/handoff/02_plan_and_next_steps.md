@@ -42,9 +42,9 @@ Build order, each step proposed before code: ~~(1) the loop~~ **built 23 Sep** �
 provenance a parameter (live stays the default) · record age on the demo source through `execute.attach_record_age` · the re-read continued as a second turn (`reread_messages`, `ModelAnswerer.answer_after_reread`) · an action reply marked unparseable and `unanswered_action`, and `verify` never commits one → ~~(2) the batch runner~~ and ~~(3) artifacts~~ **built 23 Sep** — `--refetch-arm`
 (`runner/refetch.py`), a dry-run that runs the real loop with a $0 counting answerer,
 three caps, artifacts in `results/runs/` as arm `refetch`, `NEVER_POOLED` in every loader
-that admitted all arms → **(4) the dry-run shown to the author — next**, with the proposed
-~$0.01 paid pilot (one stale age-shown agent run, 10 questions, to a scratch `--out`) →
-(5) run → (6) `analysis/refetch.py`, Fig 4.9, `refetch_findings.md`, the
+that admitted all arms → ~~(4) the dry-run and a paid pilot~~ **done 23 Sep** — **Paid pilot 23 Sep, $0.0026** (one stale age-shown agent run, replication 1, 10 questions, written to a scratch directory, not `results/runs/`): billed input **13,906 tokens = the dry-run's count exactly**; output 92 a call against 150 budgeted; seed 91 001 attributed to the arm; the gate recorded the 5.05 s violation and delegated. gpt-4o-mini **asked for a re-read 0 times in 10** with each record showing its age; 7 correct, 2 abstained, 1 silent (agent impairment, confidence 1.0); 0 flipped questions (P ≈ 0.20 at 14.7% exposure — chance). →
+**(5) the campaign — next:** `python -m airsbench.runner.run --refetch-arm --max-cost 2.00`
+(dry-run first; ~1.5–2.5 h; `--offset` if the laptop sleeps) → (6) `analysis/refetch.py`, Fig 4.9, `refetch_findings.md`, the
 third verdict in `gate/replay.py`.
 
 Budget: ~$4.58 OpenAI and ~$1.27 Anthropic remain.
@@ -60,7 +60,7 @@ Budget: ~$4.58 OpenAI and ~$1.27 Anthropic remain.
 | A7 API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | **done 20 Sep** |
 | A8 console | 18 | **done 21 Sep** — conversation, replay, paste, toggle |
 | A9 task switch, recommended policy, meter prior, report | 15 | **done 21 Sep** |
-| **Refetch arm** (Fig 4.9; ~$0.95 expected) | 28 | **design approved 23 Sep**; steps 1–3 built 23 Sep; step 4 (dry-run, pilot) next — hard cut 30 Oct |
+| **Refetch arm** (Fig 4.9; ~$0.95 expected) | 28 | **design approved 23 Sep**; steps 1–3 built, pilot done 23 Sep; the campaign next — hard cut 30 Oct |
 | A10 postgres/duckdb/http | 8 | cut first |
 | A11 live case study (Fig 4.11) | 6 | cut second |
 

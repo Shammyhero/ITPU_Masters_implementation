@@ -216,7 +216,8 @@ the answer key.
      including `flip_partition` and `phase1_check` under
      `include_other_arms=True` — the arm is a different instrument and must
      never pool.
-4. **Dry-run, shown to you.** Nothing paid before your go-ahead.
+4. **Dry-run, shown to you.** Nothing paid before your go-ahead. *Done 23 Sep.*
+   **Paid pilot 23 Sep, $0.0026** (one stale age-shown agent run, replication 1, 10 questions, written to a scratch directory, not `results/runs/`): billed input **13,906 tokens = the dry-run's count exactly**; output 92 a call against 150 budgeted; seed 91 001 attributed to the arm; the gate recorded the 5.05 s violation and delegated. gpt-4o-mini **asked for a re-read 0 times in 10** with each record showing its age; 7 correct, 2 abstained, 1 silent (agent impairment, confidence 1.0); 0 flipped questions (P ≈ 0.20 at 14.7% exposure — chance). The pilot is a plumbing check, not evidence.
 5. **Run** (~1.5–2.5 h wall-clock at gpt-4o-mini's pace; `--offset` if the
    laptop sleeps).
 6. **Analysis + Fig 4.9** (`analysis/refetch.py`, `refetch_findings.md`):

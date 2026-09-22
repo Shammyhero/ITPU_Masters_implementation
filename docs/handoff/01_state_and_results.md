@@ -1,9 +1,9 @@
 # Handoff 1 of 2 — Where the project stands
 
-**Refreshed:** 23 Sep 2026 · **Last pushed commit:** "Refetch arm steps 2–3" (23 Sep) —
-the batch runner, artifacts and quarantine, nothing spent — on top of `5117e50` (the arm's
-design and its loop) and `60cc800` (the new thesis title, 22 Sep, supervisor's advice,
-`docs/research_questions_v2.md` §1).
+**Refreshed:** 23 Sep 2026 · **Last pushed commit:** "Refetch arm: the pilot" (23 Sep,
+$0.0026) — on top of `189a18f` (the batch runner, artifacts, quarantine), `5117e50` (the
+arm's design and its loop) and `60cc800` (the new thesis title, 22 Sep, supervisor's
+advice, `docs/research_questions_v2.md` §1). The campaign was launched right after.
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
 **Read next:** `02_plan_and_next_steps.md` — what to do next, the traps, and
@@ -42,7 +42,7 @@ and the thesis document.
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
 | Figures | `make figures` builds all 10, deterministic |
 | Runs on disk | 302 run artifacts in `results/runs/` (committed), 24 270 decisions |
-| Spend | $5.15 total (+$0.0015 A5 live check) — OpenAI ~$4.58 left, Anthropic ~$1.27 left. Nothing spent since |
+| Spend | $5.15 total (+$0.0015 A5 live check, +$0.0026 refetch pilot 23 Sep) — OpenAI ~$4.58 left, Anthropic ~$1.27 left |
 | CI | **None, deliberately.** `make ci` + `make dist-check` replace it |
 
 ## 3. Timeline and where we are
@@ -62,7 +62,7 @@ and the thesis document.
 | **A7 API + firewalls** — `/api/ask` SSE, live quarantine, no key in a request | 5–9 Oct | **done 20 Sep** |
 | **A8 console** — all four steps done 20–21 Sep (conversation, replay feed, paste + question builder, semantic toggle) | 5–16 Oct | **done 21 Sep** |
 | **A9** task switch · recommended policy priced on the corpus · meter prior · printable report | 12–23 Oct | **done 21 Sep** |
-| Refetch arm (the last experiment; $0.96 expected, $1.85 worst case, exact) | 19–30 Oct | **design approved 23 Sep**; loop, batch runner, artifacts, quarantine **built 23 Sep**; step 4 (dry-run shown to the author) next |
+| Refetch arm (the last experiment; $0.96 expected, $1.85 worst case, exact) | 19–30 Oct | **design approved 23 Sep**; loop, batch runner, artifacts, quarantine **built 23 Sep**; dry-run and **$0.0026 pilot done 23 Sep** (input tokens matched the dry-run exactly); the campaign next |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |

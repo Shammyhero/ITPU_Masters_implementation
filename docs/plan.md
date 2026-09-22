@@ -621,7 +621,9 @@ router's REFETCH stays in the product without an experimental claim behind it.
 > $1.85 worst case** — *corrected* from the design's ~$1.45, which assumed a second call
 > costs what a first does. Caps: the worst case before the campaign, each run's worst case
 > before that run, and the analyst `Budget` before every call; the arm's spend never
-> touches `~/.airs`. 851 tests. Next: step 4, the dry-run shown to the author.
+> touches `~/.airs`. 851 tests.
+>
+> **Paid pilot 23 Sep, $0.0026** (one stale age-shown agent run, replication 1, 10 questions, written to a scratch directory, not `results/runs/`): billed input **13,906 tokens = the dry-run's count exactly**; output 92 a call against 150 budgeted; seed 91 001 attributed to the arm; the gate recorded the 5.05 s violation and delegated. gpt-4o-mini **asked for a re-read 0 times in 10** with each record showing its age; 7 correct, 2 abstained, 1 silent (agent impairment, confidence 1.0); 0 flipped questions (P ≈ 0.20 at 14.7% exposure — chance). Next: the campaign, `--max-cost 2.00` (worst case $1.85), on the author's go.
 
 ## Calendar — Mon 14 Sep to the freeze
 
