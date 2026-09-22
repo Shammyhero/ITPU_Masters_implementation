@@ -294,6 +294,18 @@ baseline / gate / agent (age hidden) / agent (age shown), refusal derived at $0 
 baseline; 21 runs × 150 questions, 3 replications; "flipped" defined on the records as
 first delivered. Rates compare within the arm only (a different instrument).
 
+**Answered 23 Sep** (`refetch_findings.md`, Fig 4.9; 21 runs, $0.8541). **H-R1a and H-R1b
+null:** offered a re-read, gpt-4o-mini asked **0 times in 1,800 questions** — age hidden
+or shown, healthy or stale; each cell rules out a rate above 0.66% at 95%; zero
+discordant questions, Holm p = 1.000. **H-R1c:** 0 of 450 in both states. **H-R2
+holds, by construction on this source:** refusal forfeits 6.56 correct answers per
+silent failure prevented (true cost 9.35), a gate re-read 0.16 (0.18), gaining 42
+correct answers against 7 lost. The gate's re-read matches the healthy pipeline on
+98.0% of questions (accuracy +0.2 pp [−1.1, +1.6]), which licenses pricing the third
+verdict on the corpus by the matched fault-free run (`gate/replay.py --refetch`).
+**Exploratory** (declared after replication 1, before 2–3): the unused tool-offering
+prompt costs −4.3 pp accuracy with age hidden, −2.9 pp with age shown, on healthy data.
+
 Declared constraints: classification is out of scope for the verifier (its label is a
 property of the flight, not computable from the record); the Analyst's plan-returning
 prompt is a different instrument from the corpus agent's, so live rates are not pooled

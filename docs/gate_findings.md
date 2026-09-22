@@ -160,6 +160,11 @@ freshness genuinely impairs reasoning. For retrieval it is close to a no-op with
 a real price attached — the worst kind of control, because it looks like
 diligence.
 
+> **Revised 23 Sep — when the gate can re-read instead of refuse, the staleness
+> budget stops being a trade** (§7). The paragraph above prices refusal, the only
+> verdict this replay had until the refetch arm. Refusal forfeits every correct
+> answer in the batch; a re-read forfeits none.
+
 ## 5. Design notes
 
 - **`unmeasured` is a violation by default.** A policy naming a dimension the
@@ -191,3 +196,36 @@ diligence.
 - **Silent failure is the only harm counted.** An abstention is scored as a
   forfeited answer, which is right for availability and wrong for any setting
   where a decline is itself costly.
+
+## 7. The third verdict: re-read (23 Sep)
+
+```bash
+python -m airsbench.gate.replay --refetch --task retrieval --sweep age
+```
+
+A batch refused for staleness alone (`REPAIRABLE`: record age, freshness) may be
+read again from the system of record instead. Its outcome is priced by the corpus
+itself: the matched **fault-free streaming run** of the same task and replication,
+which shares `sample_seed` and so asked the same questions from records 0.05 s old.
+The refetch arm validates that substitution on retrieval: a gate's re-read on stale
+data matches the healthy pipeline on 98.0% of questions, accuracy +0.2 pp
+[−1.1, +1.6] (`refetch_findings.md` §4). Drift, stripping and composite floors still
+refuse — a re-read bypasses the pipeline.
+
+| age policy | task | verdicts | coverage | prevented | correct answers | re-reads / SF |
+|---|---|---|---|---|---|---|
+| ≤ 0.1 s | retrieval | refuse only | 33% | 927 | −3,537 | — |
+| | | refuse / re-read | **100%** | 446 | **+451** | 10.1 |
+| ≤ 5.0 s | retrieval | refuse only | 83% | 247 | −888 | — |
+| | | refuse / re-read | **100%** | 122 | **+133** | 9.5 |
+| ≤ 0.1 s | classification | refuse only | 33% | 922 | −3,522 | — |
+| | | refuse / re-read | **100%** | 390 | **+546** | 11.8 |
+
+A re-read prevents about half the silent failures refusal does — refusal also
+removes the model's own errors, and every correct answer with them — but it keeps
+every question answered and *gains* correct answers. Its price is paid in reads
+(~10 per silent failure prevented), not in answers. **The practitioner
+recommendation gains a clause:** where the violated rule is staleness and the
+system of record can be read, re-read rather than refuse. The classification rows
+rest on the substitution unvalidated — the arm tested retrieval only — and a real
+re-read has latency and can itself be stale, which this replay does not price.

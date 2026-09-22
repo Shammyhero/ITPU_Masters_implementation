@@ -126,3 +126,13 @@ def test_a_free_local_arm_is_reported_as_free_not_as_zero_dollars(capsys):
 def test_cross_model_reads_as_not_started_when_absent(capsys):
     report(_main_prefix(4))
     assert "cross_model" in capsys.readouterr().out
+
+
+def test_every_research_arm_is_in_the_inventory():
+    """An arm missing here is on disk and in the spend line, and reported nowhere —
+    how the interaction arm's 54 runs went unlisted until 23 Sep. Live traffic is
+    never a campaign; cross-model is listed per model, from the artifacts."""
+    from airsbench.analysis.campaign_state import ARMS, CROSS_MODEL
+    from airsbench.runner.config import SEED_BLOCKS
+
+    assert set(SEED_BLOCKS) - {"live"} == set(ARMS) | {CROSS_MODEL}

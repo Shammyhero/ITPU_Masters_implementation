@@ -585,6 +585,15 @@ under `infra_unused/`."*
 *"The pipeline is the subject, the agent the instrument, held constant by
 invariant 1."* — is honest, and it is also a deflection. Only a multi-step arm
 converts it into an answer.
+> **Answered 23 Sep** (`docs/refetch_findings.md`, Fig 4.9). The refetch arm gives the
+> agent a genuine decide → act → decide loop — it may ask for any record to be read
+> again before answering — and gpt-4o-mini **declined the act in 1,800 of 1,800
+> questions**, with the record's age shown or not, on fresh or 5 s stale data (≤ 0.66%
+> per cell at 95%). The same re-read, taken by a gate, matches a healthy pipeline and
+> turns a staleness gate from a trade into a gain. Answer at the defence: *"It is
+> agentic where it can be, and the agent does not act; that is why the protection
+> has to sit outside the model."* Limitation to own: one model, and the tool is a
+> JSON action rather than native function calling.
 
 **4. "How is AIRS different from ISO/IEC 25012?"** — *Cannot answer today.*
 Needs F-A1. 4 h fixes it permanently.

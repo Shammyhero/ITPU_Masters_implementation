@@ -1,9 +1,10 @@
 # Handoff 1 of 2 — Where the project stands
 
-**Refreshed:** 23 Sep 2026 · **Last pushed commit:** "Refetch arm: the pilot" (23 Sep,
-$0.0026) — on top of `189a18f` (the batch runner, artifacts, quarantine), `5117e50` (the
-arm's design and its loop) and `60cc800` (the new thesis title, 22 Sep, supervisor's
-advice, `docs/research_questions_v2.md` §1). The campaign was launched right after.
+**Refreshed:** 23 Sep 2026 · **Last pushed commit:** "Refetch arm: results" (23 Sep) —
+the campaign's 21 runs, the analysis, Fig 4.9, the findings and the third verdict on the
+corpus. The refetch arm is **complete**; the agent never asked for a re-read. Earlier
+today: the new thesis title (`60cc800`, supervisor's advice, `docs/research_questions_v2.md`
+§1) and the arm's build (`5117e50`, `189a18f`, `f3c653d`).
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
 **Read next:** `02_plan_and_next_steps.md` — what to do next, the traps, and
@@ -29,20 +30,22 @@ product is an installable tool (`pip install .` after `make web`): `airs probe`,
 `airs gate`, `airs sources`, `airs manifest`, `airs analyst`, `airs serve`. **The
 Analyst** — live, gated question answering over declared sources or pasted records,
 with every wrong answer attributed to the pipeline or the model — is **built**
-(A1–A9, `docs/analyst_brief.md`). What remains is one experiment (the refetch arm)
-and the thesis document.
+(A1–A9, `docs/analyst_brief.md`). **The last experiment, the refetch arm, is done**
+(23 Sep, `refetch_findings.md`). What remains: A10 adapters and the A11 live case study
+(both optional, both awaiting the author's decisions — handoff 2 §1), positioning and the
+four papers, and the thesis document.
 
 ## 2. Health right now
 
 | | |
 |---|---|
-| Tests | **851 passing**, lint clean (`make test`, `make lint`) |
+| Tests | **872 passing**, lint clean (`make test`, `make lint`) |
 | Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
 | Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
-| Figures | `make figures` builds all 10, deterministic |
-| Runs on disk | 302 run artifacts in `results/runs/` (committed), 24 270 decisions |
-| Spend | $5.15 total (+$0.0015 A5 live check, +$0.0026 refetch pilot 23 Sep) — OpenAI ~$4.58 left, Anthropic ~$1.27 left |
+| Figures | `make figures` builds all 11 (Fig 4.9 added 23 Sep), deterministic |
+| Runs on disk | 323 run artifacts in `results/runs/` (committed), 27 420 decisions — 302 corpus + 21 refetch arm (never pooled) |
+| Spend | **$6.00** in artifacts ($5.15 corpus + $0.85 refetch arm), + $0.0015 A5 live check + $0.0026 refetch pilot — OpenAI **~$3.72** left, Anthropic ~$1.27 left. No paid work is scheduled |
 | CI | **None, deliberately.** `make ci` + `make dist-check` replace it |
 
 ## 3. Timeline and where we are
@@ -62,7 +65,8 @@ and the thesis document.
 | **A7 API + firewalls** — `/api/ask` SSE, live quarantine, no key in a request | 5–9 Oct | **done 20 Sep** |
 | **A8 console** — all four steps done 20–21 Sep (conversation, replay feed, paste + question builder, semantic toggle) | 5–16 Oct | **done 21 Sep** |
 | **A9** task switch · recommended policy priced on the corpus · meter prior · printable report | 12–23 Oct | **done 21 Sep** |
-| Refetch arm (the last experiment; $0.96 expected, $1.85 worst case, exact) | 19–30 Oct | **design approved 23 Sep**; loop, batch runner, artifacts, quarantine **built 23 Sep**; dry-run and **$0.0026 pilot done 23 Sep** (input tokens matched the dry-run exactly); the campaign next |
+| **Refetch arm** — the last experiment, Fig 4.9 | 19–30 Oct | **done 23 Sep** — 21 runs, $0.8541; the agent never acts; the third verdict priced on the corpus |
+| A10 adapters · A11 live case study (Fig 4.11) | 19 Oct–6 Nov | **awaiting the author's decisions** (handoff 2 §1) |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |
@@ -86,9 +90,13 @@ RQs v2 §9 declares three further analyses under the Analyst. **Verifier agreeme
 decisions exactly — correctness, silent failure, the flip partition — and regenerates
 90/90 fault realizations; agent impairment is a 9.7% floor on a fault-free pipeline,
 while drift and stripping put 25.0% / 22.5% of decisions on records damaged in transit
-(`verifier_agreement_findings.md`). Still to come: the refetch arm (Fig 4.9; design
-approved 23 Sep, `refetch_arm.md`, hypotheses refined in RQs v2 §9) and the live-source
-case study (Fig 4.11).
+(`verifier_agreement_findings.md`). **The refetch arm (Fig 4.9) is done (23 Sep):**
+offered a re-read, gpt-4o-mini asked **0 times in 1,800 questions**, age shown or not,
+fresh or stale (≤ 0.66% per cell) — the detectability null extends from metadata to
+action, and kill question 3 is answered; a gate's re-read matches the healthy pipeline
+(98.0% same correctness) and gains correct answers where refusal forfeits them;
+exploratory, the unused tool-offering prompt costs 2.9–4.3 pp accuracy
+(`refetch_findings.md`). Still to come: the live-source case study (Fig 4.11), optional.
 
 ## 5. Other results that carry the thesis
 
@@ -96,7 +104,12 @@ case study (Fig 4.11).
   pipeline (14.2% vs 19.6%); worthwhile gates forfeit **7–21 correct answers per silent
   failure genuinely prevented** (attribution true cost; the raw sweep rate is lower —
   consistency ≥ 90 on retrieval is 2.26 raw vs 7.0 true).
-- **Detectability null**: giving the agent each record's age does not make it cautious.
+- **Detectability null**: giving the agent each record's age does not make it cautious —
+  and, since the refetch arm, neither does giving it a way to act (0 re-reads in 1,800).
+- **The third verdict** (`gate_findings.md` §7, 23 Sep): a staleness gate that re-reads
+  instead of refusing keeps 100% coverage and *gains* correct answers (retrieval, age ≤
+  0.1 s: +451 against −3,537 for refusal), at ~10 re-reads per silent failure prevented.
+  Priced on the corpus by the matched fault-free run; validated by the arm on retrieval.
 - **AIRS curve sensitivity** (Fig 4.7), **query fragility** (Fig 4.8).
 - **Power + F-C7** (Fig 3.1): ICC ≤ 0.003; cell tests now CR2 + Bell–McCaffrey (α
   0.045–0.058); cell MDEs 10–12 pp, pooled 6 pp; decision-model p-values calibrated.
@@ -120,6 +133,12 @@ case study (Fig 4.11).
 
 | Commit | What |
 |---|---|
+| (23 Sep) | Refetch arm: results — 21 runs, analysis, Fig 4.9, findings, the third verdict |
+| `f3c653d` | Refetch arm: the pilot ($0.0026; dry-run counted it exactly) |
+| `189a18f` | Refetch arm steps 2–3 — batch runner, artifacts, quarantine |
+| `5117e50` | Refetch arm step 1 — the design, and the loop it runs on |
+| `60cc800` | The thesis title (supervisor's advice) |
+| `75fa839` | Handoff: three files into two |
 | `53ea7ad` | A9 — task profile, recommended policy, readiness report |
 | `eb03731` | A8 step 4 — the semantic toggle (A8 complete) |
 | `2b137ab` | A8 step 3 — paste and the question builder |
@@ -144,7 +163,8 @@ case study (Fig 4.11).
 ## 8. Honest limitations already recorded (do not rediscover)
 
 - Pipeline archetypes are **simulated** staleness signatures — no Kafka/Airflow runs.
-- Latency runs analytically. Agent is one LLM call until the refetch arm.
+- Latency runs analytically. The agent is one LLM call everywhere except the refetch
+  arm's agent condition, where it may take a second step and never does.
 - Synthetic faults; one model for most arms; n = 3–4 replications; AIRS constants underived.
 - **Product:** no task-profile switch in the console yet (A9); `aist.json` panels partly
   hand-typed (W5 note); a **files source has no history**, so its consistency also absorbs

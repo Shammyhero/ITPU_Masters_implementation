@@ -1,6 +1,9 @@
 # The refetch arm — design
 
-**Status: DESIGN APPROVED 23 Sep 2026** — the author's four choices (§4) and both
+**Status: COMPLETE 23 Sep 2026** — results in [`refetch_findings.md`](refetch_findings.md),
+Fig 4.9. 21 runs, $0.8541. The agent never asked for a re-read (0 of 1,800).
+
+**Design approved 23 Sep 2026** — the author's four choices (§4) and both
 decisions the code forced (§7: D1 (a), D2 kept). **Step 1 (the loop) built 23 Sep**
 (§5); **step 2 (the batch runner, artifacts, quarantine) built 23 Sep**; nothing spent.
 Budget **$0.96 expected, $1.85 worst case**, counted exactly by the dry-run (corrected 23 Sep from the design's ~$1.45 worst case, which assumed a second call costs what a first does — a second turn carries the records twice), against the ~$2.20 the plan holds for this arm. Quarantined by seed
@@ -48,9 +51,15 @@ finding. What the gate condition *measures* is the cost side: re-reads spent,
 dollars spent, and correct answers kept, per silent failure prevented.
 
 **2.3 Exposure caps every effect.** A $0 check with the literal answerer
-(600 stale demo questions, 23 Sep): **14.7% flipped at 5.05 s** (the corpus
-published 13.6% at the same level). At most one question in seven has anything
-a re-read could fix. On the other 85%, the best a re-read can do is nothing.
+(600 stale demo questions, 23 Sep): **12.9% of verifiable questions flipped at
+5.05 s** (the corpus published 13.6% at the same level). At most about one
+question in eight has anything a re-read could fix; on the rest, the best a
+re-read can do is nothing. *Corrected 23 Sep:* this section first said 14.7%,
+because the check counted the 12 unverifiable questions (no in-stock product at
+answer time) as flipped. The arm's own questions turned out less exposed still —
+**9.3% (41 of 443 verifiable)** across the three replications, about 2.3 SD below
+12.9%: an unlucky draw of questions, shared by every cell, so it biases no
+contrast but gives H-R1b fewer flipped questions than planned.
 
 **2.4 Provenance is hard-wired to live.** `session.build_tick` stamps every Tick
 `arm: "live"` with the live seed block, and `DemoDelivered` defaults to seed
@@ -141,8 +150,8 @@ reference, never the corpus.
 
 **Size** (choice 3a): 7 paid cells × 3 replications × 150 questions =
 **21 runs, 3,150 questions.** This replaces the plan's "~54 runs", a figure with
-no traceable derivation. Expected ≈66 flipped stale questions per cell across the
-three replications (14.7% × 450).
+no traceable derivation. Expected ≈58 flipped stale questions per cell across the
+three replications (12.9% × 450); the draw gave 41 (§2.3).
 
 **Seeds and pairing (invariant 2):**
 
@@ -217,8 +226,9 @@ the answer key.
      `include_other_arms=True` — the arm is a different instrument and must
      never pool.
 4. **Dry-run, shown to you.** Nothing paid before your go-ahead. *Done 23 Sep.*
-   **Paid pilot 23 Sep, $0.0026** (one stale age-shown agent run, replication 1, 10 questions, written to a scratch directory, not `results/runs/`): billed input **13,906 tokens = the dry-run's count exactly**; output 92 a call against 150 budgeted; seed 91 001 attributed to the arm; the gate recorded the 5.05 s violation and delegated. gpt-4o-mini **asked for a re-read 0 times in 10** with each record showing its age; 7 correct, 2 abstained, 1 silent (agent impairment, confidence 1.0); 0 flipped questions (P ≈ 0.20 at 14.7% exposure — chance). The pilot is a plumbing check, not evidence.
-5. **Run** (~1.5–2.5 h wall-clock at gpt-4o-mini's pace; `--offset` if the
+   **Paid pilot 23 Sep, $0.0026** (one stale age-shown agent run, replication 1, 10 questions, written to a scratch directory, not `results/runs/`): billed input **13,906 tokens = the dry-run's count exactly**; output 92 a call against 150 budgeted; seed 91 001 attributed to the arm; the gate recorded the 5.05 s violation and delegated. gpt-4o-mini **asked for a re-read 0 times in 10** with each record showing its age; 7 correct, 2 abstained, 1 silent (agent impairment, confidence 1.0); 0 flipped questions (P ≈ 0.25 at 12.9% exposure — chance). The pilot is a plumbing check, not evidence.
+5. **Run** — *done 23 Sep*: 21/21 runs, no failures, 4 min each (~87 min), $0.8541.
+   Planned: (~1.5–2.5 h wall-clock at gpt-4o-mini's pace; `--offset` if the
    laptop sleeps).
 6. **Analysis + Fig 4.9** (`analysis/refetch.py`, `refetch_findings.md`):
    - **A.** Re-read request rate by cell and state (H-R1a, H-R1c).
@@ -231,7 +241,25 @@ the answer key.
 
 ## 6. Analysis
 
-- **Unit:** the question, paired across cells by (replication, question index).
+*Built 23 Sep, while the campaign ran* (`analysis/refetch.py`, Fig 4.9 in `make
+figures`, the third verdict in `gate/replay.py`; 871 tests). As approved:
+
+- **Confirmatory, Holm-corrected together:** H-R1a and H-R1b. **Descriptive:**
+  H-R1c, H-R2 (the menu). Request rates carry exact Clopper–Pearson intervals;
+  a zero count reports its one-sided 95% upper bound (≈0.66% at 450).
+- **Validation:** the gate's re-read on stale data against the healthy baseline,
+  question by question — the assumption the corpus's third verdict is priced on.
+- **Exploratory, declared 23 Sep after replication 1 was seen and before the
+  rest:** the tool-offering prompt against the standard one on **healthy** data
+  (both agent cells), where a re-read cannot help. Run 2 suggested that offering
+  the tool, unused, costs accuracy. Reported as exploratory and never counted
+  toward H-R1.
+- **The third verdict on the corpus** (`replay --refetch`): a staleness violation
+  may be re-read, its outcome the matched fault-free streaming run's (same
+  `sample_seed`, same questions); drift and stripping still refuse. No arm data
+  enters the corpus — the arm only validates the assumption.
+
+- **Unit:** the question, paired across cells by (replication, question seed).
 - **Test:** paired bootstrap as declared in RQs v2 §9 (`interaction.py`'s
   method), resampling questions within replication.
 - **Discordant pairs:** request-rate contrasts (H-R1a) and flipped-question
@@ -279,6 +307,7 @@ the agent reads the number.
 - The gate is a perfect detector here (§4). A real gate sees noisier ages.
 - The tool-offering prompt is a separate instrument. Its rates compare with this
   arm's baseline only.
-- Exposure (14.7%) is a property of the slice's catalog velocity, as the
+- Exposure (12.9% on a broad sample, 9.3% on the arm's questions) is a property of
+  the slice's catalog velocity, as the
   freshness sweep established. A faster-moving catalog would give a re-read
   more to fix.

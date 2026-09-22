@@ -15,39 +15,55 @@ Adversarial audit: **`REVIEW.md`** (Phase 3 is design history). This file is the
 
 ---
 
-## 1. Immediate next step: the refetch arm — the last experiment
+## 1. Immediate next step: the author's decisions on A10 and A11
 
-**A1–A9 are done.** The product is complete as planned: declared sources and pasted
-records, the semantic manifest, the verifier and its four labels, spend caps, the
-admit/re-read/refuse loop, the API, the console (conversation, replay, paste, semantic
-toggle), the task-profile switch, a policy recommended from the study's own accounting,
-and a printable readiness report. Everything M1 asks for exists, three weeks early.
+**A1–A9 are done, and so is the refetch arm (23 Sep)** — `docs/refetch_findings.md`,
+Fig 4.9, 21 runs, $0.8541, all committed. In one line each:
 
-**The refetch arm (28 h, 19–30 Oct, ~$2.20 — the only paid work left).** Two conditions
-on one loop, which `analyst/loop.py` already runs:
+- **The agent never acts.** Offered a re-read, gpt-4o-mini asked 0 times in 1,800
+  questions, age hidden or shown, healthy or stale (≤ 0.66% per cell). H-R1a/b null;
+  **kill question 3 answered** (the loop is agentic; the agent declines the act).
+- **The act works when a gate takes it.** A gate re-read matches the healthy pipeline
+  (98.0% same correctness), prevents 43 of 57 stale silent failures and gains 35 correct
+  answers net; refusal forfeits 374. On the corpus, `python -m airsbench.gate.replay
+  --refetch` shows a staleness gate that re-reads keeps 100% coverage and gains answers
+  (`gate_findings.md` §7, which revises §4's "staleness is the wrong gate for retrieval").
+- **Exploratory:** the unused tool-offering prompt costs 2.9–4.3 pp accuracy.
 
-- **gate-initiated:** the router re-reads on a repairable violation, no model involved;
-- **agent-initiated:** the same violation is admitted with a re-read offered, and the
-  model decides. This is the treatment that answers **kill question 3** ("is this
-  agentic?") and extends the detectability null.
+The history of how it was built — design, loop, runner, pilot, campaign, analysis — is
+in `docs/refetch_arm.md` and the plan's progress notes; the traps it hit are in B4.
 
-**Design approved 23 Sep — `docs/refetch_arm.md` is the spec; read it first.** 21 runs:
-7 paid cells (baseline, gate, agent with age hidden, agent with age shown; healthy and
-freshness 5.05 s; gate on stale only) × 3 replications × 150 questions, gpt-4o-mini,
-$0.96 expected / $1.85 worst case (the dry-run's exact count; the design's ~$1.45 assumed a
-second call costs what a first does). Refusal is priced at $0 from the baseline's
-shadow-policy verdicts. Hypotheses refined in RQs v2 §9 before anything runs.
+**What is left before the freeze (Fri 6 Nov):** A10 adapters (8 h, cut first), A11 live
+case study (6 h, ~$0.05, cut second), positioning + the four papers + DOI (14 h). Then
+the thesis (Part 2 of the plan). **Nothing below has been started** — each needs the
+author's decision, and A11 spends money.
 
-Build order, each step proposed before code: ~~(1) the loop~~ **built 23 Sep** —
-provenance a parameter (live stays the default) · record age on the demo source through `execute.attach_record_age` · the re-read continued as a second turn (`reread_messages`, `ModelAnswerer.answer_after_reread`) · an action reply marked unparseable and `unanswered_action`, and `verify` never commits one → ~~(2) the batch runner~~ and ~~(3) artifacts~~ **built 23 Sep** — `--refetch-arm`
-(`runner/refetch.py`), a dry-run that runs the real loop with a $0 counting answerer,
-three caps, artifacts in `results/runs/` as arm `refetch`, `NEVER_POOLED` in every loader
-that admitted all arms → ~~(4) the dry-run and a paid pilot~~ **done 23 Sep** — **Paid pilot 23 Sep, $0.0026** (one stale age-shown agent run, replication 1, 10 questions, written to a scratch directory, not `results/runs/`): billed input **13,906 tokens = the dry-run's count exactly**; output 92 a call against 150 budgeted; seed 91 001 attributed to the arm; the gate recorded the 5.05 s violation and delegated. gpt-4o-mini **asked for a re-read 0 times in 10** with each record showing its age; 7 correct, 2 abstained, 1 silent (agent impairment, confidence 1.0); 0 flipped questions (P ≈ 0.20 at 14.7% exposure — chance). →
-**(5) the campaign — next:** `python -m airsbench.runner.run --refetch-arm --max-cost 2.00`
-(dry-run first; ~1.5–2.5 h; `--offset` if the laptop sleeps) → (6) `analysis/refetch.py`, Fig 4.9, `refetch_findings.md`, the
-third verdict in `gate/replay.py`.
+**Proposal — do A10's file-database adapter first, as A11's vehicle.** A11 needs a real
+delivered side: a polling pipeline, set up for the study, that caches a live source with
+genuine lag (brief correction 12: the data and its velocity are real, the pipeline's
+design is ours). The natural store for that cache is SQLite, which is also half of A10.
+So: (1) A10-lite — `sqlite` (and `duckdb`, same shape) + `http` adapters, read-only,
+tested against local fixtures; Postgres only if wanted, since it needs a running server
+(the old stack in `infra_unused/` has one). (2) A11 — a small poller writing timestamped
+snapshots of one live source into SQLite; the Analyst reads the cache as *delivered* and
+the live API as *upstream*; 50–100 questions, dry-run and cap first.
 
-Budget: ~$4.58 OpenAI and ~$1.27 Anthropic remain.
+**Decisions A11 needs from the author:**
+1. **Which live source.** Must be public, keyless or free-keyed, with terms that allow
+   polling and with values that change on a scale of seconds to minutes. Candidate
+   classes: exchange/crypto tickers, public transit real-time feeds, weather
+   observations. Any specific API must be checked for terms and rate limits before use —
+   none has been yet.
+2. **Which model.** gpt-4o-mini (~$0.05 for 100 questions, comparable with the arm) or
+   the free local `llama3.1:8b` ($0, not comparable).
+3. **Question type** — one of the six checkable plans, chosen to fit the source's fields.
+
+**One optional follow-up the arm raises, outside the plan:** its most plausible
+limitation is that the re-read is a JSON action, not native function calling. A small
+arm offering the same re-read as a real tool call would test whether the null
+transfers. Not scheduled; author's call; cost known only after a dry-run.
+
+Budget: ~$3.72 OpenAI and ~$1.27 Anthropic remain.
 
 | Stage | h | State |
 |---|---|---|
@@ -60,16 +76,24 @@ Budget: ~$4.58 OpenAI and ~$1.27 Anthropic remain.
 | A7 API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | **done 20 Sep** |
 | A8 console | 18 | **done 21 Sep** — conversation, replay, paste, toggle |
 | A9 task switch, recommended policy, meter prior, report | 15 | **done 21 Sep** |
-| **Refetch arm** (Fig 4.9; ~$0.95 expected) | 28 | **design approved 23 Sep**; steps 1–3 built, pilot done 23 Sep; the campaign next — hard cut 30 Oct |
+| **Refetch arm** (Fig 4.9) | 28 | **done 23 Sep** — 21 runs, $0.8541; the agent never acts; `refetch_findings.md` |
 | A10 postgres/duckdb/http | 8 | cut first |
 | A11 live case study (Fig 4.11) | 6 | cut second |
 
 **Checkpoints:** ~~Fri 2 Oct Fig 4.10 exact~~ **met 16 Sep** · Fri 9 Oct `/api/ask` on the
-free model · **Fri 16 Oct M1** · Fri 23 Oct arm dry-run · Fri 30 Oct arm runs ·
-**Fri 6 Nov freeze**. 161 h in ~160 h, no buffer; cut order A10 → A11 → A9 report →
-A2 inference → A8 toggle.
+free model (A7 was verified over real HTTP; a run on the local model is not recorded) · **Fri 16 Oct M1** · ~~Fri 23 Oct arm dry-run~~ and ~~Fri
+30 Oct arm runs~~ **met 23 Sep** · **Fri 6 Nov freeze**. The arm's 28 h were planned for
+19–30 Oct and are done, so A10 and A11 have room; cut order unchanged: A10 → A11.
 
 ## 2. Decisions made (do not re-litigate)
+
+**23 Sep, the arm's results:** the 21 artifacts are committed **as is** — pretty-printed
+like the corpus, ~180k lines — because invariant 7 makes them the canonical dataset and
+Fig 4.9 must regenerate from the repo (compact or uncommitted alternatives offered and
+declined) · the analysis, the artifacts, Fig 4.9 and the findings went in **one commit**
+once the findings were written · the prompt-effect contrast is reported, labelled
+exploratory · the third verdict is priced on the corpus by the matched fault-free run, the
+arm only validating it.
 
 **23 Sep, the refetch arm** (`docs/refetch_arm.md`): age shown is a factor for the
 agent-initiated condition (1a) · freshness 5.05 s only (2a) · 150 questions per run, 3
@@ -169,7 +193,7 @@ argument** for every live claim in Ch5. **Checkpoint Fri 27 Nov:** Ch 2–4 draf
 | F-A1 · F-A2 · F-E5 | 2–6 Nov | positioning · read the 4 load-bearing papers · Zenodo DOI |
 | F-B1 | limitation | AIRS constants underived |
 | F-C4 | polish | no multiple-comparison correction across 8 interaction contrasts |
-| Kill Q3 | Oct | refetch arm, agent-initiated condition. **First live evidence (18 Sep):** offered a re-read, `llama3.1:8b` asked 0 times in 12 stale questions — on records showing no age, so it measures spontaneous asking only (23 Sep) |
+| Kill Q3 | **ANSWERED 23 Sep** | refetch arm: gpt-4o-mini declined the re-read in 1,800 of 1,800 questions, age shown or not (`refetch_findings.md`); `REVIEW.md` carries the defence answer |
 | Phase 1D | Nov | external validity → A11 case study |
 | CR2/BM refs | before Ch3 | verify the citations |
 
@@ -236,7 +260,7 @@ than `unknown`. Always select runs with `run_arm(run)`, and never pool `live`.
 ## B3. Commands
 
 ```bash
-make test         # 851 tests, ~35 s
+make test         # 872 tests, ~45 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -330,6 +354,27 @@ corrupts `.next` · figures print recomputed vs published values.
   first bar's segments — build handles explicitly from every key present.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
+
+**23 Sep (refetch arm, step 6):**
+- **An exposure check must drop unverifiable questions before counting flips.** The design's
+  pre-check counted "literal answer not correct", which includes questions with no in-stock
+  product at answer time — 14.7% instead of 12.9%. Count `served ≠ truth` over verifiable
+  questions only, as `runner/refetch.flipped_as_delivered` does.
+- **A sample of questions can be unlucky and still be valid.** The arm's 450 questions are
+  9.3% exposed against 12.9% on a broad sample (~2.3 SD). Every cell shares them, so no
+  contrast is biased; only the power of flipped-only contrasts drops. Report both numbers.
+- **`Batch` is baked into the server's replay corpus field by field** (`asdict` in
+  `server/bake.py`, `Batch(**row)` in the API). A new field changes baked data. The third
+  verdict reads lineage through its own `load_lineage` instead; `Batch`, `Outcome` and
+  `replay()` are untouched.
+- **A synthetic campaign's first 40 stale questions contain no flipped one** (the first
+  fall at indices 40, 43 and 46); a test of "a re-read repairs every flipped question" needs
+  ≥ 50, or it has nothing to test. Assert the count is positive.
+- A heredoc Python string turns `\n` inside generated f-strings into real line breaks and
+  the module stops parsing. Parse the file (`ast.parse`) after any generated edit.
+- Two cells can agree on every aggregate by chance (age hidden and shown, stale, replication
+  1: 80.5 / 15.4 / 4.0) while differing on 13 of 150 answers. Check question by question
+  before suspecting the treatment did not reach the model; the token counts confirm it did.
 
 **23 Sep (refetch arm, steps 2–3):**
 - **After a gate re-read the Tick's gate block describes the REFRESHED records**, so the

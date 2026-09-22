@@ -27,6 +27,7 @@ from ..runner.config import (
     build_detectability_arm,
     build_freshness_sweep,
     build_grid,
+    build_interaction_arm,
     build_refetch_arm,
     run_arm,
 )
@@ -53,6 +54,9 @@ ARMS = {
     "main": ("--main --n-queries 80", lambda: build_grid(replications=4)),
     "detectability": ("--detectability --n-queries 80", build_detectability_arm),
     "freshness_sweep": ("--freshness-sweep --n-queries 60", build_freshness_sweep),
+    # Listed since 23 Sep: the inventory predated the arm, so its 54 runs were on
+    # disk, counted in the spend line, and reported nowhere.
+    "interaction": ("--interaction --n-queries 80", build_interaction_arm),
     "refetch": ("--refetch-arm", build_refetch_arm),
 }
 

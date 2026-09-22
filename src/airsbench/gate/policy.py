@@ -21,6 +21,22 @@ from typing import Any
 
 DIMENSIONS = ("freshness", "latency", "consistency", "semantic")
 
+# Rules a re-read repairs *legitimately*. Only staleness: record age and
+# freshness are about WHEN the values were true, and reading the system of record
+# again answers exactly that.
+#
+# Consistency and semantic completeness are deliberately absent, and the reason is
+# not mechanical — a re-read of upstream would raise both, because upstream is by
+# definition intact. It is that a re-read BYPASSES the pipeline. Quietly going
+# around a pipeline that is renaming fields or dropping the semantic layer turns a
+# contract violation into an invisible workaround, and the agent keeps answering
+# from a source the pipeline is no longer able to deliver. Those refuse, loudly,
+# with the rule and the observed value (author decision, 18 Sep).
+#
+# `min_airs` is absent for a related reason: a composite floor can be breached by
+# any dimension, so it does not say what a re-read would be fixing.
+REPAIRABLE = ("max_record_age_seconds", "min_dimension.freshness")
+
 
 def _require_number(name: str, value: Any) -> None:
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):

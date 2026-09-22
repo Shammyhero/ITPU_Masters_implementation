@@ -42,7 +42,7 @@ Implementation **freezes Fri 06 Nov**. November is writing. December is defence.
 | Product core — CLI, API, console, packaging | W3 | 20 | $0 | **done 14 Sep** |
 | **The Analyst A1–A9** | 14 Sep → 23 Oct | 103 | ~$0.40 (development calls; estimate) | |
 | Adapters A10 · live case study A11 | 19 Oct → 6 Nov | 14 | ~$0.05 | |
-| Refetch arm, two conditions | 19 → 30 Oct | 28 | ~$2.20 | |
+| Refetch arm, two conditions | 19 → 30 Oct | 28 | ~$2.20 | **done 23 Sep** · $0.8541 (+$0.0026 pilot) |
 | M1 presentation | 16 Oct | 2 | $0 | |
 | Positioning, papers, DOI | 2 → 6 Nov | 14 | $0 | |
 | Thesis document | W9–W12 | 80 | $0 | |
@@ -120,7 +120,7 @@ tests. The writing budget in November is not a source of hours.
 | 4.6 | Interaction — observed vs additive prediction | `interaction.py` | built |
 | 4.7 | AIRS curve sensitivity tornado | `curve_sensitivity.py` | built |
 | 4.8 | Query fragility — overlap vs chance | `fragility.py` | built |
-| 4.9 | Refetch arm — agent-initiated vs gate-initiated vs none | refetch analysis | Oct |
+| 4.9 | Refetch arm — agent-initiated vs gate-initiated vs none | refetch analysis | **done 23 Sep** |
 | **4.10** | **Verifier agreement — the live verifier reproduces the corpus** | `verifier_agreement.py` | **built 16 Sep** |
 | 4.11 | Live-source case study — lag, attribution split, AIRS ranking | A11 | Nov |
 
@@ -601,7 +601,9 @@ router's REFETCH stays in the product without an experimental claim behind it.
 > ~$1.45 worst case. **What the code forced:** the agent sees no record age by default
 > (so age is a factor, the detectability arm's own mechanism); a demo re-read returns
 > exactly the answer key (so the gate cell is a cost menu, not a finding); a $0 check
-> puts exposure at 14.7% of stale questions; provenance is hard-wired to `live`; and a
+> puts exposure at 12.9% of stale questions (*corrected* 23 Sep from 14.7%, which counted
+> unverifiable questions as flipped; the arm's own draw is 9.3%); provenance is hard-wired
+> to `live`; and a
 > **second re-read request was graded as a silent failure** — fixed by continuing the
 > conversation (D1 a: the model's request, then the records read again, no further
 > offer), with an action reply never graded as an answer.
@@ -623,7 +625,33 @@ router's REFETCH stays in the product without an experimental claim behind it.
 > before that run, and the analyst `Budget` before every call; the arm's spend never
 > touches `~/.airs`. 851 tests.
 >
-> **Paid pilot 23 Sep, $0.0026** (one stale age-shown agent run, replication 1, 10 questions, written to a scratch directory, not `results/runs/`): billed input **13,906 tokens = the dry-run's count exactly**; output 92 a call against 150 budgeted; seed 91 001 attributed to the arm; the gate recorded the 5.05 s violation and delegated. gpt-4o-mini **asked for a re-read 0 times in 10** with each record showing its age; 7 correct, 2 abstained, 1 silent (agent impairment, confidence 1.0); 0 flipped questions (P ≈ 0.20 at 14.7% exposure — chance). Next: the campaign, `--max-cost 2.00` (worst case $1.85), on the author's go.
+> **Paid pilot 23 Sep, $0.0026** (one stale age-shown agent run, replication 1, 10 questions, written to a scratch directory, not `results/runs/`): billed input **13,906 tokens = the dry-run's count exactly**; output 92 a call against 150 budgeted; seed 91 001 attributed to the arm; the gate recorded the 5.05 s violation and delegated. gpt-4o-mini **asked for a re-read 0 times in 10** with each record showing its age; 7 correct, 2 abstained, 1 silent (agent impairment, confidence 1.0); 0 flipped questions (P ≈ 0.25 at 12.9% exposure — chance). Next: the campaign, `--max-cost 2.00` (worst case $1.85), on the author's go.
+>
+> **Progress 23 Sep — the campaign launched** (`--max-cost 2.00`, dry-run first, `caffeinate`),
+> **and step 6 built while it ran:** `analysis/refetch.py` (alignment by question seed with
+> three checks; paired bootstrap within replication; exact intervals, a measured ceiling at
+> zero; Holm over H-R1a/H-R1b; the verdict menu with raw and true cost; the gate-vs-healthy
+> validation; the exploratory prompt contrast, declared after replication 1 and before the
+> rest), Fig 4.9 in `make figures`, and **the third verdict on the corpus**: `python -m
+> airsbench.gate.replay --refetch` re-reads staleness violations at the matched fault-free
+> run's rates. On retrieval at `age <= 0.1s`: refuse only forfeits 3,537 correct answers to
+> prevent 927 silent failures at 33% coverage; refuse-or-re-read keeps 100% coverage,
+> prevents 446 and *gains* 451 correct answers, at ~10 re-reads per silent failure prevented.
+> 871 tests. `REPAIRABLE` moved to `gate/policy.py` so the replay prices the loop's own rule.
+>
+> **Progress 23 Sep — the refetch arm is COMPLETE** (`refetch_findings.md`, Fig 4.9). 21/21
+> runs, no failures, **$0.8541**. **The agent never acts:** offered a re-read, gpt-4o-mini
+> asked 0 times in 1,800 questions, age hidden or shown, healthy or stale (≤ 0.66% per cell
+> at 95%) — H-R1a/H-R1b null, and **kill question 3 answered**: the loop is agentic, the
+> agent declines the act. **The act works when a gate takes it:** the gate's re-read matches
+> the healthy pipeline on 98.0% of questions, prevents 43 of 57 stale silent failures and
+> gains 35 correct answers net, where refusal forfeits 374 (raw 6.56 / true 9.35 vs 0.16 /
+> 0.18). That validates the corpus's third verdict, which revises `gate_findings.md`: a
+> staleness gate that re-reads instead of refusing keeps 100% coverage and gains correct
+> answers (§7 there). **Exploratory:** the unused tool-offering prompt costs 2.9–4.3 pp
+> accuracy on healthy data. *Corrected* on the way: the design's 14.7% exposure was 12.9%;
+> the arm's own questions drew 9.3%. Also: `campaign_state` now lists the interaction arm
+> (it predated it). Next: A10 and A11 need the author's decisions — proposals in handoff 2 §1.
 
 ## Calendar — Mon 14 Sep to the freeze
 
@@ -730,8 +758,8 @@ short conclusion** — a complete document beats a deep one.
 | **Fri 02 Oct** | **A4: Fig 4.10 — exact agreement with the corpus** | No UI work until it agrees |
 | Fri 09 Oct | `/api/ask` end to end with the free local model: verdict, answer, verification, attribution | Cut A9's report to a print stylesheet |
 | **Fri 16 Oct** | **M1 — the Analyst on the supervisor's screen** | Non-negotiable |
-| Fri 23 Oct | Refetch arm dry-run done | Cut A10 |
-| Fri 30 Oct | Refetch runs executed | **Hard cut the arm** |
+| ~~Fri 23 Oct~~ | Refetch arm dry-run done — **met 23 Sep** | Cut A10 |
+| ~~Fri 30 Oct~~ | Refetch runs executed — **met 23 Sep** | **Hard cut the arm** |
 | **Fri 06 Nov** | **Implementation freeze** | Freeze regardless of state; cut A11 if not run |
 | Fri 27 Nov | Ch. 2, 3, 4 drafted | Shorten Ch. 5 |
 | **Fri 04 Dec** | **M2 — submission** | — |

@@ -78,7 +78,8 @@ Start here if you are reviewing the research rather than the code.
 [silent-failure definition](docs/silent_definition_findings.md) ·
 [query fragility](docs/fragility_findings.md) ·
 [power under clustering](docs/power_findings.md) ·
-[verifier agreement](docs/verifier_agreement_findings.md)
+[verifier agreement](docs/verifier_agreement_findings.md) ·
+[the refetch arm](docs/refetch_findings.md)
 
 ---
 

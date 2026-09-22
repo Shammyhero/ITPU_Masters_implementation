@@ -36,7 +36,7 @@ from ..runner.config import RunConfig, run_arm
 from ..runner.execute import value_staleness_s
 from ..runner.scoring import is_silent_failure
 from .controller import Verdict
-from .policy import DIMENSIONS, Policy, Violation
+from .policy import DIMENSIONS, REPAIRABLE, Policy, Violation
 
 CALIBRATED = Path(__file__).parents[1] / "airs" / "calibrated_weights.json"
 
@@ -251,6 +251,239 @@ def fault_free_baseline(batches: list[Batch]) -> dict[str, float] | None:
     }
 
 
+# ---- the third verdict: re-read ----------------------------------------------
+#
+# Refusing a stale batch forfeits every correct answer in it. A staleness
+# violation has a third option — read the system of record again — and it is
+# priced here on the corpus itself, without the refetch arm's data: the arm is a
+# different instrument and is never pooled with this one (NEVER_POOLED).
+#
+# What a re-read would have produced is taken from the corpus's own FAULT-FREE
+# STREAMING run of the same task and replication. That run shares `sample_seed`
+# (a function of task and replication only, invariant 2), so it asked the same
+# questions at the same simulated moments, from records 0.05 s old — which is
+# what a re-read of the system of record delivers. That is a modelling
+# assumption, and the refetch arm tests it directly: within the arm, the gate's
+# re-read on stale data and the healthy baseline are compared question by
+# question (analysis/refetch.py, `gate_vs_healthy`).
+#
+# Only rules a re-read legitimately repairs (REPAIRABLE: record age, freshness)
+# are re-read. Drift, stripping and composite floors still refuse, as in the loop.
+# The substitution is at the level of rates, scaled to the batch's size, because
+# arms differ in questions per run (main 80, sweep 60).
+
+
+@dataclass(frozen=True)
+class Lineage:
+    """Where a batch came from — what the accounting needs to find its twin.
+
+    Kept out of `Batch` deliberately: `Batch` is baked into the server's replay
+    corpus field by field, and the API reads it back the same way.
+    """
+
+    arm: str
+    pipeline: str
+    sample_seed: int
+
+
+def load_lineage(
+    results_dir: Path, arms: Iterable[str] = ("main", "freshness_sweep")
+) -> dict[str, Lineage]:
+    arms = set(arms)
+    lineage: dict[str, Lineage] = {}
+    for path in sorted(results_dir.glob("*.json")):
+        run = json.loads(path.read_text())
+        if run_arm(run) not in arms:
+            continue
+        cfg = run["config"]
+        config = RunConfig(
+            **{k: v for k, v in cfg.items() if k in RunConfig.__dataclass_fields__}
+        )
+        lineage[run["run_id"]] = Lineage(run_arm(run), cfg["pipeline"], config.sample_seed)
+    return lineage
+
+
+def fault_free_twin(batch: Batch, batches: list[Batch],
+                    lineage: dict[str, Lineage]) -> Batch | None:
+    """The fault-free streaming run that asked this batch's questions.
+
+    Same task, model and `sample_seed`; the same arm preferred when both have one.
+    None when the corpus holds no such run — then a re-read cannot be priced and
+    the batch is refused, and the accounting says how many.
+    """
+    mine = lineage.get(batch.run_id)
+    if mine is None:
+        return None
+    twins = [
+        b for b in batches
+        if b.fault == "none" and b.task == batch.task and b.model == batch.model
+        and (theirs := lineage.get(b.run_id)) is not None
+        and theirs.pipeline == "streaming" and theirs.sample_seed == mine.sample_seed
+    ]
+    same_arm = [b for b in twins if lineage[b.run_id].arm == mine.arm]
+    return (same_arm or twins or [None])[0]
+
+
+def repairable(verdict: Verdict) -> bool:
+    rules = {v.rule for v in verdict.violations}
+    return bool(rules) and rules <= set(REPAIRABLE)
+
+
+@dataclass
+class Menu:
+    """One policy's accounting when a violation may be refused OR re-read.
+
+    `refetch=False` is refusal only and agrees with `replay` on every count; the
+    same class prices both so the two rows of the menu are comparable.
+
+    Answers after a re-read are the twin's RATES scaled to the batch, so they are
+    floats. `excess` is the silent failure above the task's fault-free rate —
+    what a gate can genuinely claim (see `attribution`) — so both exchange rates
+    are available and always shown together.
+    """
+
+    policy: str
+    refetch: bool
+    decisions: int
+    silent_total: int
+    correct_total: int
+    refused_batches: int = 0
+    refused_decisions: int = 0
+    refetched_batches: int = 0
+    refetched_decisions: int = 0
+    untwinned_batches: int = 0
+    silent_after: float = 0.0
+    correct_after: float = 0.0
+    floor_rate: float = 0.0
+    excess_prevented: float = 0.0
+
+    @property
+    def answered_decisions(self) -> int:
+        return self.decisions - self.refused_decisions
+
+    @property
+    def coverage(self) -> float:
+        return self.answered_decisions / self.decisions if self.decisions else 0.0
+
+    @property
+    def prevented(self) -> float:
+        return self.silent_total - self.silent_after
+
+    @property
+    def forfeited(self) -> float:
+        """Correct answers lost against admitting everything. Negative: gained."""
+        return self.correct_total - self.correct_after
+
+    @property
+    def exchange_rate(self) -> float:
+        return self.forfeited / self.prevented if self.prevented > 0 else float("inf")
+
+    @property
+    def true_cost(self) -> float:
+        return (self.forfeited / self.excess_prevented if self.excess_prevented > 0
+                else float("inf"))
+
+    @property
+    def reads_per_prevented(self) -> float | None:
+        if not self.refetched_decisions:
+            return None
+        return (self.refetched_decisions / self.prevented if self.prevented > 0
+                else float("inf"))
+
+    def to_dict(self) -> dict[str, Any]:
+        def finite(x):
+            return None if x is None or math.isinf(x) else x
+
+        return {
+            "policy": self.policy, "refetch": self.refetch, "decisions": self.decisions,
+            "coverage": self.coverage, "refused_batches": self.refused_batches,
+            "refetched_batches": self.refetched_batches,
+            "refetched_decisions": self.refetched_decisions,
+            "untwinned_batches": self.untwinned_batches,
+            "silent_total": self.silent_total, "silent_after": self.silent_after,
+            "correct_total": self.correct_total, "correct_after": self.correct_after,
+            "prevented": self.prevented, "excess_prevented": self.excess_prevented,
+            "forfeited": self.forfeited, "exchange_rate": finite(self.exchange_rate),
+            "true_cost": finite(self.true_cost),
+            "reads_per_prevented": finite(self.reads_per_prevented),
+        }
+
+
+def replay_menu(batches: list[Batch], policy: Policy, weights: dict[str, float],
+                lineage: dict[str, Lineage], *, refetch: bool = True) -> Menu:
+    """Refuse, re-read or admit each batch under `policy`, and count what follows."""
+    healthy = [b for b in batches if b.fault == "none"]
+    floor = (sum(b.silent for b in healthy) / sum(b.n for b in healthy)) if healthy else 0.0
+    menu = Menu(policy=policy.name, refetch=refetch, decisions=sum(b.n for b in batches),
+                silent_total=sum(b.silent for b in batches),
+                correct_total=sum(b.correct for b in batches), floor_rate=floor)
+    for batch in batches:
+        verdict = evaluate_batch(batch, policy, weights)
+        if verdict.admitted:
+            menu.silent_after += batch.silent
+            menu.correct_after += batch.correct
+            continue
+        # Only the excess over the fault-free rate is a gate's to claim.
+        excess = max(0.0, batch.silent - floor * batch.n)
+        twin = fault_free_twin(batch, batches, lineage) if refetch and repairable(verdict) \
+            else None
+        if twin is not None:
+            menu.refetched_batches += 1
+            menu.refetched_decisions += batch.n
+            after = twin.silent / twin.n * batch.n
+            menu.silent_after += after
+            menu.correct_after += twin.correct / twin.n * batch.n
+            menu.excess_prevented += max(0.0, min(excess, batch.silent - after))
+            continue
+        if refetch and repairable(verdict):
+            menu.untwinned_batches += 1
+        menu.refused_batches += 1
+        menu.refused_decisions += batch.n
+        menu.excess_prevented += excess
+    return menu
+
+
+def menu_report(batches: list[Batch], lineage: dict[str, Lineage], task: str,
+                sweep: str) -> int:
+    """Refuse-only against refuse-or-re-read, policy by policy."""
+    weights = load_weights(task)
+    selected = [b for b in batches if b.task == task]
+    if not selected:
+        print(f"no batches for task {task!r}")
+        return 1
+    print(f"The third verdict — {task}, {len(selected)} pipelines. A staleness "
+          f"violation may be re-read")
+    print("instead of refused; its outcome is the matched fault-free streaming run's "
+          "(same questions,")
+    print("see gate/replay.py). Drift, stripping and composite floors still refuse.")
+    print()
+    print(f"  {'policy':<32}{'verdicts':<18}{'coverage':>9}{'prevented':>11}"
+          f"{'forfeited':>11}{'raw':>7}{'true':>7}{'reads/SF':>10}")
+    print("  " + "-" * 103)
+
+    def fmt(x):
+        return "—" if x is None or math.isinf(x) else f"{x:.2f}"
+
+    for policy in SWEEPS[sweep](task):
+        for refetch in (False, True):
+            m = replay_menu(selected, policy, weights, lineage, refetch=refetch)
+            label = "refuse / re-read" if refetch else "refuse only"
+            name = "" if refetch else policy.name
+            print(f"  {name:<32}{label:<18}{m.coverage:>8.0%}"
+                  f"{m.prevented:>11.1f}{m.forfeited:>11.1f}{fmt(m.exchange_rate):>7}"
+                  f"{fmt(m.true_cost):>7}{fmt(m.reads_per_prevented):>10}")
+    print()
+    print("  prevented = silent failures removed; forfeited = correct answers lost "
+          "(negative: gained)")
+    print("  raw       = forfeited per silent failure prevented")
+    print("  true      = forfeited per silent failure above the fault-free rate "
+          "(what the fault caused)")
+    print("  reads/SF  = questions answered from a re-read per silent failure prevented")
+    print("  a NEGATIVE rate means the verdict gains correct answers while it prevents "
+          "silent failures")
+    return 0
+
+
 # ---- reporting -------------------------------------------------------------
 
 def load_weights(task: str, path: Path = CALIBRATED) -> dict[str, float]:
@@ -438,11 +671,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--attribution", action="store_true",
                         help="per-fault gate economics, crediting a gate only "
                              "with the silent failure the fault actually caused")
+    parser.add_argument("--refetch", action="store_true",
+                        help="the third verdict: refuse only against refuse-or-re-read, "
+                             "the re-read priced by the matched fault-free run")
     parser.add_argument("--policy", type=Path, default=None,
                         help="evaluate a single policy file instead of a sweep")
     args = parser.parse_args(argv)
 
     batches = load_batches(args.results)
+    if args.refetch:
+        return menu_report(batches, load_lineage(args.results), args.task, args.sweep)
     if args.attribution:
         return attribution(batches, args.task)
     if args.policy:
