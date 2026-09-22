@@ -62,6 +62,36 @@ You may also ask for any record to be read again before answering, once:
 Ask only if reading them again would change your answer. Otherwise answer now."""
 
 
+# The second turn of the agent-initiated condition (refetch arm design, D1 a): the
+# records it asked about were read again, and it answers now. Neutral, like
+# everything else here — it says what happened, never why it might matter — and it
+# offers no second re-read, so the exchange ends in an answer or an abstention.
+REREAD_USER = """The records you asked about ({ids}) were read again. Here are all the records as
+they stand now:
+{records}
+
+Answer the question from these records only; they cannot be read again. If you cannot
+answer it reliably from the records, set "abstain" to true. Respond with JSON only."""
+
+
+def reread_messages(question: str, first_records: Sequence[Record], ids: Sequence[str],
+                    why: str, records: Sequence[Record]) -> list[tuple[str, str]]:
+    """The agent-initiated exchange continued after its re-read.
+
+    The model's own request is replayed as its turn, rebuilt from what was parsed
+    (the raw text is not kept). The follow-up carries the WHOLE candidate set with
+    the re-read records swapped in, not just the re-read ones — asking the model to
+    merge two lists would add an error the arm is not measuring.
+    """
+    request = json.dumps({"action": "refetch", "ids": list(ids), "why": why},
+                         ensure_ascii=False)
+    return refetch_messages(question, first_records) + [
+        ("assistant", request),
+        ("user", REREAD_USER.format(ids=", ".join(ids),
+                                    records=render_analyst_records(records))),
+    ]
+
+
 def refetch_messages(question: str, records: Sequence[Record]) -> list[tuple[str, str]]:
     """The agent-initiated condition's prompt — see REFETCH_SYSTEM."""
     return [

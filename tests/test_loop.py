@@ -88,7 +88,8 @@ def test_a_stale_batch_is_re_read_and_then_answered():
     tick = loop.ask(question(), seed=100_005)
     assert tick["refetch"] == {"attempted": True, "initiated_by": "gate", "n_records": 6,
                                "verdict_after": "admit", "airs_after": tick["gate"]["airs"],
-                               "reason": tick["refetch"]["reason"]}
+                               "reason": tick["refetch"]["reason"],
+                               "asked_ids": None, "why": None}
     assert tick["gate"]["verdict"] == "admit"
     assert tick["decision"]["correct"] is True
 
@@ -170,8 +171,16 @@ def test_the_agent_is_offered_a_re_read_only_once():
     always_asks = Scripted(AgentAnswer(refetch_ids=("x",)))
     loop = Loop(pair=pair("demo-stale"), policy=OPEN, answerer=always_asks, mode="agent")
     tick = loop.ask(question(), seed=100_005)
-    assert always_asks.calls == 2  # not a loop: the second reply stands as the answer
+    assert always_asks.calls == 2  # not a loop: one re-read, then the exchange ends
     assert tick["refetch"]["attempted"] is True
+    # The second request is not an answer, so it cannot be a wrong one. Until 23 Sep
+    # it was graded as a committed wrong answer — a silent failure the model never
+    # claimed (docs/refetch_arm.md §2.5).
+    assert tick["decision"]["parse_failed"] is True
+    assert tick["decision"]["unanswered_action"] is True
+    assert tick["decision"]["silent_failure"] is False
+    assert tick["decision"]["attribution"] is None
+    assert tick["running"]["silent_failures"] == 0
 
 
 def test_agent_mode_delegates_a_repairable_violation_instead_of_refusing_it():
@@ -196,6 +205,8 @@ def test_the_gate_mode_ignores_a_refetch_request():
     loop = Loop(pair=pair("demo-healthy"), policy=OPEN, answerer=answerer, mode="gate")
     tick = loop.ask(question(), seed=100_001)
     assert answerer.calls == 1 and tick["refetch"]["attempted"] is False
+    assert tick["decision"]["unanswered_action"] is True
+    assert tick["decision"]["silent_failure"] is False
 
 
 def test_a_refetch_action_is_parsed_and_an_empty_one_is_a_parse_failure():

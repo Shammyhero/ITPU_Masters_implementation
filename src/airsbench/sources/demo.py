@@ -46,7 +46,13 @@ from ..runner.config import (
     SEVERITY_PARAMS,
     RunConfig,
 )
-from ..runner.execute import N_CANDIDATES, build_event_ts, build_fault_chain, value_staleness_s
+from ..runner.execute import (
+    N_CANDIDATES,
+    attach_record_age,
+    build_event_ts,
+    build_fault_chain,
+    value_staleness_s,
+)
 from .base import Sample, SourceError, SourcePair, SourceSchema, schema_from_payloads
 
 SLICE = Path(__file__).parent / "data" / "esci_slice.json.gz"
@@ -156,9 +162,15 @@ class DemoDelivered:
     renders_context = True
 
     def __init__(self, name: str, condition: Condition, *, seed: int = LIVE_SEED,
-                 clock: Callable[[], float] = time.time, data: DemoSlice | None = None) -> None:
+                 clock: Callable[[], float] = time.time, data: DemoSlice | None = None,
+                 emit_record_age: bool = False) -> None:
         self.name = name
         self.condition = condition
+        # The detectability treatment: deliver each record's own age beside it,
+        # through the runner's own `attach_record_age` (meta, never payload, so
+        # AIRS cannot see it). Off everywhere except the refetch arm's
+        # age-shown cells (docs/refetch_arm.md §4).
+        self.emit_record_age = emit_record_age
         self._data = data or load_slice()
         self._config = condition.run_config(seed)
         self._chain = build_fault_chain(self._config)
@@ -196,6 +208,8 @@ class DemoDelivered:
         delivered = [self._chain.apply(record) for record in records]  # exactly once
         for record in delivered:
             record.meta.setdefault("injected_latency_ms", 0.0)
+            if self.emit_record_age:
+                attach_record_age(record, now)  # after the chain, as the runner does
         return Sample(
             records=delivered, ids=list(ids), as_of=t, key=str(query["query_id"]),
             meta={"query": query["query"], "condition": self.condition.label(),
@@ -259,9 +273,10 @@ def _find_query(name: str, data: DemoSlice, key: str | None,
 
 def demo_pair(pair_id: str, condition: Condition, *, seed: int = LIVE_SEED,
               clock: Callable[[], float] = time.time, description: str = "",
-              manifest: str | None = None) -> SourcePair:
+              manifest: str | None = None, emit_record_age: bool = False) -> SourcePair:
     data = load_slice()
-    delivered = DemoDelivered(f"{pair_id}/delivered", condition, seed=seed, clock=clock, data=data)
+    delivered = DemoDelivered(f"{pair_id}/delivered", condition, seed=seed, clock=clock,
+                              data=data, emit_record_age=emit_record_age)
     if not description:
         description = (f"Bundled ESCI slice as a {condition.label()}: delivered values are "
                        f"{delivered.staleness_seconds:g} s behind upstream.")

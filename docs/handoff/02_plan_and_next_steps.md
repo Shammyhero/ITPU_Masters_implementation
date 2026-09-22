@@ -31,13 +31,20 @@ on one loop, which `analyst/loop.py` already runs:
   model decides. This is the treatment that answers **kill question 3** ("is this
   agentic?") and extends the detectability null.
 
-What is still to build is the **batch runner**: seed block 90 000–100 000 (registered),
-`--dry-run` before anything paid, `--max-cost`, the paired design preserved, and an
-analysis emitting **Fig 4.9**. First live evidence already exists and is worth designing
-against: offered a re-read, `llama3.1:8b` asked **0 times in 12** stale questions.
+**Design approved 23 Sep — `docs/refetch_arm.md` is the spec; read it first.** 21 runs:
+7 paid cells (baseline, gate, agent with age hidden, agent with age shown; healthy and
+freshness 5.05 s; gate on stale only) × 3 replications × 150 questions, gpt-4o-mini,
+~$0.95 expected / ~$1.45 worst case. Refusal is priced at $0 from the baseline's
+shadow-policy verdicts. Hypotheses refined in RQs v2 §9 before anything runs.
 
-Read `docs/plan.md` "Refetch arm" and `docs/analyst_brief.md` §7 before starting. Budget:
-~$4.58 OpenAI and ~$1.27 Anthropic remain.
+Build order, each step proposed before code: ~~(1) the loop~~ **built 23 Sep** —
+provenance a parameter (live stays the default) · record age on the demo source through `execute.attach_record_age` · the re-read continued as a second turn (`reread_messages`, `ModelAnswerer.answer_after_reread`) · an action reply marked unparseable and `unanswered_action`, and `verify` never commits one → **(2) the batch runner — next**
+`--refetch-arm` with an exact-token `--dry-run` and `--max-cost` → **(3) artifacts** in
+`results/runs/` as arm `refetch`, quarantined from every corpus loader → (4) dry-run shown
+to the author → (5) run → (6) `analysis/refetch.py`, Fig 4.9, `refetch_findings.md`, the
+third verdict in `gate/replay.py`.
+
+Budget: ~$4.58 OpenAI and ~$1.27 Anthropic remain.
 
 | Stage | h | State |
 |---|---|---|
@@ -50,7 +57,7 @@ Read `docs/plan.md` "Refetch arm" and `docs/analyst_brief.md` §7 before startin
 | A7 API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | **done 20 Sep** |
 | A8 console | 18 | **done 21 Sep** — conversation, replay, paste, toggle |
 | A9 task switch, recommended policy, meter prior, report | 15 | **done 21 Sep** |
-| **Refetch arm** (two conditions, ~$2.20, Fig 4.9) | 28 | **next** — 19–30 Oct, hard cut 30 Oct |
+| **Refetch arm** (Fig 4.9; ~$0.95 expected) | 28 | **design approved 23 Sep**; step 1 built 23 Sep; step 2 next — hard cut 30 Oct |
 | A10 postgres/duckdb/http | 8 | cut first |
 | A11 live case study (Fig 4.11) | 6 | cut second |
 
@@ -60,6 +67,14 @@ free model · **Fri 16 Oct M1** · Fri 23 Oct arm dry-run · Fri 30 Oct arm runs
 A2 inference → A8 toggle.
 
 ## 2. Decisions made (do not re-litigate)
+
+**23 Sep, the refetch arm** (`docs/refetch_arm.md`): age shown is a factor for the
+agent-initiated condition (1a) · freshness 5.05 s only (2a) · 150 questions per run, 3
+replications (3a) · artifacts in `results/runs/` as arm `refetch` (4a) · the re-read
+continues the conversation — the model's request, then the records read again, no further
+offer (D1 a) · healthy `agent_shown` records show their true 0.05 s age (D2) · gate on
+healthy is not run (it is the baseline) · refusal priced from the baseline, not the
+literal answerer · "flipped" defined on the records as first delivered.
 
 **22 Sep, the title:** *An Experimental Study of the Effect of Selected Data Infrastructure
 Faults on Silent Failures in Agentic AI Systems*, in title case (supervisor's wording). He
@@ -151,7 +166,7 @@ argument** for every live claim in Ch5. **Checkpoint Fri 27 Nov:** Ch 2–4 draf
 | F-A1 · F-A2 · F-E5 | 2–6 Nov | positioning · read the 4 load-bearing papers · Zenodo DOI |
 | F-B1 | limitation | AIRS constants underived |
 | F-C4 | polish | no multiple-comparison correction across 8 interaction contrasts |
-| Kill Q3 | Oct | refetch arm, agent-initiated condition. **First live evidence (18 Sep):** offered a re-read, `llama3.1:8b` asked 0 times in 12 stale questions |
+| Kill Q3 | Oct | refetch arm, agent-initiated condition. **First live evidence (18 Sep):** offered a re-read, `llama3.1:8b` asked 0 times in 12 stale questions — on records showing no age, so it measures spontaneous asking only (23 Sep) |
 | Phase 1D | Nov | external validity → A11 case study |
 | CR2/BM refs | before Ch3 | verify the citations |
 
@@ -218,7 +233,7 @@ than `unknown`. Always select runs with `run_arm(run)`, and never pool `live`.
 ## B3. Commands
 
 ```bash
-make test         # 801 tests, ~30 s
+make test         # 818 tests, ~30 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -311,6 +326,23 @@ corrupts `.next` · figures print recomputed vs published values.
   first bar's segments — build handles explicitly from every key present.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
+
+**23 Sep (refetch arm, step 1):**
+- **A reply that is still a re-read request is not an answer.** It was graded as a
+  committed wrong answer — a silent failure the model never claimed — whenever the model
+  asked twice, or asked where no re-read was offered. The loop now marks it unparseable
+  (`unanswered_action`), and `verify` refuses to commit any answer carrying `refetch_ids`.
+- **`build_tick` stamped `arm: "live"` unconditionally.** Every loader drops `live`, so the
+  arm's own decisions would have vanished. `Loop(provenance=…)`; live stays the default.
+- **Refreshed records need their own age** when a pipeline shows age — ≈0 s, not the
+  stale age they replaced (`Loop._refetch`).
+- **Early question seeds can have 2 candidates** (`10_001_000`, `…001`); a test about a
+  partial re-read needs a full set (`…004`), or its "untouched" half is empty and passes
+  vacuously. Assert the size.
+- LangChain maps a `("assistant", …)` tuple to `AIMessage`, so `call_json` carries a
+  continued exchange unchanged. llama's tokenizer counted 3,509 input tokens for one.
+- The forbidden-word lists match substrings: the follow-up says "read again" and "as they
+  stand now" — nothing with `age`, `old` or `recent` inside it.
 
 **21 Sep (A9):**
 - **`Outcome.to_dict()` carries its own `policy` key — the NAME.** Spreading it after a
@@ -471,7 +503,8 @@ corrupts `.next` · figures print recomputed vs published values.
 > (Part A is the next step, Part B the operating guide), then `CLAUDE.md`,
 > `docs/plan.md` and the header of `docs/analyst_brief.md`. Treat the handoff as a
 > starting point, not ground truth: confirm the state with `git log --oneline -3`
-> (expect `53ea7ad`) and `make test` (801 passing) before trusting anything below.
+> (expect the newest commit named in handoff 1) and `make test` (the count in handoff 1)
+> before trusting anything below.
 > Then continue from 02 Part A — the refetch arm, which is the last experiment and
 > the only paid work left. Work step by step: propose before writing code, surface
 > decisions to me as questions instead of guessing, keep every document current in

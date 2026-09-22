@@ -593,6 +593,25 @@ does the ability to act on suspicion?*
 **► HARD CUT — Fri 30 Oct:** if the runs are not executed, cut the arm entirely. The
 router's REFETCH stays in the product without an experimental claim behind it.
 
+> **Progress 23 Sep — design approved** (`docs/refetch_arm.md`; hypotheses refined in
+> RQs v2 §9 before anything runs). **21 runs, not ~54:** 7 paid cells × 3 replications ×
+> 150 questions — baseline and agent-initiated (age hidden, age shown) on healthy and
+> freshness 5.05 s data, gate-initiated on stale only (on healthy it *is* the baseline);
+> refusal priced at $0 from the baseline's shadow-policy verdicts. ~$0.95 expected,
+> ~$1.45 worst case. **What the code forced:** the agent sees no record age by default
+> (so age is a factor, the detectability arm's own mechanism); a demo re-read returns
+> exactly the answer key (so the gate cell is a cost menu, not a finding); a $0 check
+> puts exposure at 14.7% of stale questions; provenance is hard-wired to `live`; and a
+> **second re-read request was graded as a silent failure** — fixed by continuing the
+> conversation (D1 a: the model's request, then the records read again, no further
+> offer), with an action reply never graded as an answer.
+>
+> **Progress 23 Sep — step 1, the loop, built.** provenance a parameter (live stays the default) · record age on the demo source through `execute.attach_record_age` · the re-read continued as a second turn (`reread_messages`, `ModelAnswerer.answer_after_reread`) · an action reply marked unparseable and `unanswered_action`, and `verify` never commits one. 818 tests. A
+> $0 smoke run, `llama3.1:8b`, 12 stale questions each: **0 re-read requests with age
+> shown**, as with it hidden — a hint the detectability null extends from metadata to
+> action on this model, not evidence (the arm runs gpt-4o-mini). Next: step 2, the batch
+> runner.
+
 ## Calendar — Mon 14 Sep to the freeze
 
 | Week | Work | h |

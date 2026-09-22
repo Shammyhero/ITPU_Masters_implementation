@@ -166,6 +166,9 @@ class Loop:
     max_refetches: int = MAX_REFETCHES
     meter: Meter = field(default_factory=Meter)
     session_id: str | None = None
+    # Which arm the Ticks belong to. None is live (session.LIVE_PROVENANCE); the
+    # refetch arm passes its own arm and seed block.
+    provenance: dict[str, Any] | None = None
     # Set by a re-read: from then on, THESE records are what the pipeline
     # delivered, so the verifier's in-transit comparison must move with them.
     _refreshed: list[Record] | None = None
@@ -219,7 +222,8 @@ class Loop:
         decision = route(verdict, self.pair, self.mode)
 
         refetch = {"attempted": False, "initiated_by": None, "n_records": 0,
-                   "verdict_after": None, "airs_after": None, "reason": None}
+                   "verdict_after": None, "airs_after": None, "reason": None,
+                   "asked_ids": None, "why": None}
         records = list(sample.records)
         if decision == "refetch":
             records, verdict, refetch = self._refetch(
@@ -236,19 +240,42 @@ class Loop:
         if decision == "refuse":
             tick = self._tick(question, text, sample, records, ids, gate, refetch,
                               answer=None, usage=None, started=started)
+            tick["decision"]["unanswered_action"] = False
             yield {"stage": "tick", "tick": tick}
             return
 
         answer, usage = self.answerer.answer(text, question.plan, records)
         if self.mode == "agent" and getattr(answer, "refetch_ids", None) \
                 and not refetch["attempted"]:
+            request, first_records = answer, records
             records, verdict, refetch = self._refetch(
                 sample, ids, verdict, initiated_by="agent",
-                asked_for=answer.refetch_ids)
+                asked_for=request.refetch_ids)
+            refetch["asked_ids"] = list(request.refetch_ids)
+            refetch["why"] = request.text or None
             gate = self._gate_block(verdict, "admit", question, records, sample, ids)
             yield {"stage": "refetch", "refetch": dict(refetch)}
-            answer, second = self.answerer.answer(text, question.plan, records)
+            # The re-read continues the conversation (arm design D1): the model sees
+            # its own request, then the records read again, and is not offered a
+            # second one. An answerer with no conversation (literal, a test double)
+            # is simply asked again over the refreshed records.
+            follow_up = getattr(self.answerer, "answer_after_reread", None)
+            if follow_up is not None:
+                answer, second = follow_up(text, question.plan, first_records, request,
+                                           records)
+            else:
+                answer, second = self.answerer.answer(text, question.plan, records)
             usage = _add_usage(usage, second)
+        # A reply that is still a request to re-read is not an answer — a second
+        # request once the re-read is spent, or one made where none was offered.
+        # Graded as a committed answer it would count as a silent failure
+        # (invariant 8) for something the model never claimed. It is unusable
+        # output instead, like any reply outside the answer schema (invariant 6),
+        # and the Tick says why. Found designing the refetch arm, 23 Sep.
+        unanswered = bool(getattr(answer, "refetch_ids", ()))
+        if unanswered:
+            answer = AgentAnswer(plan=answer.plan, text=answer.text, parse_failed=True,
+                                 refetch_ids=answer.refetch_ids)
         # Answered, not yet checked: everything the agent said, and nothing the
         # verifier will say about it.
         yield {"stage": "answer", "answer": {
@@ -257,6 +284,12 @@ class Loop:
             "plan": answer.plan}, "cost": usage.to_dict()}
         tick = self._tick(question, text, sample, records, ids, gate, refetch,
                           answer=answer, usage=usage, started=started)
+        tick["decision"]["unanswered_action"] = unanswered
+        if unanswered:
+            tick["notes"].append(
+                "the model asked to read records again instead of answering, after its "
+                "one re-read (or where none was offered): counted as no answer, never as "
+                "a wrong one")
         yield {"stage": "tick", "tick": tick}
 
     # ---- the pieces ---------------------------------------------------------
@@ -324,6 +357,13 @@ class Loop:
         fresh = (upstream.fetch(wanted, as_of=sample.as_of)
                  if upstream.describe().supports_as_of else upstream.fetch(wanted))
         by_id = {record.meta.get("record_id"): record for record in fresh}
+        if getattr(self.pair.delivered, "emit_record_age", False):
+            # A pipeline that shows each record's age shows it on a re-read too —
+            # the true age of what just came back, ≈0 s (arm design §4).
+            from ..runner.execute import attach_record_age
+
+            for record in fresh:
+                attach_record_age(record, record.read_timestamp)
         records = [by_id.get(record_id) or original
                    for record_id, original in zip(ids, sample.records)]
         records = self.layer.apply(records)
@@ -343,6 +383,8 @@ class Loop:
             "verdict_after": "admit" if after.admitted else "refuse",
             "airs_after": after.airs,
             "reason": before.reason,
+            "asked_ids": None,
+            "why": None,
         }
 
     def _gate_block(self, verdict: Verdict, decision: str, question: Question,
@@ -416,7 +458,7 @@ class Loop:
             truth=truth, as_of=as_of, seed=getattr(self, "_seed", None),
             session_id=self.session_id,
             answerer=self.answerer.name, started=started, t0=t0, t1=t1,
-            semantic=self.layer, answerer_obj=self.answerer,
+            semantic=self.layer, answerer_obj=self.answerer, provenance=self.provenance,
         )
         self.session_id = tick["session_id"]
         tick["mode"] = f"analyst/{self.mode}"

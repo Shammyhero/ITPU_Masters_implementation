@@ -34,6 +34,10 @@ from .plan import Plan
 from .verifier import AgentAnswer, verify
 
 LIVE_SEED_BLOCK = (100_000, 110_000)
+# Where a Tick says it came from. Live unless a research caller says otherwise:
+# the refetch arm drives this same loop and stamps its own arm and seed block,
+# so its decisions are attributed to it rather than dropped as live traffic.
+LIVE_PROVENANCE = {"arm": "live", "seed_block": list(LIVE_SEED_BLOCK)}
 DEFAULT_CANDIDATES = 6
 
 DEMO_QUESTION = ('A customer searched for "{query}". Among these catalog records, which '
@@ -105,7 +109,8 @@ def ask(pair: SourcePair, question: Question, answerer: Answerer, *, seed: int |
 
 def build_tick(*, pair, question, text, sample, answer: AgentAnswer, usage, airs, verification,
                served, truth, as_of, seed, session_id, answerer, started, t0, t1,
-               semantic=None, answerer_obj=None) -> dict[str, Any]:
+               semantic=None, answerer_obj=None,
+               provenance: dict[str, Any] | None = None) -> dict[str, Any]:
     staleness = sample.meta.get("staleness_seconds")
     notes = []
     if pair.upstream is None:
@@ -171,6 +176,6 @@ def build_tick(*, pair, question, text, sample, answer: AgentAnswer, usage, airs
                  "budget": (answerer_obj.budget.to_dict(answerer_obj.model)
                             if getattr(answerer_obj, "budget", None) is not None else None)},
         "notes": notes,
-        "provenance": {"arm": "live", "seed_block": list(LIVE_SEED_BLOCK), "seed": seed,
+        "provenance": {**(provenance or LIVE_PROVENANCE), "seed": seed,
                        "session_id": session_id},
     }

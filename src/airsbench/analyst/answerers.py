@@ -32,7 +32,7 @@ from ..agents.llm import UnpricedModel, is_local_model, require_price
 from ..runner.config import TASK_TEMPERATURE
 from .budget import Budget, SpendRefused
 from .plan import Plan, execute
-from .prompts import analyst_messages, refetch_messages
+from .prompts import analyst_messages, refetch_messages, reread_messages
 from .verifier import AgentAnswer, rows
 
 OLLAMA_PREFIX = "ollama/"
@@ -49,6 +49,10 @@ MAX_REFETCH_IDS = 20
 # honest enough to cap spend before the call; `record` then charges the truth.
 ESTIMATED_INPUT_TOKENS = 1_600
 ESTIMATED_OUTPUT_TOKENS = 150
+# The continued exchange after a re-read carries the records twice (as first
+# delivered, then as read again), plus the replayed request. Measured once on the
+# demo (23 Sep, llama3.1:8b's tokenizer): 3,509 in, 93 out.
+ESTIMATED_REREAD_INPUT_TOKENS = 3_600
 
 
 class AnswererError(RuntimeError):
@@ -129,13 +133,25 @@ class ModelAnswerer:
 
     def answer(self, question: str, plan: Plan,
                records: Sequence[Record]) -> tuple[AgentAnswer, Usage]:
+        messages = (refetch_messages(question, records) if self.offer_refetch
+                    else analyst_messages(question, records))
+        return self._call(messages, ESTIMATED_INPUT_TOKENS)
+
+    def answer_after_reread(self, question: str, plan: Plan,
+                            first_records: Sequence[Record], request: AgentAnswer,
+                            records: Sequence[Record]) -> tuple[AgentAnswer, Usage]:
+        """The same exchange, continued: the model's request, then the records read again."""
+        messages = reread_messages(question, first_records, request.refetch_ids,
+                                   request.text, records)
+        return self._call(messages, ESTIMATED_REREAD_INPUT_TOKENS)
+
+    def _call(self, messages: list[tuple[str, str]],
+              estimated_input: int) -> tuple[AgentAnswer, Usage]:
         if self.budget is not None:
             # Before the request, not around it: a refusal costs nothing.
-            self.budget.check(self.model, ESTIMATED_INPUT_TOKENS, ESTIMATED_OUTPUT_TOKENS)
+            self.budget.check(self.model, estimated_input, ESTIMATED_OUTPUT_TOKENS)
         before = (self.client.usage.input_tokens, self.client.usage.output_tokens)
         try:
-            messages = (refetch_messages(question, records) if self.offer_refetch
-                        else analyst_messages(question, records))
             result = self.client.call_json(messages)
         except Exception as exc:  # transport: the client already retried
             raise AnswererError(

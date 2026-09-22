@@ -190,10 +190,13 @@ def verify(plan: Plan, answer: AgentAnswer, *, delivered: Sequence[Record],
         return Verification(False, "no well-defined answer: no record matches the question "
                                    "at answer time", **base)
 
-    committed = not answer.abstained and not answer.parse_failed
+    # A request to read records again is not an answer, whatever else it carries;
+    # the loop already marks a leftover one unparseable, and this holds if it did not.
+    committed = not answer.abstained and not answer.parse_failed and not answer.refetch_ids
     correct = committed and answers_equal(plan, answer.value, truth_result.value)
     silent = is_silent_failure({"correct": correct, "abstained": answer.abstained,
-                                "parse_failed": answer.parse_failed})
+                                "parse_failed": answer.parse_failed
+                                or bool(answer.refetch_ids)})
     flipped = (not answers_equal(plan, served_result.value, truth_result.value)
                if served_result.computable else None)
     changes = changed_fields(plan.fields_read(), delivered, served)

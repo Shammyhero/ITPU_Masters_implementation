@@ -1,8 +1,9 @@
 # Handoff 1 of 2 — Where the project stands
 
-**Refreshed:** 22 Sep 2026 · **Last pushed commit:** `75fa839` (the handoff, on top of
-`53ea7ad`, A9 — the product is complete as planned). Since then: the thesis title
-changed (22 Sep, supervisor's advice), recorded in `docs/research_questions_v2.md` §1.
+**Refreshed:** 23 Sep 2026 · **Last pushed commit:** "Refetch arm step 1" (23 Sep) — the
+arm's design approved and its loop built (`docs/refetch_arm.md`), nothing spent — on top
+of `60cc800`, the new thesis title (22 Sep, supervisor's advice,
+`docs/research_questions_v2.md` §1).
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
 **Read next:** `02_plan_and_next_steps.md` — what to do next, the traps, and
@@ -35,7 +36,7 @@ and the thesis document.
 
 | | |
 |---|---|
-| Tests | **801 passing**, lint clean (`make test`, `make lint`) |
+| Tests | **818 passing**, lint clean (`make test`, `make lint`) |
 | Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
 | Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
@@ -61,7 +62,7 @@ and the thesis document.
 | **A7 API + firewalls** — `/api/ask` SSE, live quarantine, no key in a request | 5–9 Oct | **done 20 Sep** |
 | **A8 console** — all four steps done 20–21 Sep (conversation, replay feed, paste + question builder, semantic toggle) | 5–16 Oct | **done 21 Sep** |
 | **A9** task switch · recommended policy priced on the corpus · meter prior · printable report | 12–23 Oct | **done 21 Sep** |
-| Refetch arm (the last experiment, ~$2.20) | 19–30 Oct | next |
+| Refetch arm (the last experiment; ~$0.95 expected, ~$1.45 worst case) | 19–30 Oct | **design approved 23 Sep**; step 1 (the loop) **built 23 Sep**; step 2 (batch runner) next |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |
@@ -85,8 +86,9 @@ RQs v2 §9 declares three further analyses under the Analyst. **Verifier agreeme
 decisions exactly — correctness, silent failure, the flip partition — and regenerates
 90/90 fault realizations; agent impairment is a 9.7% floor on a fault-free pipeline,
 while drift and stripping put 25.0% / 22.5% of decisions on records damaged in transit
-(`verifier_agreement_findings.md`). Still to come: the two-condition refetch arm (Fig
-4.9) and the live-source case study (Fig 4.11).
+(`verifier_agreement_findings.md`). Still to come: the refetch arm (Fig 4.9; design
+approved 23 Sep, `refetch_arm.md`, hypotheses refined in RQs v2 §9) and the live-source
+case study (Fig 4.11).
 
 ## 5. Other results that carry the thesis
 
