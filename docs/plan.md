@@ -756,7 +756,7 @@ short conclusion** — a complete document beats a deep one.
 | Fri 25 Sep | Figs. 4.1–4.8 exist, `make figures` works, power analysis done | **met** |
 | **Fri 25 Sep** | **A3: the verifier prints attributed Ticks on the `demo` source (no UI)** | Pause A2/A5; finish A3 first |
 | **Fri 02 Oct** | **A4: Fig 4.10 — exact agreement with the corpus** | No UI work until it agrees |
-| Fri 09 Oct | `/api/ask` end to end with the free local model: verdict, answer, verification, attribution | Cut A9's report to a print stylesheet |
+| ~~Fri 09 Oct~~ | `/api/ask` end to end with the free local model: verdict, answer, verification, attribution — **met 23 Sep**: the real route, in-process, `llama3.1:8b`, two sessions × 3 questions on `demo-stale` (admit-all: gate → answer → tick, 2 correct, 1 agent impairment; age policy + gate re-read: gate → refetch → answer → tick, 3 correct), meter accumulating, $0 | Cut A9's report to a print stylesheet |
 | **Fri 16 Oct** | **M1 — the Analyst on the supervisor's screen** | Non-negotiable |
 | ~~Fri 23 Oct~~ | Refetch arm dry-run done — **met 23 Sep** | Cut A10 |
 | ~~Fri 30 Oct~~ | Refetch runs executed — **met 23 Sep** | **Hard cut the arm** |

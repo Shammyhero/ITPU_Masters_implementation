@@ -202,6 +202,8 @@ python -m airsbench.analysis.flip_partition
 python -m airsbench.analysis.airs_calibration
 python -m airsbench.gate.replay --task retrieval --sweep dimension
 python -m airsbench.gate.replay --task retrieval --attribution
+python -m airsbench.gate.replay --task retrieval --refetch     # refuse vs re-read
+python -m airsbench.analysis.refetch                          # the refetch arm, Fig 4.9
 ```
 
 Re-running the experiments themselves does cost money. Every paid command takes

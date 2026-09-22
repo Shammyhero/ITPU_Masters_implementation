@@ -80,8 +80,9 @@ Budget: ~$3.72 OpenAI and ~$1.27 Anthropic remain.
 | A10 postgres/duckdb/http | 8 | cut first |
 | A11 live case study (Fig 4.11) | 6 | cut second |
 
-**Checkpoints:** ~~Fri 2 Oct Fig 4.10 exact~~ **met 16 Sep** · Fri 9 Oct `/api/ask` on the
-free model (A7 was verified over real HTTP; a run on the local model is not recorded) · **Fri 16 Oct M1** · ~~Fri 23 Oct arm dry-run~~ and ~~Fri
+**Checkpoints:** ~~Fri 2 Oct Fig 4.10 exact~~ **met 16 Sep** · ~~Fri 9 Oct `/api/ask` on the
+free model~~ **met 23 Sep** (the real route in-process with `llama3.1:8b`, both admit and
+gate-re-read paths; plan checkpoint table) · **Fri 16 Oct M1** · ~~Fri 23 Oct arm dry-run~~ and ~~Fri
 30 Oct arm runs~~ **met 23 Sep** · **Fri 6 Nov freeze**. The arm's 28 h were planned for
 19–30 Oct and are done, so A10 and A11 have room; cut order unchanged: A10 → A11.
 
@@ -225,13 +226,19 @@ Mode B's bespoke walkthrough and Mode C (absorbed).
 **`sources/{base,demo,files,inline,config,__main__}.py`** · `demo/src/` · tests
 `test_{server,replay_api,cli,probe,gate,sources,demo_source}.py` · `tests/dist_smoke.py`
 
-**For the console (A8, next):** `src/airsbench/server/api.py` (the A7 routes the page
+**For the console (A8, built):** `src/airsbench/server/api.py` (the A7 routes the page
 calls: `/api/sources`, `/api/models`, `/api/session`, `/api/ask` SSE, `/api/session/{id}`) ·
 `src/airsbench/analyst/{loop,sessions}.py` (`Loop.stream` yields gate → refetch → answer →
 tick; the page renders those in order) · `demo/src/` · `docs/analyst_brief.md` §6 · `src/airsbench/analysis/flip_partition.py` (`Replayer`,
 `QueryOutcome.flipped`, `followed served`) · `docs/flip_partition_findings.md` ·
 `src/airsbench/runner/{config,execute,scoring}.py` (`run_arm`, `_airs_components`,
 `is_silent_failure`)
+
+**For the refetch arm (done):** `docs/refetch_arm.md` (design, with the history of every
+decision) · `docs/refetch_findings.md` · `src/airsbench/runner/refetch.py` (grid execution,
+the exact dry-run) · `src/airsbench/analysis/refetch.py` (alignment, the tests, Fig 4.9) ·
+`src/airsbench/gate/replay.py` (`replay_menu`, the third verdict) · tests
+`test_refetch_{loop,arm,quarantine,analysis}.py`.
 
 **Stale — do not trust for current state:** `docs/campaign_status.md` · `infra_unused/`.
 

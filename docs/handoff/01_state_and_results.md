@@ -1,8 +1,9 @@
 # Handoff 1 of 2 — Where the project stands
 
-**Refreshed:** 23 Sep 2026 · **Last pushed commit:** "Refetch arm: results" (23 Sep) —
-the campaign's 21 runs, the analysis, Fig 4.9, the findings and the third verdict on the
-corpus. The refetch arm is **complete**; the agent never asked for a re-read. Earlier
+**Refreshed:** 23 Sep 2026 · **Last pushed commits:** `14190ce` "Refetch arm: results"
+(23 Sep) — the campaign's 21 runs, the analysis, Fig 4.9, the findings and the third
+verdict on the corpus — then a docs commit recording the `/api/ask` local-model
+checkpoint. The refetch arm is **complete**; the agent never asked for a re-read. Earlier
 today: the new thesis title (`60cc800`, supervisor's advice, `docs/research_questions_v2.md`
 §1) and the arm's build (`5117e50`, `189a18f`, `f3c653d`).
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
@@ -133,7 +134,8 @@ exploratory, the unused tool-offering prompt costs 2.9–4.3 pp accuracy
 
 | Commit | What |
 |---|---|
-| (23 Sep) | Refetch arm: results — 21 runs, analysis, Fig 4.9, findings, the third verdict |
+| (23 Sep) | Docs: the `/api/ask` local-model checkpoint met, README commands, file guide |
+| `14190ce` | Refetch arm: results — 21 runs, analysis, Fig 4.9, findings, the third verdict |
 | `f3c653d` | Refetch arm: the pilot ($0.0026; dry-run counted it exactly) |
 | `189a18f` | Refetch arm steps 2–3 — batch runner, artifacts, quarantine |
 | `5117e50` | Refetch arm step 1 — the design, and the loop it runs on |
