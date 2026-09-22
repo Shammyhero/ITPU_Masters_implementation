@@ -36,6 +36,8 @@ python -m airsbench.runner.run --main --n-queries 80 --limit 36 --max-cost 1.00
 python -m airsbench.runner.run --main --n-queries 80 --offset 36 --max-cost 2.00
 python -m airsbench.runner.run --freshness-sweep --n-queries 60 --replications 3
 python -m airsbench.runner.run --cross-model claude-haiku-4-5 --n-queries 100
+python -m airsbench.runner.run --refetch-arm --dry-run                # exact token count, $0
+python -m airsbench.runner.run --refetch-arm --max-cost 2.00 [--offset N --limit M]
 python -m airsbench.dataprep.check_sensitivity --n 400   # free, no API calls
 ```
 
@@ -46,7 +48,8 @@ takes `--max-cost`; the guard refuses to start above it and aborts mid-run if
 spend exceeds it. **Never launch a paid run without a dry-run first.**
 
 Approximate costs: phase 1 (36 runs × 80q) $0.39 · phase 2 (108 runs) $1.17 ·
-freshness sweep $0.29 · Haiku cross-model arm $1.68.
+freshness sweep $0.29 · Haiku cross-model arm $1.68 · refetch arm $0.96 expected, $1.85
+worst case (the dry-run's exact count; `--max-cost` is checked against the worst case).
 
 The Analyst's hosted answers are capped per session and per day in the request
 path (`analyst/budget.py`, `~/.airs/spend.json`), and a hosted model with no

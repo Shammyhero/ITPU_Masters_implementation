@@ -27,7 +27,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Iterable
 
-from ..runner.config import run_arm
+from ..runner.config import NEVER_POOLED, run_arm
 from ..runner.scoring import HIGH_CONFIDENCE, is_silent_failure
 
 THRESHOLDS = (0.5, 0.6, 0.7, 0.8, 0.9)
@@ -61,7 +61,10 @@ def shift_pp(result: dict[str, Any], threshold: float = HIGH_CONFIDENCE) -> floa
 
 
 def load_runs(results_dir: Path) -> list[dict[str, Any]]:
-    return [json.loads(p.read_text()) for p in sorted(results_dir.glob("*.json"))]
+    """Every corpus arm. Not the refetch arm, nor live traffic: a different
+    instrument would add a row to this robustness table that the corpus never had."""
+    runs = (json.loads(p.read_text()) for p in sorted(results_dir.glob("*.json")))
+    return [run for run in runs if run_arm(run) not in NEVER_POOLED]
 
 
 def sensitivity(runs: list[dict[str, Any]]) -> list[tuple[tuple[str, str, str], dict[str, Any]]]:

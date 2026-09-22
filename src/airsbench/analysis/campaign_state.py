@@ -27,6 +27,7 @@ from ..runner.config import (
     build_detectability_arm,
     build_freshness_sweep,
     build_grid,
+    build_refetch_arm,
     run_arm,
 )
 
@@ -42,6 +43,9 @@ def _key(config: dict[str, Any]) -> tuple:
         config["pipeline"], config["task"], config["fault_type"],
         config["severity"], config["replication"], config["seed"],
         bool(config.get("emit_record_age", False)), config.get("model", ""),
+        # The refetch arm's cells share a seed within a (state, replication) and
+        # differ only in who may re-read; without this they read as duplicates.
+        config.get("refetch_mode"),
     )
 
 
@@ -49,6 +53,7 @@ ARMS = {
     "main": ("--main --n-queries 80", lambda: build_grid(replications=4)),
     "detectability": ("--detectability --n-queries 80", build_detectability_arm),
     "freshness_sweep": ("--freshness-sweep --n-queries 60", build_freshness_sweep),
+    "refetch": ("--refetch-arm", build_refetch_arm),
 }
 
 # The cross-model arm is reported once per model, because RQ5 runs the same

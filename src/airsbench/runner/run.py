@@ -192,6 +192,9 @@ def main(argv: list[str] | None = None) -> int:
                       help="reduced factorial on a second model (generalization arm)")
     mode.add_argument("--detectability", action="store_true",
                       help="14-run arm: freshness severe, with and without record age")
+    mode.add_argument("--refetch-arm", action="store_true",
+                      help="21-run refetch arm (docs/refetch_arm.md): offered a re-read, "
+                           "does the agent use it, and what does each verdict cost?")
     mode.add_argument("--interaction", action="store_true",
                       help="54-run arm (PROVISIONAL): do two faults compose "
                            "additively? baseline + solos + pairs, self-contained")
@@ -199,7 +202,10 @@ def main(argv: list[str] | None = None) -> int:
     # design (main 4, sweep 3, detectability 3), so an unset flag must mean
     # "use this arm's design", not "use 4".
     parser.add_argument("--replications", type=int, default=None)
-    parser.add_argument("--n-queries", type=int, default=12, help="queries per smoke run")
+    # No global default: the refetch arm's design is 150 questions per run, every
+    # other mode keeps the 12 it always had when the flag is omitted.
+    parser.add_argument("--n-queries", type=int, default=None,
+                        help="queries per run (default 12; the refetch arm: 150)")
     parser.add_argument("--max-cost", type=float, default=0.50, help="USD spend guard")
     parser.add_argument("--data-root", default="data")
     parser.add_argument("--out", default="results/runs")
@@ -214,6 +220,17 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     reps = args.replications
+
+    if args.refetch_arm:
+        from .config import REFETCH_N_QUERIES, build_refetch_arm
+        from .refetch import execute_refetch_arm
+
+        arm = build_refetch_arm(replications=reps or 3,
+                                n_queries=args.n_queries or REFETCH_N_QUERIES)
+        return execute_refetch_arm(arm, args)
+
+    if args.n_queries is None:
+        args.n_queries = 12
 
     if args.grid:
         grid = build_grid(replications=reps or 4)

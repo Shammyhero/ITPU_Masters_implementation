@@ -47,7 +47,7 @@ from typing import Any
 
 from ..agents.retrieval import RetrievalAgent
 from ..pipelines.loader import CatalogTimeMachine
-from ..runner.config import RunConfig, run_arm
+from ..runner.config import NEVER_POOLED, RunConfig, run_arm
 from ..runner.execute import N_CANDIDATES, value_staleness_s
 
 
@@ -233,10 +233,12 @@ def load_retrieval_runs(
         data = json.loads(path.read_text())
         if data["config"]["task"] != "retrieval":
             continue
-        if run_arm(data) == "live":
+        if run_arm(data) in NEVER_POOLED:
             # Live Analyst traffic is never data, whatever the caller asked for:
             # unpaired, unreplicated, and chosen by whoever was holding the mouse
-            # (invariant 7). → tests/test_live_quarantine.py
+            # (invariant 7). The refetch arm is data, but from a different
+            # instrument, so it is never pooled with this one either.
+            # → tests/test_live_quarantine.py, tests/test_refetch_quarantine.py
             continue
         if not include_other_arms and run_arm(data) != "main":
             continue

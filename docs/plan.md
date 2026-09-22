@@ -609,8 +609,19 @@ router's REFETCH stays in the product without an experimental claim behind it.
 > **Progress 23 Sep — step 1, the loop, built.** provenance a parameter (live stays the default) · record age on the demo source through `execute.attach_record_age` · the re-read continued as a second turn (`reread_messages`, `ModelAnswerer.answer_after_reread`) · an action reply marked unparseable and `unanswered_action`, and `verify` never commits one. 818 tests. A
 > $0 smoke run, `llama3.1:8b`, 12 stale questions each: **0 re-read requests with age
 > shown**, as with it hidden — a hint the detectability null extends from metadata to
-> action on this model, not evidence (the arm runs gpt-4o-mini). Next: step 2, the batch
-> runner.
+> action on this model, not evidence (the arm runs gpt-4o-mini).
+>
+> **Progress 23 Sep — steps 2–3, the batch runner, built.** `--refetch-arm` (`runner/refetch.py`,
+> `config.build_refetch_arm`: 21 runs, replication-major, `RunConfig.refetch_mode`); artifacts
+> in `results/runs/` as arm `refetch`; `NEVER_POOLED = ("live", "refetch")` closes the three
+> loaders that admitted every arm (`flip_partition` and `phase1_check` under
+> `include_other_arms`, `silent_definition`'s robustness table); `campaign_state` tracks the
+> arm. **The dry-run runs the real loop with a $0 counting answerer** over all 3,150
+> questions (35 s) and counts every prompt with gpt-4o-mini's tokenizer: **$0.96 expected,
+> $1.85 worst case** — *corrected* from the design's ~$1.45, which assumed a second call
+> costs what a first does. Caps: the worst case before the campaign, each run's worst case
+> before that run, and the analyst `Budget` before every call; the arm's spend never
+> touches `~/.airs`. 851 tests. Next: step 4, the dry-run shown to the author.
 
 ## Calendar — Mon 14 Sep to the freeze
 

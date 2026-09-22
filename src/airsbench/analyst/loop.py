@@ -222,7 +222,8 @@ class Loop:
         decision = route(verdict, self.pair, self.mode)
 
         refetch = {"attempted": False, "initiated_by": None, "n_records": 0,
-                   "verdict_after": None, "airs_after": None, "reason": None,
+                   "verdict_after": None, "airs_after": None, "airs_before": None,
+                   "dimensions_before": None, "reason": None,
                    "asked_ids": None, "why": None}
         records = list(sample.records)
         if decision == "refetch":
@@ -382,6 +383,13 @@ class Loop:
             "n_records": len(fresh),
             "verdict_after": "admit" if after.admitted else "refuse",
             "airs_after": after.airs,
+            # The measurement that triggered the re-read. Once the refreshed
+            # records are the delivery, the gate block describes THEM, so without
+            # this the question's first reading would be lost (the refetch arm
+            # prices every verdict on the first reading).
+            "airs_before": before.airs,
+            "dimensions_before": {dim: value["score"]
+                                  for dim, value in before.dimensions.items()},
             "reason": before.reason,
             "asked_ids": None,
             "why": None,

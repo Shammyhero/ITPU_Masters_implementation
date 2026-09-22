@@ -1,8 +1,8 @@
 # Handoff 1 of 2 — Where the project stands
 
-**Refreshed:** 23 Sep 2026 · **Last pushed commit:** "Refetch arm step 1" (23 Sep) — the
-arm's design approved and its loop built (`docs/refetch_arm.md`), nothing spent — on top
-of `60cc800`, the new thesis title (22 Sep, supervisor's advice,
+**Refreshed:** 23 Sep 2026 · **Last pushed commit:** "Refetch arm steps 2–3" (23 Sep) —
+the batch runner, artifacts and quarantine, nothing spent — on top of `5117e50` (the arm's
+design and its loop) and `60cc800` (the new thesis title, 22 Sep, supervisor's advice,
 `docs/research_questions_v2.md` §1).
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
 `github.com/Shammyhero/ITPU_Masters_implementation`
@@ -36,7 +36,7 @@ and the thesis document.
 
 | | |
 |---|---|
-| Tests | **818 passing**, lint clean (`make test`, `make lint`) |
+| Tests | **851 passing**, lint clean (`make test`, `make lint`) |
 | Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
 | Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
@@ -62,7 +62,7 @@ and the thesis document.
 | **A7 API + firewalls** — `/api/ask` SSE, live quarantine, no key in a request | 5–9 Oct | **done 20 Sep** |
 | **A8 console** — all four steps done 20–21 Sep (conversation, replay feed, paste + question builder, semantic toggle) | 5–16 Oct | **done 21 Sep** |
 | **A9** task switch · recommended policy priced on the corpus · meter prior · printable report | 12–23 Oct | **done 21 Sep** |
-| Refetch arm (the last experiment; ~$0.95 expected, ~$1.45 worst case) | 19–30 Oct | **design approved 23 Sep**; step 1 (the loop) **built 23 Sep**; step 2 (batch runner) next |
+| Refetch arm (the last experiment; $0.96 expected, $1.85 worst case, exact) | 19–30 Oct | **design approved 23 Sep**; loop, batch runner, artifacts, quarantine **built 23 Sep**; step 4 (dry-run shown to the author) next |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |

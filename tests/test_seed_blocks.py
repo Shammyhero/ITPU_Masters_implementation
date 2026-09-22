@@ -22,6 +22,7 @@ from airsbench.runner.config import (
     build_detectability_arm,
     build_freshness_sweep,
     build_grid,
+    build_refetch_arm,
     run_arm,
 )
 
@@ -30,6 +31,7 @@ BUILDERS = {
     "freshness_sweep": lambda: build_freshness_sweep(replications=3),
     "detectability": lambda: build_detectability_arm(replications=3),
     "cross_model": lambda: build_cross_model_subset("claude-haiku-4-5"),
+    "refetch": lambda: build_refetch_arm(replications=3),
 }
 
 

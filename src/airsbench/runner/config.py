@@ -69,6 +69,14 @@ INTERACTION_SEED_RANGE = (80_000, 90_000)
 REFETCH_SEED_RANGE = (90_000, 100_000)
 LIVE_SEED_RANGE = (100_000, 110_000)
 
+# Arms that are a DIFFERENT INSTRUMENT from the corpus and must never be pooled
+# with it, whatever a loader was asked for — `include_other_arms=True` means other
+# research arms of the same instrument, never these. `live` is unpaired traffic
+# chosen by whoever holds the mouse; `refetch` runs the Analyst's plan-returning
+# prompt through the loop (brief correction 11). Both are attributed by seed block
+# and dropped by name. → tests/test_live_quarantine.py, tests/test_refetch_quarantine.py
+NEVER_POOLED = ("live", "refetch")
+
 SEED_BLOCKS = {
     "main": MAIN_SEED_RANGE,
     "freshness_sweep": SWEEP_SEED_RANGE,
@@ -183,6 +191,10 @@ class RunConfig:
     # Detectability arm only: deliver each record's own age alongside it.
     # False everywhere in the main factorial, so that grid is unaffected.
     emit_record_age: bool = False
+    # Refetch arm only: who may start a re-read — "off" (nobody; the age policy
+    # runs in shadow), "gate" or "agent". None everywhere else, so no other
+    # arm's configs or artifacts change meaning (docs/refetch_arm.md).
+    refetch_mode: str | None = None
     run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
     def __post_init__(self) -> None:
@@ -208,9 +220,10 @@ class RunConfig:
 
     def label(self) -> str:
         age = "+age" if self.emit_record_age else ""
+        refetch = f"/refetch-{self.refetch_mode}" if self.refetch_mode else ""
         return (
             f"{self.pipeline}/{self.task}/{self.fault_type}"
-            f"/{self.severity}{age}/rep{self.replication}"
+            f"/{self.severity}{age}{refetch}/rep{self.replication}"
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -476,4 +489,81 @@ def build_interaction_arm(
                         seed=80_000 + 1_000 * task_idx + rep,
                     )
                 )
+    return grid
+
+
+# ---- the refetch arm (docs/refetch_arm.md) ----------------------------------------
+
+# The two data states, in seed order. Healthy is the streaming pipeline's inherent
+# 0.05 s; stale adds the corpus's severe freshness fault (5.05 s in all).
+REFETCH_STATES = (
+    ("healthy", "none", "none"),
+    ("stale", "freshness", "severe"),
+)
+# (cell, refetch_mode, emit_record_age, run on healthy?). `gate` is not run on
+# healthy data: nothing violates the age policy there, so it would be the baseline
+# again — the same prompt over the same records, paid for twice.
+REFETCH_CELLS = (
+    ("baseline", "off", False, True),
+    ("gate", "gate", False, False),
+    ("agent_hidden", "agent", False, True),
+    ("agent_shown", "agent", True, True),
+)
+REFETCH_DATASET = "esci_demo_slice"
+REFETCH_N_QUERIES = 150
+
+
+def refetch_cell(config: RunConfig | dict) -> str:
+    """The arm cell a config (or an artifact's config) belongs to."""
+    get = config.get if isinstance(config, dict) else lambda k, d=None: getattr(config, k, d)
+    for cell, mode, age, _ in REFETCH_CELLS:
+        if get("refetch_mode") == mode and bool(get("emit_record_age", False)) == age:
+            return cell
+    raise ValueError(f"not a refetch-arm config: {get('refetch_mode')!r}")
+
+
+def build_refetch_arm(
+    replications: int = 3,
+    n_queries: int = REFETCH_N_QUERIES,
+    model: str = DEFAULT_MODEL,
+) -> list[RunConfig]:
+    """Offered a re-read, does the agent use it — and what does each verdict cost?
+
+    Design and rationale: docs/refetch_arm.md. 21 runs with the defaults:
+    7 cells (baseline, agent age-hidden, agent age-shown on both states; gate on
+    stale only) x 3 replications, run on the bundled demo source (the study's
+    ESCI slice served through the runner's own functions) by the Analyst's loop.
+
+    Paired twice over (invariant 2):
+      - `sample_seed` is RunConfig's own default, a function of (task,
+        replication) only, and question i draws with `sample_seed * 1000 + i` —
+        every cell AND both states see the same queries at the same moments;
+      - `seed` is shared by every cell of a (state, replication), as the
+        detectability arm shared it across its pair, so the delivered records
+        are identical within a state apart from the treatment.
+
+    Replication-major order: a campaign stopped with --limit leaves whole
+    replications, every cell of each, rather than one cell of all three.
+    """
+    grid: list[RunConfig] = []
+    for rep in range(1, replications + 1):
+        for state_idx, (state, fault, severity) in enumerate(REFETCH_STATES):
+            for cell, mode, age, on_healthy in REFETCH_CELLS:
+                if state == "healthy" and not on_healthy:
+                    continue
+                grid.append(RunConfig(
+                    pipeline="streaming",
+                    task="retrieval",
+                    fault_type=fault,
+                    severity=severity,
+                    replication=rep,
+                    injector_params=({} if fault == "none"
+                                     else dict(SEVERITY_PARAMS[fault][severity])),
+                    dataset=REFETCH_DATASET,
+                    model=model,
+                    n_queries=n_queries,
+                    seed=REFETCH_SEED_RANGE[0] + 1_000 * state_idx + rep,
+                    emit_record_age=age,
+                    refetch_mode=mode,
+                ))
     return grid

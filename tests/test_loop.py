@@ -88,8 +88,13 @@ def test_a_stale_batch_is_re_read_and_then_answered():
     tick = loop.ask(question(), seed=100_005)
     assert tick["refetch"] == {"attempted": True, "initiated_by": "gate", "n_records": 6,
                                "verdict_after": "admit", "airs_after": tick["gate"]["airs"],
+                               "airs_before": tick["refetch"]["airs_before"],
+                               "dimensions_before": tick["refetch"]["dimensions_before"],
                                "reason": tick["refetch"]["reason"],
                                "asked_ids": None, "why": None}
+    # The first reading is kept: it is what refused, and the arm prices it.
+    assert tick["refetch"]["airs_before"] < tick["refetch"]["airs_after"]
+    assert tick["refetch"]["dimensions_before"]["freshness"] < 100
     assert tick["gate"]["verdict"] == "admit"
     assert tick["decision"]["correct"] is True
 

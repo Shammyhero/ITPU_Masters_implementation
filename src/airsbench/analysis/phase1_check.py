@@ -27,7 +27,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from ..runner.config import run_arm
+from ..runner.config import NEVER_POOLED, run_arm
 from ..runner.scoring import failure_modes
 
 # A faulted condition scoring this far ABOVE its own baseline is not
@@ -47,8 +47,8 @@ def load_runs(
     runs = []
     for path in sorted(results_dir.glob("*.json")):
         data = json.loads(path.read_text())
-        if run_arm(data) == "live":
-            continue  # never data, whatever was asked for — test_live_quarantine.py
+        if run_arm(data) in NEVER_POOLED:
+            continue  # never pooled, whatever was asked for — test_{live,refetch}_quarantine.py
         if not include_other_arms and run_arm(data) != "main":
             continue
         cfg, met = data["config"], data["metrics"]

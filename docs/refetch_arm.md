@@ -2,8 +2,8 @@
 
 **Status: DESIGN APPROVED 23 Sep 2026** — the author's four choices (§4) and both
 decisions the code forced (§7: D1 (a), D2 kept). **Step 1 (the loop) built 23 Sep**
-(§5); nothing spent. Budget ~$0.95 expected, ~$1.45
-worst case, against the ~$2.20 the plan holds for this arm. Quarantined by seed
+(§5); **step 2 (the batch runner, artifacts, quarantine) built 23 Sep**; nothing spent.
+Budget **$0.96 expected, $1.85 worst case**, counted exactly by the dry-run (corrected 23 Sep from the design's ~$1.45 worst case, which assumed a second call costs what a first does — a second turn carries the records twice), against the ~$2.20 the plan holds for this arm. Quarantined by seed
 block (90 000–100 000) and by arm name; nothing outside the arm depends on it. If it
 is cut on 30 Oct (the plan's hard cut), the router's REFETCH stays in the product
 without an experimental claim behind it.
@@ -183,7 +183,16 @@ the answer key.
      - the re-read accounting;
      - termination;
      - an action reply is never graded as an answer.
-2. **Batch runner** (`python -m airsbench.runner.run --refetch-arm`):
+2. **Batch runner** (`python -m airsbench.runner.run --refetch-arm`). *Built 23 Sep*
+   with step 3 — `runner/refetch.py`, `config.build_refetch_arm`, 851 tests
+   (`test_refetch_arm.py`, `test_refetch_quarantine.py`). As built, the dry-run
+   runs the real loop over all 3,150 questions with a counting answerer in place of
+   the model (35 s, $0), so the second turn is counted exactly too, not bounded:
+   **$0.9649 expected, $1.8482 worst case** (output at 150 tokens a call). Each
+   run's worst case must also fit what is left before that run starts. The
+   pre-re-read AIRS reading is kept in the Tick (`refetch.airs_before`,
+   `dimensions_before`), because after a gate re-read the gate block describes the
+   refreshed records.
    - Builds the 21 configs.
    - **`--dry-run` renders every first-call prompt of the grid and counts its
      tokens exactly** with tiktoken. The prices are gpt-4o-mini's declared ones.

@@ -34,14 +34,17 @@ on one loop, which `analyst/loop.py` already runs:
 **Design approved 23 Sep — `docs/refetch_arm.md` is the spec; read it first.** 21 runs:
 7 paid cells (baseline, gate, agent with age hidden, agent with age shown; healthy and
 freshness 5.05 s; gate on stale only) × 3 replications × 150 questions, gpt-4o-mini,
-~$0.95 expected / ~$1.45 worst case. Refusal is priced at $0 from the baseline's
+$0.96 expected / $1.85 worst case (the dry-run's exact count; the design's ~$1.45 assumed a
+second call costs what a first does). Refusal is priced at $0 from the baseline's
 shadow-policy verdicts. Hypotheses refined in RQs v2 §9 before anything runs.
 
 Build order, each step proposed before code: ~~(1) the loop~~ **built 23 Sep** —
-provenance a parameter (live stays the default) · record age on the demo source through `execute.attach_record_age` · the re-read continued as a second turn (`reread_messages`, `ModelAnswerer.answer_after_reread`) · an action reply marked unparseable and `unanswered_action`, and `verify` never commits one → **(2) the batch runner — next**
-`--refetch-arm` with an exact-token `--dry-run` and `--max-cost` → **(3) artifacts** in
-`results/runs/` as arm `refetch`, quarantined from every corpus loader → (4) dry-run shown
-to the author → (5) run → (6) `analysis/refetch.py`, Fig 4.9, `refetch_findings.md`, the
+provenance a parameter (live stays the default) · record age on the demo source through `execute.attach_record_age` · the re-read continued as a second turn (`reread_messages`, `ModelAnswerer.answer_after_reread`) · an action reply marked unparseable and `unanswered_action`, and `verify` never commits one → ~~(2) the batch runner~~ and ~~(3) artifacts~~ **built 23 Sep** — `--refetch-arm`
+(`runner/refetch.py`), a dry-run that runs the real loop with a $0 counting answerer,
+three caps, artifacts in `results/runs/` as arm `refetch`, `NEVER_POOLED` in every loader
+that admitted all arms → **(4) the dry-run shown to the author — next**, with the proposed
+~$0.01 paid pilot (one stale age-shown agent run, 10 questions, to a scratch `--out`) →
+(5) run → (6) `analysis/refetch.py`, Fig 4.9, `refetch_findings.md`, the
 third verdict in `gate/replay.py`.
 
 Budget: ~$4.58 OpenAI and ~$1.27 Anthropic remain.
@@ -57,7 +60,7 @@ Budget: ~$4.58 OpenAI and ~$1.27 Anthropic remain.
 | A7 API + firewalls (`/api/ask` SSE, live quarantine, credential test) | 8 | **done 20 Sep** |
 | A8 console | 18 | **done 21 Sep** — conversation, replay, paste, toggle |
 | A9 task switch, recommended policy, meter prior, report | 15 | **done 21 Sep** |
-| **Refetch arm** (Fig 4.9; ~$0.95 expected) | 28 | **design approved 23 Sep**; step 1 built 23 Sep; step 2 next — hard cut 30 Oct |
+| **Refetch arm** (Fig 4.9; ~$0.95 expected) | 28 | **design approved 23 Sep**; steps 1–3 built 23 Sep; step 4 (dry-run, pilot) next — hard cut 30 Oct |
 | A10 postgres/duckdb/http | 8 | cut first |
 | A11 live case study (Fig 4.11) | 6 | cut second |
 
@@ -233,7 +236,7 @@ than `unknown`. Always select runs with `run_arm(run)`, and never pool `live`.
 ## B3. Commands
 
 ```bash
-make test         # 818 tests, ~30 s
+make test         # 851 tests, ~35 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -250,6 +253,7 @@ make lock         # re-pin requirements-lock.txt
 .venv/bin/python -m airsbench.server.bake   # regenerate baked data (slice needs data/ecommerce)
 npm --prefix demo run data                  # regenerate demo/src/data/aist.json
 python -m airsbench.runner.run --<arm> --dry-run   # ALWAYS before any paid run
+python -m airsbench.runner.run --refetch-arm --dry-run   # 35 s, exact: $0.96 / $1.85 worst
 ```
 
 ## B4. Traps (beyond CLAUDE.md)
@@ -326,6 +330,25 @@ corrupts `.next` · figures print recomputed vs published values.
   first bar's segments — build handles explicitly from every key present.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
+
+**23 Sep (refetch arm, steps 2–3):**
+- **After a gate re-read the Tick's gate block describes the REFRESHED records**, so the
+  question's first reading (the one that refused) was lost. `refetch.airs_before` and
+  `dimensions_before` keep it; the arm prices every verdict on it.
+- **Three loaders admitted every arm**: `flip_partition` and `phase1_check` under
+  `include_other_arms=True`, and `silent_definition`, which would have added a `refetch` row to
+  a published robustness table. `NEVER_POOLED` closes all three; the quarantine test runs a
+  genuine arm artifact beside real runs through every loader.
+- **`campaign_state` keyed runs without the refetch mode**, so three cells sharing a seed read
+  as duplicates of one another. The key now includes it.
+- **A second turn costs about twice a first** (the records are sent twice). The design's worst
+  case assumed equal calls and was ~25% low; count, never assume.
+- `--n-queries` no longer defaults to 12 globally: every old mode still gets 12, the arm 150.
+- Healthy and stale prompts total the **same** token count (628,828) although 118 of 150
+  questions serve different values: price and stock changes rarely change token length. It
+  looks like a pairing bug and is not one — checked.
+- A test that loops over an object that turns out not to exist passes vacuously
+  (`Panel.members`); pin the allow-list itself as well.
 
 **23 Sep (refetch arm, step 1):**
 - **A reply that is still a re-read request is not an answer.** It was graded as a
