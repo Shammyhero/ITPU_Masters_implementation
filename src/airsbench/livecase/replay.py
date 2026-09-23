@@ -210,12 +210,13 @@ class Recording:
         nearest = sorted(installed, key=lambda sid: (_distance_m(here, self.coords[sid]), sid))
         return t, anchor, nearest[:n]
 
-    def pair(self, minutes: int) -> SourcePair:
+    def pair(self, minutes: int, freshness_target_s: float | None = None) -> SourcePair:
         return SourcePair(
             id=f"velib-cache-{minutes}min", kind="sqlite",
             delivered=CacheReplay(self, minutes), upstream=self.upstream,
             description=(f"Vélib' Métropole, recorded live: a cache refreshed every "
-                         f"{minutes} min, against the feed as recorded every 20 s"))
+                         f"{minutes} min, against the feed as recorded every 20 s"),
+            freshness_target_s=freshness_target_s)
 
 
 class CacheReplay:

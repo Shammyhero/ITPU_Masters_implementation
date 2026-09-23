@@ -139,6 +139,30 @@ the study's timescale, not this source's. That is F-B1 made concrete. A practiti
 would set the freshness target to the source's own cadence (here, minutes), and it is a
 declared parameter (`DEFAULT_FRESHNESS_TARGET_S`), not a constant to trust.
 
+### 5a. Exploratory: the same answers, scored with the source's own freshness target
+
+Declared **before** it was computed (24 Sep), so the target is not tuned to the
+outcome: a source's freshness target is **its own publication interval** — for Vélib',
+**60 s**, the feed's measured cadence (§1). The logged answers are re-graded at $0 with
+that target (the per-source `freshness_target_s`, added for this lesson), against the
+version-aligned reference. Only how age is *scored* changes; the answers, the truth and
+every other dimension are the same.
+
+| freshness target | median freshness score | AIRS AUC |
+|---|---|---|
+| 1 s (calibrated) | 0.04 | 0.557 [0.435, 0.675] |
+| **60 s** (the feed's cadence, declared in advance) | 2.70 | **0.558** [0.435, 0.677] |
+
+**No change.** The target is necessary but, on this source, not sufficient, for two
+reasons the numbers show. The event clock is the stations' `last_reported`, a median
+~33 min old (§1), so even at 60 s freshness sits near its floor. And the composite's
+weights — consistency 0.702, freshness 0.129 on the retrieval profile — were fitted on
+the corpus, so freshness could not move AIRS much at any target. No other target was
+tried: choosing one to fit this data (≈ 30 min) would be tuning on the outcome. The
+honest conclusion for Chapter 5 is sharper than "retune one constant": **transferring
+AIRS needs the event clock, the target and the weights set for the source** — the
+records' raw age already ranks these failures (0.690); the calibrated composite does not.
+
 ## 6. What this adds to the thesis
 
 - **External validity for RQ1's mechanism.** On real data at real velocity, silent failure

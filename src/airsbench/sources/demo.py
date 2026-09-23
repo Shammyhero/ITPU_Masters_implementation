@@ -273,7 +273,8 @@ def _find_query(name: str, data: DemoSlice, key: str | None,
 
 def demo_pair(pair_id: str, condition: Condition, *, seed: int = LIVE_SEED,
               clock: Callable[[], float] = time.time, description: str = "",
-              manifest: str | None = None, emit_record_age: bool = False) -> SourcePair:
+              manifest: str | None = None, emit_record_age: bool = False,
+              freshness_target_s: float | None = None) -> SourcePair:
     data = load_slice()
     delivered = DemoDelivered(f"{pair_id}/delivered", condition, seed=seed, clock=clock,
                               data=data, emit_record_age=emit_record_age)
@@ -283,4 +284,5 @@ def demo_pair(pair_id: str, condition: Condition, *, seed: int = LIVE_SEED,
     return SourcePair(id=pair_id, kind="demo", delivered=delivered,
                       upstream=DemoUpstream(f"{pair_id}/upstream", clock=clock, data=data),
                       description=description,
-                      manifest=manifest if manifest is not None else str(DEMO_MANIFEST))
+                      manifest=manifest if manifest is not None else str(DEMO_MANIFEST),
+                      freshness_target_s=freshness_target_s)

@@ -26,6 +26,7 @@ connection because a request asked it to.
           records_path: data.stations
         id_field: station_id
         timestamp_field: last_reported            # the source's own clock
+        freshness_target_s: 60                    # its cadence: fresh up to a minute
 
 A `sqlite` or `duckdb` side reads one table (a name, never SQL) opened read-only;
 `history: true` means the table keeps each id's snapshots, so it can be read as of
@@ -54,13 +55,14 @@ from .tables import DuckdbSource, HttpSource, SqliteSource, check_url
 SOURCE_ID = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 SECRET_WORDS = ("password", "passwd", "secret", "token", "api_key", "apikey", "dsn",
                 "credential")
-_DECLARED = {"type", "delivered", "upstream", "id_field", "description", "manifest"}
+_DECLARED = {"type", "delivered", "upstream", "id_field", "description", "manifest",
+             "freshness_target_s"}
 PAIR_KEYS = {
     "files": _DECLARED,
     "sqlite": _DECLARED | {"timestamp_field"},
     "duckdb": _DECLARED | {"timestamp_field"},
     "http": _DECLARED | {"timestamp_field"},
-    "demo": {"type", "condition", "description", "manifest"},
+    "demo": {"type", "condition", "description", "manifest", "freshness_target_s"},
 }
 # What one side may declare, by the side's own type (which defaults to the pair's).
 SIDE_KEYS = {
@@ -137,7 +139,8 @@ def _declared_pair(source_id: str, spec: dict[str, Any], base: Path, label: str,
         upstream = _side(spec["upstream"], kind, base, f"{label}.upstream",
                          f"{source_id}/upstream", id_field, timestamp_field, True, clock)
     return SourcePair(id=source_id, kind=kind, delivered=delivered, upstream=upstream,
-                      description=_text(spec, label), manifest=_manifest(spec, base, label))
+                      description=_text(spec, label), manifest=_manifest(spec, base, label),
+                      freshness_target_s=_target(spec, label))
 
 
 def _side(value: Any, pair_type: str, base: Path, label: str, name: str, id_field: str,
@@ -219,7 +222,23 @@ def _demo_pair(source_id: str, spec: dict[str, Any], base: Path, label: str,
     except ValueError as exc:
         raise SourceError(f"{label}.condition: {exc}") from None
     return demo_pair(source_id, condition, seed=seed, clock=clock,
-                     description=_text(spec, label), manifest=_manifest(spec, base, label))
+                     description=_text(spec, label), manifest=_manifest(spec, base, label),
+                     freshness_target_s=_target(spec, label))
+
+
+def _target(spec: dict[str, Any], label: str) -> float | None:
+    """`freshness_target_s`: this source's own cadence, in seconds (or the default)."""
+    from ..probe import freshness_target
+
+    value = spec.get("freshness_target_s")
+    if value is None:
+        return None
+    try:
+        return freshness_target(value)
+    except SourceError:
+        raise
+    except Exception as exc:  # ProbeError: say which declaration
+        raise SourceError(f"{label}.freshness_target_s: {exc}") from None
 
 
 def _resolve(value: str, base: Path) -> Path:

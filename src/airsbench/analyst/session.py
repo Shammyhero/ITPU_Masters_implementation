@@ -86,7 +86,8 @@ def ask(pair: SourcePair, question: Question, answerer: Answerer, *, seed: int |
                          for record, record_id in zip(sample.records, sample.ids)]
     airs = score(delivered_entries,
                  [to_probe_entry(record) for record in served] if served is not None else None,
-                 task, semantic_unmeasured=layer.unmeasured_reason)
+                 task, semantic_unmeasured=layer.unmeasured_reason,
+                 freshness_target_s=pair.freshness_target_s)
 
     t0 = clock()
     answer, usage = answerer.answer(text, question.plan, sample.records)

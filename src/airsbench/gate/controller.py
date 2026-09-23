@@ -95,9 +95,14 @@ class BatchRefused(RuntimeError):
 class Controller:
     """Evaluate batches against a policy. Stateless apart from counters."""
 
-    def __init__(self, policy: Policy, weights: dict[str, float] | None = None) -> None:
+    def __init__(self, policy: Policy, weights: dict[str, float] | None = None,
+                 freshness_target_s: float | None = None) -> None:
         self.policy = policy
         self.weights = weights or {d: 0.25 for d in DIMENSIONS}
+        # The source's declared freshness target (probe.freshness_target); None
+        # is the calibrated default. An age budget in the policy is unaffected:
+        # it is held against the measured age, not the score.
+        self.freshness_target_s = freshness_target_s
         self.admitted = 0
         self.refused = 0
 
@@ -113,7 +118,8 @@ class Controller:
         reason — not scored 0 for missing context the source was never asked to carry.
         Until 23 Sep the loop never passed it, so every files, inline, SQLite and HTTP
         source scored semantic 0 in the loop while `airs analyst` said UNMEASURED."""
-        measured = measure(list(delivered), list(source) if source else None)
+        measured = measure(list(delivered), list(source) if source else None,
+                           self.freshness_target_s)
         if semantic_unmeasured is not None:
             measured["semantic"] = {"score": None, "detail": semantic_unmeasured}
         airs, covered = composite(measured, self.weights)

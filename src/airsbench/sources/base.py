@@ -108,6 +108,9 @@ class SourcePair:
     upstream: Source | None
     description: str = ""
     manifest: str | None = None
+    # The age at which freshness stops scoring 100, in seconds, declared for this
+    # source's own cadence (`probe.freshness_target`); None is the calibrated 1 s.
+    freshness_target_s: float | None = None
 
 
 def reads_as_of(source: Source) -> bool:

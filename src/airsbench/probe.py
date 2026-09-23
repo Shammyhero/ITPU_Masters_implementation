@@ -70,6 +70,7 @@ from .airs import (
     payload_consistency,
     semantic_score,
 )
+from .airs.calculator import DEFAULT_FRESHNESS_TARGET_S
 
 DIMENSIONS = ("freshness", "latency", "consistency", "semantic")
 DEFAULT_WEIGHTS = Path(__file__).parent / "airs" / "calibrated_weights.json"
@@ -292,8 +293,28 @@ def _as_record(entry: dict[str, Any]) -> Record:
     return record
 
 
+def freshness_target(value: Any) -> float:
+    """A declared freshness target, in seconds — or the calibrated default.
+
+    The age at which freshness stops scoring 100 (`100 x target / mean age`
+    beyond it). The weights were fitted at the default, one second, on the study's
+    seconds-scale staleness; a source that changes on a scale of minutes needs its
+    own target, or every record scores near 0 and freshness stops moving the
+    composite (the live case study, `docs/live_case_study_findings.md`). Any other
+    target is reported beside the score.
+    """
+    if value is None:
+        return DEFAULT_FRESHNESS_TARGET_S
+    if isinstance(value, bool) or not isinstance(value, (int, float)) \
+            or not math.isfinite(value) or value <= 0:
+        raise ProbeError(f"the freshness target must be a positive number of seconds, "
+                         f"got {value!r}")
+    return float(value)
+
+
 def measure(
-    delivered: list[dict[str, Any]], source: list[dict[str, Any]] | None = None
+    delivered: list[dict[str, Any]], source: list[dict[str, Any]] | None = None,
+    freshness_target_s: float | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Score each dimension, or mark it unmeasured and say why.
 
@@ -301,8 +322,10 @@ def measure(
     is the honest answer when the input does not carry what the dimension needs
     — see the module docstring on why that must never become 100. Freshness also
     carries `mean_age_seconds` when measured, so the admission controller holds
-    an age budget against the same number the probe scored.
+    an age budget against the same number the probe scored, and
+    `target_seconds`: the freshness target it was scored against.
     """
+    target = freshness_target(freshness_target_s)
     delivered = [normalise(e, f"delivered record {i}") for i, e in enumerate(delivered, 1)]
     if source is not None:
         source = [normalise(e, f"source record {i}") for i, e in enumerate(source, 1)]
@@ -333,11 +356,15 @@ def measure(
         )
     else:
         mean_age = statistics.fmean(ages)
+        declared = "" if target == DEFAULT_FRESHNESS_TARGET_S else \
+            f", against a declared target of {target:g}s (calibrated at " \
+            f"{DEFAULT_FRESHNESS_TARGET_S:g}s)"
         out["freshness"] = {
-            "score": freshness_score(max(mean_age, 1e-6)),
+            "score": freshness_score(max(mean_age, 1e-6), target),
             "detail": f"mean age {mean_age:.2f}s over {len(ages)} of "
-                      f"{len(delivered)} records",
+                      f"{len(delivered)} records{declared}",
             "mean_age_seconds": mean_age,
+            "target_seconds": target,
         }
 
     # ---- latency: observed delivery time ---------------------------------
@@ -459,6 +486,7 @@ def score(
     task: str = "retrieval",
     weights_path: Path = DEFAULT_WEIGHTS,
     semantic_unmeasured: str | None = None,
+    freshness_target_s: float | None = None,
 ) -> dict[str, Any]:
     """Everything `airs probe --json` reports, as data.
 
@@ -473,7 +501,8 @@ def score(
     applies unchanged — records without context score 0.
     """
     weights, meta = load_weights(weights_path, task)
-    measured = measure(delivered, source)
+    target = freshness_target(freshness_target_s)
+    measured = measure(delivered, source, target)
     if semantic_unmeasured is not None:
         measured["semantic"] = {"score": None, "detail": semantic_unmeasured}
     airs, covered = composite(measured, weights)
@@ -489,6 +518,7 @@ def score(
         "band": label,
         "band_note": note,
         "calibration": {k: meta.get(k) for k in ("calibrated_at", "target")},
+        "freshness_target_s": target,
         "validation": meta.get("validation", {}).get(task),
     }
 
@@ -549,6 +579,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--task", default="retrieval",
                         help="which calibrated weight profile to apply")
     parser.add_argument("--weights", type=Path, default=DEFAULT_WEIGHTS)
+    parser.add_argument("--freshness-target", type=float, default=None, metavar="SECONDS",
+                        help="the age at which freshness stops scoring 100 (default "
+                             f"{DEFAULT_FRESHNESS_TARGET_S:g}s, the calibrated value); "
+                             "set it to your source's own update cadence")
     parser.add_argument("--json", action="store_true",
                         help="emit machine-readable output instead of a report")
     args = parser.parse_args(argv)
@@ -559,10 +593,11 @@ def main(argv: list[str] | None = None) -> int:
         delivered = load_records(args.records)
         source = load_records(args.source, unique_ids=True) if args.source else None
         if args.json:
-            result = score(delivered, source, args.task, args.weights)
+            result = score(delivered, source, args.task, args.weights,
+                           freshness_target_s=args.freshness_target)
         else:
             weights, meta = load_weights(args.weights, args.task)
-            measured = measure(delivered, source)
+            measured = measure(delivered, source, args.freshness_target)
     except ProbeError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

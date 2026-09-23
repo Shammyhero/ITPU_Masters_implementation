@@ -315,7 +315,9 @@ here measured gaps in the reference, not the pipeline — F-B1, AIRS's constants
 on real data. **The mechanism transfers:** a 15-minute cache moved the answer on 11.0% of
 600 questions against 5.7% for a 5-minute one, and doubled silent failure for both models
 (paired, discordant 3/0 and 4/0). **The attribution transfers:** of 19 silent failures, 10
-were the pipeline's and 7 the models'.
+were the pipeline's and 7 the models'. *Exploratory, 24 Sep, by a rule declared first:*
+scoring freshness at the feed's own cadence (60 s) leaves AIRS's AUC at 0.558 — transfer
+needs the event clock, the target and the weights set for the source, not one constant.
 
 Declared constraints: classification is out of scope for the verifier (its label is a
 property of the flight, not computable from the record); the Analyst's plan-returning

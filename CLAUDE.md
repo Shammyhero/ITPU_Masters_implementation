@@ -26,6 +26,7 @@ airs serve           # local web console + API on 127.0.0.1:8000 (probe/gate/rep
 airs serve --sources sources.yaml   # adds /api/sources, /api/session, /api/ask (SSE) over declared sources
 airs sources list | describe <id> | sample <id>   # declared sources; demo pairs always available
 airs manifest propose <src> | review <file> --source <src> | show <src>   # what fields mean; semantic UNMEASURED until reviewed
+airs probe --records d.jsonl --freshness-target 60   # a source's own cadence; default: the calibrated 1 s
 airs analyst ask demo-stale [--answerer ollama/llama3.1:8b]   # verified, attributed answers ($0)
 airs analyst ask demo-stale --answerer openai/gpt-4o-mini --max-cost 0.01 [--estimate]   # hosted: capped before each call
 airs analyst ask demo-drift --policy p.json [--refetch gate|agent|off]   # router: admit / re-read / refuse ($0 to refuse)

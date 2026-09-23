@@ -156,8 +156,8 @@ class LoggedAnswers:
                            text=""), Usage(self.name)
 
 
-def reverify(runs: list[dict[str, Any]], db: Path, reference: str = "version"
-             ) -> list[dict[str, Any]]:
+def reverify(runs: list[dict[str, Any]], db: Path, reference: str = "version",
+             freshness_target_s: float | None = None) -> list[dict[str, Any]]:
     """The paid answers, graded again against a chosen consistency reference, at $0.
 
     Every question regenerates from the committed recording and its seed, and the
@@ -178,8 +178,8 @@ def reverify(runs: list[dict[str, Any]], db: Path, reference: str = "version"
     replayed = []
     for run in runs:
         answers = LoggedAnswers()
-        loop = Loop(pair=recording.pair(cache_of(run)), policy=Policy(name="open"),
-                    answerer=answers, mode="off")
+        loop = Loop(pair=recording.pair(cache_of(run), freshness_target_s),
+                    policy=Policy(name="open"), answerer=answers, mode="off")
         out = copy.deepcopy(run)
         for index, logged in enumerate(run["decisions"]):
             if question_type(index) != logged["question_type"]:

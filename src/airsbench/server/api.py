@@ -134,7 +134,7 @@ def score_records(body: ScoreRequest):
     delivered = _records(body.delivered, "delivered")
     source = _records(body.source, "source", unique_ids=True)
     try:
-        return score(delivered, source, body.task)
+        return score(delivered, source, body.task, freshness_target_s=body.freshness_target_s)
     except ProbeError as exc:
         raise InputError("delivered", str(exc)) from None
 
@@ -148,7 +148,8 @@ def gate_batch(body: GateRequest):
     delivered = _records(body.delivered, "delivered")
     source = _records(body.source, "source", unique_ids=True)
     try:
-        verdict = Controller(policy, weights).evaluate(delivered, source)
+        verdict = Controller(policy, weights,
+                             freshness_target_s=body.freshness_target_s).evaluate(delivered, source)
     except ProbeError as exc:
         raise InputError("delivered", str(exc)) from None
     return {**verdict.to_dict(), "task": body.task, "policy_description": policy.describe()}
@@ -218,6 +219,7 @@ def _source_summary(pair) -> dict[str, Any]:
         "upstream": upstream.name if upstream is not None else None,
         "supports_as_of": bool(upstream is not None and reads_as_of(upstream)),
         "verifiable": upstream is not None,
+        "freshness_target_s": pair.freshness_target_s,
         "semantic": layer.to_dict(),
     }
 

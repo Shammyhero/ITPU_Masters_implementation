@@ -1,7 +1,8 @@
 # Handoff 1 of 2 — Where the project stands
 
-**Refreshed:** 23 Sep 2026 · **Last pushed commit:** "A11: the live case study" (23 Sep) —
-the Vélib' recording, 4 paid runs, Fig 4.11 and the findings. **Every experiment the plan
+**Refreshed:** 24 Sep 2026 · **Last pushed commit:** "The freshness target per source"
+(24 Sep), on top of `f228454` (A11: the Vélib' recording, 4 paid runs, Fig 4.11 and the
+findings). **Every experiment the plan
 scheduled is done.** Before it today: `0a5a3a8` (A10, SQLite/DuckDB/HTTP sources),
 `74eaec3` (docs), `14190ce` (the refetch arm's results). Earlier
 today: the new thesis title (`60cc800`, supervisor's advice, `docs/research_questions_v2.md`
@@ -40,7 +41,7 @@ freeze week (positioning, the four papers, the DOI) and the thesis document.
 
 | | |
 |---|---|
-| Tests | **953 passing**, lint clean (`make test`, `make lint`) |
+| Tests | **977 passing**, lint clean (`make test`, `make lint`) |
 | Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
 | Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
@@ -126,6 +127,7 @@ the failures (0.690) — F-B1 on real data (`live_case_study_findings.md`).
 | Piece | What |
 |---|---|
 | `airs` command | `serve`, `probe`, `gate`, `sources`, `manifest`, `analyst` (`src/airsbench/cli.py`) |
+| Freshness target | per source (24 Sep): `freshness_target_s` in `sources.yaml`, `--freshness-target` on `airs probe`/`airs gate`, the API's score/gate; default the calibrated 1 s; a declared target is shown beside the score; age budgets unaffected |
 | Input contract | JSONL, `payload` required; timestamps epoch seconds or ISO-8601 **with zone**; ms refused; duplicate upstream ids refused; `opaque_map` accepted (consistency reverses stripped names) |
 | API (`server/`) | `/api/meta`, `/api/samples`, `/api/score`, `/api/gate`, `/api/replay` (180 baked runs); **A7:** `/api/sources`, `/api/sources/{id}/test`, `/api/models`, `/api/session`, `/api/ask` (SSE), `/api/session/{id}`; 422 `{error: {input, line, message}}` |
 | Security | 127.0.0.1; Host allowlist; CORS only with `--dev`; 64 MB cap; outbound requests only to an `http` source's declared url and a configured model provider, never to an address a request names; files and sources only through CLI flags / `sources.yaml` |
@@ -140,7 +142,8 @@ the failures (0.690) — F-B1 on real data (`live_case_study_findings.md`).
 
 | Commit | What |
 |---|---|
-| (23 Sep) | A11: the live case study — recording, runs, Fig 4.11, findings |
+| (24 Sep) | The freshness target per source |
+| `f228454` | A11: the live case study — recording, runs, Fig 4.11, findings |
 | `0a5a3a8` | A10: live sources — SQLite, DuckDB and HTTP |
 | `74eaec3` | Docs: the `/api/ask` local-model checkpoint met, README commands, file guide |
 | `14190ce` | Refetch arm: results — 21 runs, analysis, Fig 4.9, findings, the third verdict |

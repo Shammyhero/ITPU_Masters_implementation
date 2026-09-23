@@ -111,7 +111,16 @@ failure mode that would make the tool dangerous.
 
 ```bash
 airs probe --records delivered.jsonl --source upstream.jsonl --task retrieval
+airs probe --records delivered.jsonl --freshness-target 60   # a source that changes by the minute
 ```
+
+Freshness scores 100 up to a **target age**, then falls as `target / age`. The calibrated
+target is one second — the benchmark's timescale. A source that changes over minutes
+should declare its own (`--freshness-target`, `freshness_target_s:` in `sources.yaml`,
+`freshness_target_s` in the API), and every output that uses another target says so,
+because the weights were fitted at one second. The live case study shows why this is
+necessary, and that on its own it is not sufficient
+([`docs/live_case_study_findings.md`](docs/live_case_study_findings.md) §5a).
 
 **`airs gate`** — refuse a batch that violates a declared data contract, before
 the agent is ever asked. Exit 1 means refused, and the refusal names the rule

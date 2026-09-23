@@ -173,7 +173,11 @@ class Loop:
 
         self.clock = self.clock or time.time
         weights, _meta = load_weights(DEFAULT_WEIGHTS, self.task)
-        self.controller = Controller(self.policy, weights)
+        # The source's own freshness target, declared in sources.yaml; None is the
+        # calibrated 1 s. It changes how an age is SCORED, never the age an age
+        # budget in the policy is held against.
+        self.controller = Controller(self.policy, weights,
+                                     freshness_target_s=self.pair.freshness_target_s)
         self.layer = semantic_layer(self.pair)
         self.stripper = _stripper() if self.strip_semantics else None
 
@@ -492,6 +496,8 @@ class Loop:
             "weights": weights,
             "airs": score,
             "weight_covered": gate["weight_covered"],
+            "freshness_target_s": gate["dimensions"]["freshness"].get(
+                "target_seconds", self.pair.freshness_target_s),
             "unmeasured": [d for d, v in gate["dimensions"].items() if v["score"] is None],
             "band": label,
             "band_note": note,

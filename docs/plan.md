@@ -619,6 +619,8 @@ ranked the risky moments above the safe ones — a null is reportable.
 > decisions under the old reference. Also fixed: the corpus's freshness correction applied
 > itself to non-corpus arms (now corpus only). The recording is committed
 > (`results/livecase/`, Licence Ouverte). 953 tests.
+>
+> **24 Sep — the freshness target per source** (author's go-ahead). `freshness_target_s` is declared per source in `sources.yaml` (every type, demo included), as `--freshness-target` on `airs probe` and `airs gate`, and in the API's score and gate bodies; the loop, `airs analyst ask`, `airs sources sample` and `/api/sources` use a source's own. **The default stays the calibrated 1 s** — every corpus number, baked file and figure is unchanged — and any other target is reported beside the score. It changes how an age is scored, **never** the age a policy's `max_record_age_seconds` is held against. **Checked on A11 by a rule declared in advance** (the feed's own cadence, 60 s): AIRS's AUC is unchanged, 0.558 — the target is necessary but not sufficient there, because the event clock (`last_reported`) is ~33 min old and the weights were fitted on the corpus. 977 tests; `make dist-check` green.
 
 ## The refetch arm — two conditions, one loop · 28 h · ~$2.20
 

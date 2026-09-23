@@ -25,6 +25,10 @@ class ScoreRequest(_Request):
     source: str | None = Field(
         None, description="JSONL: the same records upstream, matched on id. "
                           "Empty or absent leaves consistency unmeasured.")
+    freshness_target_s: float | None = Field(
+        None, gt=0, description="the age, in seconds, at which freshness stops scoring 100; "
+                                "set it to the source's update cadence (default: the "
+                                "calibrated 1s)")
 
 
 class GateRequest(ScoreRequest):

@@ -36,13 +36,15 @@ papers (F-A2, 8 h) · Zenodo DOI + `CITATION.cff` (F-E5, 2 h — needs the autho
 account). **Then the thesis** (Part 2 of the plan, from 9 Nov), with the M1 presentation on
 Fri 16 Oct before it.
 
+**Done 24 Sep: the freshness target per source** — `freshness_target_s` in `sources.yaml`,
+`--freshness-target` on `airs probe` / `airs gate`, the API's score and gate. Default
+unchanged (1 s). On A11, by a rule declared first (the feed's 60 s cadence), AIRS's AUC
+stays 0.558: necessary, not sufficient (`live_case_study_findings.md` §5a).
+
 **Open for the author — none started, none needed for the thesis:**
-1. **The freshness target as a per-source parameter.** A11 shows the 1 s target floors on
-   minute-scale sources. `DEFAULT_FRESHNESS_TARGET_S` is already a declared parameter; the
-   product could take it per source (`sources.yaml`) and per probe run. Small, $0.
-2. **A native-function-calling refetch arm** — the refetch arm's most plausible limitation.
+1. **A native-function-calling refetch arm** — the refetch arm's most plausible limitation.
    Outside the plan; cost known only after a dry-run.
-3. **F-C4** — Holm across the 8 interaction contrasts; it could change what
+2. **F-C4** — Holm across the 8 interaction contrasts; it could change what
    `interaction_findings.md` calls significant.
 
 Budget: ~$3.70 OpenAI and ~$1.10 Anthropic remain; no paid work is scheduled.
@@ -69,6 +71,11 @@ gate-re-read paths; plan checkpoint table) · **Fri 16 Oct M1** · ~~Fri 23 Oct 
 19–30 Oct and are done, so A10 and A11 have room; cut order unchanged: A10 → A11.
 
 ## 2. Decisions made (do not re-litigate)
+
+**24 Sep, the freshness target:** per source, on every entry point · default stays the
+calibrated 1 s so nothing published moves · a declared target is shown beside the score ·
+age budgets are held against the measured age, never the score · the A11 check used a rule
+fixed before computing (the source's own cadence) and no other target was tried.
 
 **23 Sep, A11's results:** one commit with the results · the recording committed
 (`results/livecase/`, Licence Ouverte, with attribution) · the consistency reference
@@ -260,7 +267,7 @@ than `unknown`. Always select runs with `run_arm(run)`, and never pool `live`.
 ## B3. Commands
 
 ```bash
-make test         # 953 tests, ~65 s
+make test         # 977 tests, ~70 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -354,6 +361,15 @@ corrupts `.next` · figures print recomputed vs published values.
   first bar's segments — build handles explicitly from every key present.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
+
+**24 Sep (the freshness target):**
+- **Declare the rule before computing the check.** A target picked to suit a data set
+  (≈ 30 min for Vélib') would be tuning on the outcome; the rule was "the source's own
+  cadence", written into the findings before the number existed.
+- **A target changes scores, not ages.** `max_record_age_seconds` is held against
+  `mean_age_seconds`; a test pins that a declared target never moves an age budget.
+- `probe.py` imports the default from `airs.calculator`; ruff sorts it after `from .airs
+  import (...)`.
 
 **23 Sep (A11, results):**
 - **Grade consistency against the publication a copy holds, not the moment it was taken.**

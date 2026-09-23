@@ -65,7 +65,8 @@ def sample_report(pair: SourcePair, n: int, key: str | None, seed: int | None,
         "upstream_now": now,
         "upstream_as_served": as_served,
         "semantic": layer.to_dict(),
-        "airs": score(delivered, reference, task, semantic_unmeasured=layer.unmeasured_reason),
+        "airs": score(delivered, reference, task, semantic_unmeasured=layer.unmeasured_reason,
+                      freshness_target_s=pair.freshness_target_s),
     }
 
 

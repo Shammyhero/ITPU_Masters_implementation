@@ -44,6 +44,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--policy", type=Path, required=True)
     parser.add_argument("--task", default="retrieval",
                         help="which calibrated weight profile to apply")
+    parser.add_argument("--freshness-target", type=float, default=None, metavar="SECONDS",
+                        help="the age at which freshness stops scoring 100 (default: the "
+                             "calibrated 1s); set it to your source's update cadence")
     parser.add_argument("--shadow", action="store_true",
                         help="warn instead of refusing, and always exit 0")
     parser.add_argument("--json", action="store_true")
@@ -58,7 +61,8 @@ def main(argv: list[str] | None = None) -> int:
         weights, _ = load_weights(DEFAULT_WEIGHTS, args.task)
         if args.shadow:
             policy = policy.shadow()
-        verdict = Controller(policy, weights).evaluate(delivered, source)
+        verdict = Controller(policy, weights,
+                             freshness_target_s=args.freshness_target).evaluate(delivered, source)
     except (ProbeError, ValueError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
