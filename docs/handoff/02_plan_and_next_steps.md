@@ -240,6 +240,17 @@ the exact dry-run) · `src/airsbench/analysis/refetch.py` (alignment, the tests,
 `src/airsbench/gate/replay.py` (`replay_menu`, the third verdict) · tests
 `test_refetch_{loop,arm,quarantine,analysis}.py`.
 
+**For live sources (A10, done):** `src/airsbench/sources/tables.py` (`sqlite`, `duckdb`, `http`;
+read afresh each question; `history` + `version_field` = readable as of; `columns`; the id
+filter pushed to SQL) · `sources/config.py` (per-side `type`, `freshness_target_s`) · tests
+`test_live_sources.py`, `test_freshness_target.py`.
+
+**For the live case study (A11, done):** `docs/live_case_study.md` (design, and what building
+it found) · `docs/live_case_study_findings.md` · `src/airsbench/livecase/{record,replay,
+questions,run}.py` · `src/airsbench/analysis/livecase.py` (Fig 4.11, H-L, the $0 re-grading
+of logged answers) · `results/livecase/` (the committed recording + attribution) · tests
+`test_livecase{,_record}.py`.
+
 **Stale — do not trust for current state:** `docs/campaign_status.md` · `infra_unused/`.
 
 ## B2. Code map (what actually runs)
@@ -252,17 +263,20 @@ the exact dry-run) · `src/airsbench/analysis/refetch.py` (alignment, the tests,
 | `src/airsbench/pipelines/loader.py` | catalog time machine, record builders |
 | `src/airsbench/probe.py`, `gate/` | scoring and admission control — stdlib only at import |
 | `src/airsbench/server/` | `airs serve` FastAPI API (the only FastAPI importer); `data/` baked |
-| `src/airsbench/sources/` | **A1** declared read-only sources; `data/esci_slice.json.gz` baked |
+| `src/airsbench/sources/` | **A1** declared read-only sources; `data/esci_slice.json.gz` baked; **A10** `tables.py` (SQLite, DuckDB, HTTP) |
+| `src/airsbench/livecase/` | **A11** record a live GBFS feed + real caches; replay it; run the questions |
 | `src/airsbench/sources/manifest*.py` | **A2** semantic manifest, the two-state rule, `airs manifest` |
 | `src/airsbench/analyst/` | **A3–A7** plans, verifier (four labels), answerers, spend caps (`budget.py`), the router and two-step loop (`loop.py`), live sessions (`sessions.py`) |
 | `src/airsbench/analysis/` | one module per result, all $0 |
 | `demo/` | console source (Next.js export) → `src/airsbench/web/` via `make web` |
-| `results/runs/` | 302 JSON artifacts — **canonical dataset** (invariant 7) |
+| `results/runs/` | 327 JSON artifacts — **canonical dataset** (invariant 7): 302 corpus + 21 refetch + 4 livecase |
+| `results/livecase/` | the A11 recording (`velib-2026-09-23.db.gz`, Licence Ouverte) — restored to `data/livecase/` on first use |
 
 **Seed blocks:** main <50 000 · freshness_sweep 50–60k · detectability 60–70k · cross_model
-70–80k · interaction 80–90k · refetch (reserved) 90–100k · **live sessions 100–110k**. All
-seven are registered in `SEED_BLOCKS`, so `run_arm(run)` names a live Tick as `live` rather
-than `unknown`. Always select runs with `run_arm(run)`, and never pool `live`.
+70–80k · interaction 80–90k · refetch 90–100k · live sessions 100–110k · **livecase
+110–120k**. All eight are registered in `SEED_BLOCKS`. Always select runs with
+`run_arm(run)`; **`NEVER_POOLED = ("live", "refetch", "livecase")`** — every corpus loader
+drops them, whatever it is asked (a different instrument, or not data).
 
 ## B3. Commands
 
@@ -272,7 +286,7 @@ make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
 make dist-check   # wheel → clean install → airs probe/gate/sources + airs serve + console
-make figures      # all 10 figures (needs data/ecommerce)
+make figures      # all 12 figures (needs data/ecommerce; restores the A11 recording)
 make lock         # re-pin requirements-lock.txt
 .venv/bin/airs serve [--records d.jsonl --source u.jsonl] [--sources sources.yaml] [--dev]
 .venv/bin/airs sources list | describe <id> | sample <id> [--seed N] [--json] [--sources f]
@@ -285,6 +299,11 @@ make lock         # re-pin requirements-lock.txt
 npm --prefix demo run data                  # regenerate demo/src/data/aist.json
 python -m airsbench.runner.run --<arm> --dry-run   # ALWAYS before any paid run
 python -m airsbench.runner.run --refetch-arm --dry-run   # 35 s, exact: $0.96 / $1.85 worst
+python -m airsbench.analysis.refetch                     # Fig 4.9, $0
+python -m airsbench.gate.replay --refetch                # the third verdict, $0
+python -m airsbench.analysis.livecase                    # Fig 4.11 + H-L + re-grading, ~1 min, $0
+python -m airsbench.analysis.campaign_state              # every arm's runs, spend, resume offsets
+.venv/bin/airs probe --records d.jsonl --freshness-target 60   # a source's own cadence
 ```
 
 ## B4. Traps (beyond CLAUDE.md)
@@ -638,7 +657,9 @@ corrupts `.next` · figures print recomputed vs published values.
 > starting point, not ground truth: confirm the state with `git log --oneline -3`
 > (expect the newest commit named in handoff 1) and `make test` (the count in handoff 1)
 > before trusting anything below.
-> Then continue from 02 Part A — the refetch arm, which is the last experiment and
-> the only paid work left. Work step by step: propose before writing code, surface
-> decisions to me as questions instead of guessing, keep every document current in
-> the same commit as the change it describes, and commit only when I ask.
+> Every experiment is done (the refetch arm, A10, A11, the per-source freshness target);
+> continue from 02 Part A §1 — the freeze week (positioning, the four papers, the DOI) and
+> then the thesis, or one of the open items there. Work step by step: propose before
+> writing code, surface decisions to me as questions instead of guessing, keep every
+> document current in the same commit as the change it describes, and commit only when I
+> ask. Never spend without a dry-run and `--max-cost`.

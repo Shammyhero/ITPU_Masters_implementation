@@ -1,7 +1,7 @@
 # Handoff 1 of 2 — Where the project stands
 
-**Refreshed:** 24 Sep 2026 · **Last pushed commit:** "The freshness target per source"
-(24 Sep), on top of `f228454` (A11: the Vélib' recording, 4 paid runs, Fig 4.11 and the
+**Refreshed:** 24 Sep 2026 · **Last pushed commit:** "Handoff: refreshed for a new session"
+(24 Sep), on top of `4340b2e` (the freshness target per source) and `f228454` (A11: the Vélib' recording, 4 paid runs, Fig 4.11 and the
 findings). **Every experiment the plan
 scheduled is done.** Before it today: `0a5a3a8` (A10, SQLite/DuckDB/HTTP sources),
 `74eaec3` (docs), `14190ce` (the refetch arm's results). Earlier
@@ -70,12 +70,16 @@ freeze week (positioning, the four papers, the DOI) and the thesis document.
 | **Refetch arm** — the last experiment, Fig 4.9 | 19–30 Oct | **done 23 Sep** — 21 runs, $0.8541; the agent never acts; the third verdict priced on the corpus |
 | A10 adapters — sqlite, duckdb, http | 19–23 Oct | **done 23 Sep** — `sources/tables.py` |
 | **A11 live case study** (Fig 4.11) | 2–6 Nov | **done 23 Sep** — Vélib' recorded 180 min; $0.19; AIRS's calibration does not transfer, its mechanism does |
-| **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
+| Freshness target per source (A11's lesson) | — | **done 24 Sep** — `freshness_target_s`; default 1 s unchanged |
+| **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | everything M1 asks for exists; rehearse |
+| Freeze week: positioning (F-A1), the four papers (F-A2), Zenodo DOI (F-E5) | 2–6 Nov | **next**, $0 — the DOI needs the author's Zenodo account |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |
 | **M2 — submission** | ~Fri 4 Dec · defence December, TBC | |
 
-Capacity: 20 h/week. ~159 h of work scheduled into ~160 h to the freeze (handoff 2, Part A §1).
+Capacity: 20 h/week. Every stage scheduled before the freeze finished by 24 Sep — about six
+weeks early — so the freeze week's 14 h and the thesis's 80 h now have room; the open items
+in handoff 2 §1 are optional.
 
 ## 4. The six research questions — answered
 
@@ -179,7 +183,12 @@ the failures (0.690) — F-B1 on real data (`live_case_study_findings.md`).
 - Latency runs analytically. The agent is one LLM call everywhere except the refetch
   arm's agent condition, where it may take a second step and never does.
 - Synthetic faults; one model for most arms; n = 3–4 replications; AIRS constants underived.
-- **Product:** no task-profile switch in the console yet (A9); `aist.json` panels partly
-  hand-typed (W5 note); a **files source has no history**, so its consistency also absorbs
-  staleness — the output says so; console verified in the browser against `next dev`, and
-  from the wheel by content checks only.
+- **Product:** `aist.json` panels partly hand-typed (W5 note); a **files or http source has
+  no history**, so its consistency also absorbs staleness — the output says so; console
+  verified in the browser against `next dev`, and from the wheel by content checks only.
+- **AIRS does not transfer untuned** (A11): on a real minute-scale feed its AUC is 0.557,
+  and 0.558 at the feed's own freshness target — the event clock, the target and the
+  weights all need setting for the source. The mechanism (exposure) and the attribution
+  do transfer. One city, one evening, 200 paid questions.
+- **The refetch arm tested one model** (gpt-4o-mini) with the re-read as a JSON action, not
+  native function calling.
