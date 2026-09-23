@@ -320,6 +320,7 @@ class Loop:
         return self.controller.evaluate(
             self._entries(records, record_ids),
             [to_probe_entry(record) for record in served] if served is not None else None,
+            semantic_unmeasured=self.layer.unmeasured_reason,
         )
 
     def _refetch(self, sample, ids: list[str], before: Verdict, *, initiated_by: str,
@@ -364,6 +365,7 @@ class Loop:
         after = self.controller.evaluate(
             self._entries(records, ids),
             [to_probe_entry(record) for record in fresh],
+            semantic_unmeasured=self.layer.unmeasured_reason,
         )
         return records, after, {
             "attempted": True,

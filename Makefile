@@ -119,6 +119,8 @@ figures:
 		--figure docs/figures/fig4_10_verifier_agreement.png >/dev/null
 	@.venv/bin/python -m airsbench.analysis.refetch \
 		--figure docs/figures/fig4_9_refetch.png >/dev/null
+	@.venv/bin/python -m airsbench.analysis.livecase \
+		--figure docs/figures/fig4_11_livecase.png >/dev/null
 	@echo "figures written to docs/figures/"
 
 # Pin the exact environment that produced the published results.

@@ -1,0 +1,3452 @@
+{
+  "run_id": "85e5315e-ae06-47a2-9c9b-8faaedef348d",
+  "config": {
+    "pipeline": "velib-cache-15min",
+    "fault_type": "none",
+    "severity": "none",
+    "task": "retrieval",
+    "replication": 1,
+    "injector_params": {},
+    "dataset": "velib_live",
+    "model": "claude-haiku-4-5",
+    "temperature": 0.2,
+    "n_queries": 50,
+    "seed": 110115,
+    "sample_seed": 10001,
+    "emit_record_age": false,
+    "refetch_mode": null,
+    "run_id": "85e5315e-ae06-47a2-9c9b-8faaedef348d"
+  },
+  "started_at": "2026-09-23T17:09:59.856872+00:00",
+  "finished_at": "2026-09-23T17:12:06.090117+00:00",
+  "metrics": {
+    "n": 50,
+    "n_verifiable": 50,
+    "accuracy": 0.82,
+    "abstention_rate": 0.02,
+    "silent_failure_rate": 0.16,
+    "parse_failures": 0,
+    "unanswered_actions": 0,
+    "refetch_rate": 0.0,
+    "agent_requests": 0,
+    "gate_refetches": 0,
+    "would_refuse": 0,
+    "n_flipped_as_delivered": 5,
+    "accuracy_on_flipped": 0.2,
+    "silent_failure_on_flipped": 0.8
+  },
+  "airs": {
+    "consistency": 93.2083,
+    "freshness": 0.0653,
+    "latency": null,
+    "semantic": null,
+    "total": 78.7115
+  },
+  "usage": {
+    "calls": 50,
+    "input_tokens": 57290,
+    "output_tokens": 6081,
+    "cost_usd": 0.087695
+  },
+  "decisions": [
+    {
+      "question_seed": 10001000,
+      "question_key": "124622630",
+      "query": "Pel\u00e9e - Alphonse Baudin",
+      "simulated_time": 1790174176.884298,
+      "served_as_of": 1790173769.900933,
+      "ids": [
+        "124622630",
+        "42907187",
+        "813544903",
+        "266963426",
+        "27363337",
+        "82405965"
+      ],
+      "value": "27363337",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": true,
+      "flipped_as_delivered": true,
+      "changed_fields": [
+        {
+          "id": "124622630",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 27,
+          "delivered": 26
+        },
+        {
+          "id": "42907187",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 9,
+          "delivered": 7
+        },
+        {
+          "id": "813544903",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 21,
+          "delivered": 22
+        },
+        {
+          "id": "266963426",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 14,
+          "delivered": 15
+        },
+        {
+          "id": "27363337",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 32,
+          "delivered": 33
+        },
+        {
+          "id": "82405965",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 33,
+          "delivered": 32
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": false,
+      "airs_first": 52.7782893377845,
+      "dimensions_first": {
+        "freshness": 0.03763334956744942,
+        "latency": null,
+        "consistency": 62.5,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2657.2176314195,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1145,
+        "output_tokens": 128,
+        "usd": 0.0017850000000000001
+      },
+      "question_type": "bikes",
+      "question": "I'm at Pel\u00e9e - Alphonse Baudin. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 406.9833650588989
+    },
+    {
+      "question_seed": 10001001,
+      "question_key": "230873471",
+      "query": "Octave Feuillet - Alb\u00e9ric Magnard",
+      "simulated_time": 1790180956.4105148,
+      "served_as_of": 1790180081.8635578,
+      "ids": [
+        "230873471",
+        "63279",
+        "213688824",
+        "39599631",
+        "49807107",
+        "82339935"
+      ],
+      "value": "82339935",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44288351142237,
+      "dimensions_first": {
+        "freshness": 0.04492543583117402,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2225.910514831543,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1158,
+        "output_tokens": 135,
+        "usd": 0.001833
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Octave Feuillet - Alb\u00e9ric Magnard. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 874.5469570159912
+    },
+    {
+      "question_seed": 10001002,
+      "question_key": "1805401614",
+      "query": "S\u00e8vres-Gallieni",
+      "simulated_time": 1790173653.6266685,
+      "served_as_of": 1790172770.776469,
+      "ids": [
+        "1805401614",
+        "82588656",
+        "43195240",
+        "653118283",
+        "102329800",
+        "11063317380"
+      ],
+      "value": 1,
+      "confidence": 0.85,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44318138498889,
+      "dimensions_first": {
+        "freshness": 0.04683928500595762,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2134.96000178655,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1141,
+        "output_tokens": 123,
+        "usd": 0.001756
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near S\u00e8vres-Gallieni have no bikes available right now?",
+      "cache_age_seconds": 882.8501994609833
+    },
+    {
+      "question_seed": 10001003,
+      "question_key": "85160045",
+      "query": "Arthur Auger - Jean Jaur\u00e8s",
+      "simulated_time": 1790177528.150793,
+      "served_as_of": 1790177352.85296,
+      "ids": [
+        "85160045",
+        "586539770",
+        "37848502",
+        "2515756572",
+        "12806084887",
+        "301841024"
+      ],
+      "value": [
+        "2515756572",
+        "301841024"
+      ],
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": false,
+      "silent_failure": true,
+      "attribution": "both",
+      "flipped": true,
+      "flipped_as_delivered": true,
+      "changed_fields": [
+        {
+          "id": "2515756572",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 6,
+          "delivered": 4
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": false,
+      "airs_first": 79.16475886277418,
+      "dimensions_first": {
+        "freshness": 0.039262121409839486,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2546.984126408895,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1139,
+        "output_tokens": 145,
+        "usd": 0.0018640000000000002
+      },
+      "question_type": "bikes",
+      "question": "I'm at Arthur Auger - Jean Jaur\u00e8s. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 175.29783296585083
+    },
+    {
+      "question_seed": 10001004,
+      "question_key": "102287315",
+      "query": "F\u00e9lix Faure - Convention",
+      "simulated_time": 1790173417.2415385,
+      "served_as_of": 1790172770.776469,
+      "ids": [
+        "102287315",
+        "82499609",
+        "101748685",
+        "101759167",
+        "213683101",
+        "102289046"
+      ],
+      "value": "101759167",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44387323770816,
+      "dimensions_first": {
+        "freshness": 0.05128446546035718,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 1949.9082051912944,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1135,
+        "output_tokens": 102,
+        "usd": 0.001645
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near F\u00e9lix Faure - Convention. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 646.4650695323944
+    },
+    {
+      "question_seed": 10001005,
+      "question_key": "102751453",
+      "query": "H\u00f4tel de Ville de Vincennes",
+      "simulated_time": 1790175171.0117502,
+      "served_as_of": 1790174665.73582,
+      "ids": [
+        "102751453",
+        "66491385",
+        "102748267",
+        "66491396",
+        "102749572",
+        "977409509"
+      ],
+      "value": 0,
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "977409509",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 3,
+          "delivered": 4
+        }
+      ],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 79.16288011073061,
+      "dimensions_first": {
+        "freshness": 0.027191066935270757,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 3677.678416887919,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1135,
+        "output_tokens": 125,
+        "usd": 0.0017599999999999998
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near H\u00f4tel de Ville de Vincennes have no bikes available right now?",
+      "cache_age_seconds": 505.2759301662445
+    },
+    {
+      "question_seed": 10001006,
+      "question_key": "499303158",
+      "query": "Jules Guesde - Pont du Port \u00e0 l'Anglais",
+      "simulated_time": 1790175461.873127,
+      "served_as_of": 1790174665.73582,
+      "ids": [
+        "499303158",
+        "631773910",
+        "650091839",
+        "214119792",
+        "235197110",
+        "1074204954"
+      ],
+      "value": "499303158",
+      "confidence": 1.0,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "650091839",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 9,
+          "delivered": 8
+        },
+        {
+          "id": "235197110",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 7,
+          "delivered": 8
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 73.88518680279407,
+      "dimensions_first": {
+        "freshness": 0.024299133253391017,
+        "latency": null,
+        "consistency": 87.5,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 4115.373126983643,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1154,
+        "output_tokens": 110,
+        "usd": 0.0017039999999999998
+      },
+      "question_type": "bikes",
+      "question": "I'm at Jules Guesde - Pont du Port \u00e0 l'Anglais. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 796.1373069286346
+    },
+    {
+      "question_seed": 10001007,
+      "question_key": "653137566",
+      "query": "Mairie de Clamart",
+      "simulated_time": 1790172000.1071591,
+      "served_as_of": 1790171866.148793,
+      "ids": [
+        "653137566",
+        "653156540",
+        "18749423187",
+        "11851103861",
+        "12225289563",
+        "2515774908"
+      ],
+      "value": "653156540",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 84.46158420472402,
+      "dimensions_first": {
+        "freshness": 0.16507811288678972,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 605.7738258043925,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1145,
+        "output_tokens": 104,
+        "usd": 0.001665
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Mairie de Clamart. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 133.9583661556244
+    },
+    {
+      "question_seed": 10001008,
+      "question_key": "303452950",
+      "query": "H\u00f4tel de Ville de Fontenay-aux-Roses",
+      "simulated_time": 1790180904.4784205,
+      "served_as_of": 1790180081.8635578,
+      "ids": [
+        "303452950",
+        "12943772652",
+        "12959947458",
+        "653155159",
+        "11851103861",
+        "653156540"
+      ],
+      "value": 1,
+      "confidence": 0.85,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44266914043475,
+      "dimensions_first": {
+        "freshness": 0.04354809395250466,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2296.3117538293204,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1159,
+        "output_tokens": 131,
+        "usd": 0.001814
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near H\u00f4tel de Ville de Fontenay-aux-Roses have no bikes available right now?",
+      "cache_age_seconds": 822.6148626804352
+    },
+    {
+      "question_seed": 10001009,
+      "question_key": "27415389",
+      "query": "Gambetta - P\u00e8re Lachaise",
+      "simulated_time": 1790172067.152998,
+      "served_as_of": 1790171866.148793,
+      "ids": [
+        "27415389",
+        "54000623",
+        "653104215",
+        "213700358",
+        "82583924",
+        "85118872"
+      ],
+      "value": [
+        "82583924",
+        "85118872"
+      ],
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": false,
+      "silent_failure": true,
+      "attribution": "agent_impairment",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": false,
+      "airs_first": 84.46126120336658,
+      "dimensions_first": {
+        "freshness": 0.1630028166845352,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 613.4863313039144,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1143,
+        "output_tokens": 147,
+        "usd": 0.001878
+      },
+      "question_type": "bikes",
+      "question": "I'm at Gambetta - P\u00e8re Lachaise. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 201.00420498847961
+    },
+    {
+      "question_seed": 10001010,
+      "question_key": "20690183551",
+      "query": "Grilles - Honor\u00e9 d'Estienne d'Orves",
+      "simulated_time": 1790178058.0796547,
+      "served_as_of": 1790177352.85296,
+      "ids": [
+        "20690183551",
+        "244400797",
+        "588452142",
+        "209057581",
+        "82554786",
+        "339797666"
+      ],
+      "value": "82554786",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44113127380407,
+      "dimensions_first": {
+        "freshness": 0.033667241427372076,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2970.24632136027,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1169,
+        "output_tokens": 112,
+        "usd": 0.001729
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Grilles - Honor\u00e9 d'Estienne d'Orves. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 705.2266945838928
+    },
+    {
+      "question_seed": 10001011,
+      "question_key": "12225158518",
+      "query": "Henri Barbusse - Gabriel P\u00e9ri",
+      "simulated_time": 1790182482.2434092,
+      "served_as_of": 1790181874.843936,
+      "ids": [
+        "12225158518",
+        "12225289563",
+        "11851103861",
+        "12959947458",
+        "13373758036",
+        "653143563"
+      ],
+      "value": 0,
+      "confidence": 0.6,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": false,
+      "silent_failure": true,
+      "attribution": "answer_key_moved",
+      "flipped": true,
+      "flipped_as_delivered": true,
+      "changed_fields": [
+        {
+          "id": "12225158518",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 8,
+          "delivered": 9
+        },
+        {
+          "id": "12225289563",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 7,
+          "delivered": 6
+        },
+        {
+          "id": "12959947458",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 5,
+          "delivered": 4
+        }
+      ],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 68.60829766123817,
+      "dimensions_first": {
+        "freshness": 0.026573999639940164,
+        "latency": null,
+        "consistency": 81.25,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 3763.076742490133,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1143,
+        "output_tokens": 115,
+        "usd": 0.001718
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Henri Barbusse - Gabriel P\u00e9ri have no bikes available right now?",
+      "cache_age_seconds": 607.3994731903076
+    },
+    {
+      "question_seed": 10001012,
+      "question_key": "653076393",
+      "query": "Place du Front Populaire - George Sand",
+      "simulated_time": 1790173535.8429763,
+      "served_as_of": 1790172770.776469,
+      "ids": [
+        "653076393",
+        "213952930",
+        "473204291",
+        "2515885093",
+        "213957917",
+        "2515855808"
+      ],
+      "value": "2515855808",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": false,
+      "airs_first": 84.44359178780851,
+      "dimensions_first": {
+        "freshness": 0.04947613897996475,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2021.176309665044,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1141,
+        "output_tokens": 126,
+        "usd": 0.001771
+      },
+      "question_type": "bikes",
+      "question": "I'm at Place du Front Populaire - George Sand. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 765.0665073394775
+    },
+    {
+      "question_seed": 10001013,
+      "question_key": "303452950",
+      "query": "H\u00f4tel de Ville de Fontenay-aux-Roses",
+      "simulated_time": 1790178868.7094631,
+      "served_as_of": 1790178249.025153,
+      "ids": [
+        "303452950",
+        "12943772652",
+        "12959947458",
+        "653155159",
+        "11851103861",
+        "653156540"
+      ],
+      "value": "653156540",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 84.43987130569046,
+      "dimensions_first": {
+        "freshness": 0.02557189761245104,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 3910.5427964528403,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1168,
+        "output_tokens": 108,
+        "usd": 0.0017079999999999999
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near H\u00f4tel de Ville de Fontenay-aux-Roses. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 619.6843101978302
+    },
+    {
+      "question_seed": 10001014,
+      "question_key": "287096529",
+      "query": "Paul Klee - Place Augusta Holmes",
+      "simulated_time": 1790176361.3058558,
+      "served_as_of": 1790175601.992975,
+      "ids": [
+        "287096529",
+        "76488849",
+        "1057319366",
+        "213676825",
+        "1064000778",
+        "13912564"
+      ],
+      "value": null,
+      "confidence": 0.0,
+      "abstained": true,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": false,
+      "silent_failure": false,
+      "attribution": null,
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44902399415473,
+      "dimensions_first": {
+        "freshness": 0.08437827465418574,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 1185.1391890843709,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1151,
+        "output_tokens": 131,
+        "usd": 0.0018059999999999999
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Paul Klee - Place Augusta Holmes have no bikes available right now?",
+      "cache_age_seconds": 759.3128807544708
+    },
+    {
+      "question_seed": 10001015,
+      "question_key": "214134714",
+      "query": "Gare Arcueil - Cachan",
+      "simulated_time": 1790174360.2721183,
+      "served_as_of": 1790173769.900933,
+      "ids": [
+        "214134714",
+        "640629438",
+        "102343591",
+        "653114443",
+        "214097180",
+        "214102967"
+      ],
+      "value": "214134714",
+      "confidence": 1.0,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "214134714",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 17,
+          "delivered": 18
+        },
+        {
+          "id": "214102967",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 3,
+          "delivered": 4
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 73.88675622125251,
+      "dimensions_first": {
+        "freshness": 0.03438270749099316,
+        "latency": null,
+        "consistency": 87.5,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2908.4387849966683,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1145,
+        "output_tokens": 105,
+        "usd": 0.00167
+      },
+      "question_type": "bikes",
+      "question": "I'm at Gare Arcueil - Cachan. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 590.3711853027344
+    },
+    {
+      "question_seed": 10001016,
+      "question_key": "80298493",
+      "query": "Mairie du Kremlin-Bic\u00eatre",
+      "simulated_time": 1790175506.7376068,
+      "served_as_of": 1790174665.73582,
+      "ids": [
+        "80298493",
+        "85165045",
+        "3906335682",
+        "85162552",
+        "478385490",
+        "39535340"
+      ],
+      "value": "85162552",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "80298493",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 20,
+          "delivered": 19
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 79.16244813817681,
+      "dimensions_first": {
+        "freshness": 0.02441562658575994,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 4095.7376067638397,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1158,
+        "output_tokens": 109,
+        "usd": 0.001703
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Mairie du Kremlin-Bic\u00eatre. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 841.0017867088318
+    },
+    {
+      "question_seed": 10001017,
+      "question_key": "13373712848",
+      "query": "Place de la Paix - Abb\u00e9 Saint-Pierre",
+      "simulated_time": 1790175425.2522302,
+      "served_as_of": 1790174665.73582,
+      "ids": [
+        "13373712848",
+        "653140345",
+        "501862076",
+        "17992442278",
+        "16134083337",
+        "11218473640"
+      ],
+      "value": 1,
+      "confidence": 0.85,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": false,
+      "silent_failure": true,
+      "attribution": "answer_key_moved",
+      "flipped": true,
+      "flipped_as_delivered": true,
+      "changed_fields": [],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 84.43975772465686,
+      "dimensions_first": {
+        "freshness": 0.024842135082798172,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 4025.4188968340554,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1163,
+        "output_tokens": 127,
+        "usd": 0.0017980000000000001
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Place de la Paix - Abb\u00e9 Saint-Pierre have no bikes available right now?",
+      "cache_age_seconds": 759.516410112381
+    },
+    {
+      "question_seed": 10001018,
+      "question_key": "1057765913",
+      "query": "H\u00f4pital Necker",
+      "simulated_time": 1790177537.8400788,
+      "served_as_of": 1790177352.85296,
+      "ids": [
+        "1057765913",
+        "100872260",
+        "41464928",
+        "20490738387",
+        "213682190",
+        "101742129"
+      ],
+      "value": "100872260",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "1057765913",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 27,
+          "delivered": 28
+        },
+        {
+          "id": "213682190",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 3,
+          "delivered": 2
+        },
+        {
+          "id": "101742129",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 3,
+          "delivered": 4
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 68.61066429338051,
+      "dimensions_first": {
+        "freshness": 0.04177970260084618,
+        "latency": null,
+        "consistency": 81.25,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2393.5067454973855,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1152,
+        "output_tokens": 102,
+        "usd": 0.001662
+      },
+      "question_type": "bikes",
+      "question": "I'm at H\u00f4pital Necker. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 184.9871187210083
+    },
+    {
+      "question_seed": 10001019,
+      "question_key": "1074390359",
+      "query": "Youri Gagarine - Commune de Paris",
+      "simulated_time": 1790180522.2633,
+      "served_as_of": 1790180081.8635578,
+      "ids": [
+        "1074390359",
+        "1057387136",
+        "17278902806",
+        "620676855",
+        "1057221951",
+        "653139897"
+      ],
+      "value": "653139897",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44430840963204,
+      "dimensions_first": {
+        "freshness": 0.05408046188633612,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 1849.0966332753499,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1165,
+        "output_tokens": 104,
+        "usd": 0.001685
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Youri Gagarine - Commune de Paris. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 440.39974212646484
+    },
+    {
+      "question_seed": 10001020,
+      "question_key": "66491395",
+      "query": "Daumesnil - H\u00e9brard",
+      "simulated_time": 1790177933.456175,
+      "served_as_of": 1790177352.85296,
+      "ids": [
+        "66491395",
+        "27414945",
+        "82421013",
+        "37815204",
+        "82421994",
+        "100933541"
+      ],
+      "value": 0,
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "27414945",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 5,
+          "delivered": 4
+        },
+        {
+          "id": "82421994",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 10,
+          "delivered": 9
+        }
+      ],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 73.88690139239324,
+      "dimensions_first": {
+        "freshness": 0.03531543767954705,
+        "latency": null,
+        "consistency": 87.5,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2831.622841755549,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1137,
+        "output_tokens": 124,
+        "usd": 0.0017569999999999999
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Daumesnil - H\u00e9brard have no bikes available right now?",
+      "cache_age_seconds": 580.6032149791718
+    },
+    {
+      "question_seed": 10001021,
+      "question_key": "20636368032",
+      "query": "Victor Cousin - Cujas",
+      "simulated_time": 1790180204.0674074,
+      "served_as_of": 1790180081.8635578,
+      "ids": [
+        "20636368032",
+        "210408693",
+        "18099679477",
+        "66491368",
+        "35380305",
+        "210399835"
+      ],
+      "value": "66491368",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "20636368032",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 3,
+          "delivered": 2
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 79.16922581319967,
+      "dimensions_first": {
+        "freshness": 0.06796245049613472,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 1471.400740702947,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1139,
+        "output_tokens": 102,
+        "usd": 0.001649
+      },
+      "question_type": "bikes",
+      "question": "I'm at Victor Cousin - Cujas. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 122.20384955406189
+    },
+    {
+      "question_seed": 10001022,
+      "question_key": "129038848",
+      "query": "Enghien - Faubourg Poissonni\u00e8re",
+      "simulated_time": 1790182032.4959328,
+      "served_as_of": 1790181874.843936,
+      "ids": [
+        "129038848",
+        "37521",
+        "37420",
+        "6515",
+        "54000536",
+        "54000560"
+      ],
+      "value": "6515",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "129038848",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 16,
+          "delivered": 17
+        },
+        {
+          "id": "37420",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 7,
+          "delivered": 6
+        },
+        {
+          "id": "6515",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 35,
+          "delivered": 36
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 65.09079266005105,
+      "dimensions_first": {
+        "freshness": 0.030796117205798973,
+        "latency": null,
+        "consistency": 77.08333333333334,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 3247.1625994841256,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1157,
+        "output_tokens": 112,
+        "usd": 0.0017170000000000002
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Enghien - Faubourg Poissonni\u00e8re. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 157.6519968509674
+    },
+    {
+      "question_seed": 10001023,
+      "question_key": "378648513",
+      "query": "Jean Colly - Tolbiac",
+      "simulated_time": 1790181555.6137006,
+      "served_as_of": 1790180977.757966,
+      "ids": [
+        "378648513",
+        "213674686",
+        "125811629",
+        "27415169",
+        "256561528",
+        "101022698"
+      ],
+      "value": 0,
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "101022698",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 2,
+          "delivered": 5
+        }
+      ],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 73.88694773759138,
+      "dimensions_first": {
+        "freshness": 0.035613207368414716,
+        "latency": null,
+        "consistency": 87.5,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2807.947033961614,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1131,
+        "output_tokens": 124,
+        "usd": 0.001751
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Jean Colly - Tolbiac have no bikes available right now?",
+      "cache_age_seconds": 577.8557345867157
+    },
+    {
+      "question_seed": 10001024,
+      "question_key": "101763163",
+      "query": "Desaix - Edgar Faure",
+      "simulated_time": 1790175791.8106942,
+      "served_as_of": 1790175601.992975,
+      "ids": [
+        "101763163",
+        "85008390",
+        "559595472",
+        "27415224",
+        "66491393",
+        "213684750"
+      ],
+      "value": "85008390",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "101763163",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 10,
+          "delivered": 9
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 79.18243509445426,
+      "dimensions_first": {
+        "freshness": 0.1528325929619165,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 654.3106942176819,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1131,
+        "output_tokens": 131,
+        "usd": 0.0017859999999999998
+      },
+      "question_type": "bikes",
+      "question": "I'm at Desaix - Edgar Faure. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 189.8177192211151
+    },
+    {
+      "question_seed": 10001025,
+      "question_key": "230952057",
+      "query": "Place Marcel Cachin",
+      "simulated_time": 1790181261.4353826,
+      "served_as_of": 1790180977.757966,
+      "ids": [
+        "230952057",
+        "653106960",
+        "613737748",
+        "35101194",
+        "653110492",
+        "94250567"
+      ],
+      "value": "94250567",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44189995272295,
+      "dimensions_first": {
+        "freshness": 0.03860603318285074,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2590.2687159379325,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1154,
+        "output_tokens": 108,
+        "usd": 0.0016939999999999998
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Place Marcel Cachin. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 283.67741656303406
+    },
+    {
+      "question_seed": 10001026,
+      "question_key": "20431134793",
+      "query": "Ch\u00e2teau -R\u00e9publique",
+      "simulated_time": 1790173856.1879265,
+      "served_as_of": 1790173769.900933,
+      "ids": [
+        "20431134793",
+        "1063017616",
+        "653150828",
+        "13341879803",
+        "570185777",
+        "653153519"
+      ],
+      "value": 1,
+      "confidence": 0.6,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "570185777",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 6,
+          "delivered": 5
+        }
+      ],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 79.16507503064945,
+      "dimensions_first": {
+        "freshness": 0.041293512225274165,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2421.687926530838,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1129,
+        "output_tokens": 109,
+        "usd": 0.0016740000000000001
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Ch\u00e2teau -R\u00e9publique have no bikes available right now?",
+      "cache_age_seconds": 86.28699350357056
+    },
+    {
+      "question_seed": 10001027,
+      "question_key": "653102462",
+      "query": "Lampes",
+      "simulated_time": 1790175982.1123567,
+      "served_as_of": 1790175601.992975,
+      "ids": [
+        "653102462",
+        "16898865154",
+        "35101194",
+        "653106960",
+        "230952057",
+        "653087914"
+      ],
+      "value": "653106960",
+      "confidence": 0.85,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": false,
+      "silent_failure": true,
+      "attribution": "corrupted_in_transit",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "35101194",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 8,
+          "delivered": 9
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": false,
+      "airs_first": 79.17569940707952,
+      "dimensions_first": {
+        "freshness": 0.10955554131299373,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 912.7790233294169,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1136,
+        "output_tokens": 162,
+        "usd": 0.0019459999999999998
+      },
+      "question_type": "bikes",
+      "question": "I'm at Lampes. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 380.1193816661835
+    },
+    {
+      "question_seed": 10001028,
+      "question_key": "1063017616",
+      "query": "Mairie de La Garenne Colombes",
+      "simulated_time": 1790173800.4551105,
+      "served_as_of": 1790173769.900933,
+      "ids": [
+        "1063017616",
+        "653150828",
+        "13341879803",
+        "20431134793",
+        "1063012692",
+        "653205656"
+      ],
+      "value": "653150828",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 84.4424488422506,
+      "dimensions_first": {
+        "freshness": 0.042132669607065,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2373.4551105499268,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1148,
+        "output_tokens": 105,
+        "usd": 0.001673
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Mairie de La Garenne Colombes. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 30.5541775226593
+    },
+    {
+      "question_seed": 10001029,
+      "question_key": "13912564",
+      "query": "Bruant - Vincent Auriol",
+      "simulated_time": 1790173393.3933725,
+      "served_as_of": 1790172770.776469,
+      "ids": [
+        "13912564",
+        "567884788",
+        "224598098",
+        "213676825",
+        "549480297",
+        "101015227"
+      ],
+      "value": 0,
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44444426016692,
+      "dimensions_first": {
+        "freshness": 0.05495330682210516,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 1819.7267058690388,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1137,
+        "output_tokens": 122,
+        "usd": 0.001747
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Bruant - Vincent Auriol have no bikes available right now?",
+      "cache_age_seconds": 622.6169035434723
+    },
+    {
+      "question_seed": 10001030,
+      "question_key": "54000564",
+      "query": "Paradis - Hauteville",
+      "simulated_time": 1790175652.850291,
+      "served_as_of": 1790175601.992975,
+      "ids": [
+        "54000564",
+        "121025345",
+        "54000562",
+        "27313492",
+        "37521",
+        "15309045"
+      ],
+      "value": "27313492",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "121025345",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 2,
+          "delivered": 3
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 79.18461636445859,
+      "dimensions_first": {
+        "freshness": 0.16684733702366927,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 599.3502910137177,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1144,
+        "output_tokens": 135,
+        "usd": 0.001819
+      },
+      "question_type": "bikes",
+      "question": "I'm at Paradis - Hauteville. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 50.85731601715088
+    },
+    {
+      "question_seed": 10001031,
+      "question_key": "18012983979",
+      "query": "Gallieni - Lyc\u00e9e Charles Petitet",
+      "simulated_time": 1790174496.996009,
+      "served_as_of": 1790173769.900933,
+      "ids": [
+        "18012983979",
+        "20702544649",
+        "20702946965",
+        "653046369",
+        "18013122841",
+        "17527110170"
+      ],
+      "value": "17527110170",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "18012983979",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 11,
+          "delivered": 12
+        },
+        {
+          "id": "653046369",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 21,
+          "delivered": 22
+        },
+        {
+          "id": "17527110170",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 28,
+          "delivered": 27
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 68.60928255737656,
+      "dimensions_first": {
+        "freshness": 0.032901995385456725,
+        "latency": null,
+        "consistency": 81.25,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 3039.329342444738,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1155,
+        "output_tokens": 113,
+        "usd": 0.0017200000000000002
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Gallieni - Lyc\u00e9e Charles Petitet. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 727.095076084137
+    },
+    {
+      "question_seed": 10001032,
+      "question_key": "102333275",
+      "query": "Saint-Vincent - Verdun",
+      "simulated_time": 1790175720.9286807,
+      "served_as_of": 1790175601.992975,
+      "ids": [
+        "102333275",
+        "16529895896",
+        "102335085",
+        "1057081237",
+        "37504995",
+        "1055541632"
+      ],
+      "value": 0,
+      "confidence": 1.0,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 84.45885524095145,
+      "dimensions_first": {
+        "freshness": 0.14754441520121617,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 677.7620139916738,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1143,
+        "output_tokens": 121,
+        "usd": 0.001748
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Saint-Vincent - Verdun have no bikes available right now?",
+      "cache_age_seconds": 118.93570566177368
+    },
+    {
+      "question_seed": 10001033,
+      "question_key": "15401095",
+      "query": "Versailles - Claude Terrasse",
+      "simulated_time": 1790177936.6726646,
+      "served_as_of": 1790177352.85296,
+      "ids": [
+        "15401095",
+        "82562556",
+        "27415302",
+        "82563707",
+        "506455295",
+        "201923447"
+      ],
+      "value": "15401095",
+      "confidence": 1.0,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "82562556",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 23,
+          "delivered": 22
+        },
+        {
+          "id": "27415302",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 12,
+          "delivered": 11
+        },
+        {
+          "id": "82563707",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 19,
+          "delivered": 18
+        },
+        {
+          "id": "201923447",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 26,
+          "delivered": 25
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 63.332459897101195,
+      "dimensions_first": {
+        "freshness": 0.0356040065682536,
+        "latency": null,
+        "consistency": 75.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2808.672664642334,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1147,
+        "output_tokens": 102,
+        "usd": 0.001657
+      },
+      "question_type": "bikes",
+      "question": "I'm at Versailles - Claude Terrasse. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 583.8197045326233
+    },
+    {
+      "question_seed": 10001034,
+      "question_key": "128986726",
+      "query": "Bo\u00e9tie - Ponthieu",
+      "simulated_time": 1790182071.3123705,
+      "served_as_of": 1790181874.843936,
+      "ids": [
+        "128986726",
+        "121086415",
+        "54000553",
+        "49403716",
+        "74805344",
+        "54000555"
+      ],
+      "value": "54000555",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": false,
+      "silent_failure": true,
+      "attribution": "both",
+      "flipped": true,
+      "flipped_as_delivered": true,
+      "changed_fields": [
+        {
+          "id": "49403716",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 18,
+          "delivered": 21
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": false,
+      "airs_first": 79.15866622012764,
+      "dimensions_first": {
+        "freshness": 0.00011665698698977905,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 857213.9790372053,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1157,
+        "output_tokens": 115,
+        "usd": 0.001732
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Bo\u00e9tie - Ponthieu. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 196.46843457221985
+    },
+    {
+      "question_seed": 10001035,
+      "question_key": "571923059",
+      "query": "Bordier - F\u00e9lix Faure",
+      "simulated_time": 1790171974.5146747,
+      "served_as_of": 1790171866.148793,
+      "ids": [
+        "571923059",
+        "35317080",
+        "129161858",
+        "54000635",
+        "213699079",
+        "27278603"
+      ],
+      "value": 0,
+      "confidence": 0.7,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 84.4697620222359,
+      "dimensions_first": {
+        "freshness": 0.21762090639046494,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 459.5146746635437,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1145,
+        "output_tokens": 124,
+        "usd": 0.001765
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Bordier - F\u00e9lix Faure have no bikes available right now?",
+      "cache_age_seconds": 108.36588168144226
+    },
+    {
+      "question_seed": 10001036,
+      "question_key": "100923502",
+      "query": "Crozatier - Faubourg Saint-Antoine",
+      "simulated_time": 1790172913.1822753,
+      "served_as_of": 1790172770.776469,
+      "ids": [
+        "100923502",
+        "19495480499",
+        "15299574",
+        "101011685",
+        "1056959071",
+        "426772876"
+      ],
+      "value": "19495480499",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44745722875439,
+      "dimensions_first": {
+        "freshness": 0.07431174641730262,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 1345.6822752952576,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1142,
+        "output_tokens": 102,
+        "usd": 0.001652
+      },
+      "question_type": "bikes",
+      "question": "I'm at Crozatier - Faubourg Saint-Antoine. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 142.4058063030243
+    },
+    {
+      "question_seed": 10001037,
+      "question_key": "54000577",
+      "query": "Arago - Glaci\u00e8re",
+      "simulated_time": 1790174495.2362056,
+      "served_as_of": 1790173769.900933,
+      "ids": [
+        "54000577",
+        "284708999",
+        "66505516",
+        "210749865",
+        "1062812659",
+        "75313725"
+      ],
+      "value": "66505516",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "54000577",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 17,
+          "delivered": 16
+        },
+        {
+          "id": "66505516",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 48,
+          "delivered": 46
+        },
+        {
+          "id": "75313725",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 33,
+          "delivered": 32
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 68.60940962979315,
+      "dimensions_first": {
+        "freshness": 0.03371844057199814,
+        "latency": null,
+        "consistency": 81.25,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2965.7362055778503,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1144,
+        "output_tokens": 112,
+        "usd": 0.0017040000000000002
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Arago - Glaci\u00e8re. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 725.3352725505829
+    },
+    {
+      "question_seed": 10001038,
+      "question_key": "128889359",
+      "query": "Champ de Mars - Cler",
+      "simulated_time": 1790177259.204595,
+      "served_as_of": 1790176457.0443861,
+      "ids": [
+        "128889359",
+        "494183852",
+        "128890772",
+        "1062742831",
+        "54000550",
+        "66491386"
+      ],
+      "value": 0,
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44316295420525,
+      "dimensions_first": {
+        "freshness": 0.046720866508913814,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2140.3712617556253,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1146,
+        "output_tokens": 123,
+        "usd": 0.001761
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Champ de Mars - Cler have no bikes available right now?",
+      "cache_age_seconds": 802.160208940506
+    },
+    {
+      "question_seed": 10001039,
+      "question_key": "221047138",
+      "query": "Pierre et Marie Curie - Julien Grimau",
+      "simulated_time": 1790177386.964229,
+      "served_as_of": 1790177352.85296,
+      "ids": [
+        "221047138",
+        "82568336",
+        "102743096",
+        "102752610",
+        "261987383",
+        "213945171"
+      ],
+      "value": "261987383",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": false,
+      "silent_failure": true,
+      "attribution": "corrupted_in_transit",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "221047138",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 6,
+          "delivered": 5
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": false,
+      "airs_first": 79.16557427717898,
+      "dimensions_first": {
+        "freshness": 0.04450119046829056,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2247.1308957735696,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1153,
+        "output_tokens": 151,
+        "usd": 0.001908
+      },
+      "question_type": "bikes",
+      "question": "I'm at Pierre et Marie Curie - Julien Grimau. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 34.11126899719238
+    },
+    {
+      "question_seed": 10001040,
+      "question_key": "653114003",
+      "query": "D\u00f4me - R\u00e9publique",
+      "simulated_time": 1790172941.9787266,
+      "served_as_of": 1790172770.776469,
+      "ids": [
+        "653114003",
+        "1057045129",
+        "252339799",
+        "653121023",
+        "82590367",
+        "117480156"
+      ],
+      "value": "252339799",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": false,
+      "airs_first": 84.44734687551718,
+      "dimensions_first": {
+        "freshness": 0.07360272260423435,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 1358.6453932921092,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1147,
+        "output_tokens": 154,
+        "usd": 0.001917
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near D\u00f4me - R\u00e9publique. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 171.20225763320923
+    },
+    {
+      "question_seed": 10001041,
+      "question_key": "213686471",
+      "query": "Eylau - Trocad\u00e9ro",
+      "simulated_time": 1790179713.1206586,
+      "served_as_of": 1790179226.6833658,
+      "ids": [
+        "213686471",
+        "19495456684",
+        "213688462",
+        "38280",
+        "129080400",
+        "54000593"
+      ],
+      "value": 2,
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "54000593",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 20,
+          "delivered": 19
+        }
+      ],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 79.17316067556231,
+      "dimensions_first": {
+        "freshness": 0.09324409321873343,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 1072.4539919694264,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1151,
+        "output_tokens": 125,
+        "usd": 0.0017759999999999998
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Eylau - Trocad\u00e9ro have no bikes available right now?",
+      "cache_age_seconds": 486.43729281425476
+    },
+    {
+      "question_seed": 10001042,
+      "question_key": "1055553396",
+      "query": "Mornay - Sully",
+      "simulated_time": 1790173962.6395178,
+      "served_as_of": 1790173769.900933,
+      "ids": [
+        "1055553396",
+        "20431005501",
+        "265201872",
+        "1056979685",
+        "84986959",
+        "380891087"
+      ],
+      "value": [
+        "84986959",
+        "380891087"
+      ],
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": false,
+      "silent_failure": true,
+      "attribution": "corrupted_in_transit",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "84986959",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 36,
+          "delivered": 34
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 77.40595539965855,
+      "dimensions_first": {
+        "freshness": 0.04104574401946237,
+        "latency": null,
+        "consistency": 91.66666666666666,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 2436.306184450785,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1145,
+        "output_tokens": 166,
+        "usd": 0.001975
+      },
+      "question_type": "bikes",
+      "question": "I'm at Mornay - Sully. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 192.7385847568512
+    },
+    {
+      "question_seed": 10001043,
+      "question_key": "516709288",
+      "query": "Charonne - Robert et Sonia Delaunay",
+      "simulated_time": 1790179991.8325872,
+      "served_as_of": 1790179226.6833658,
+      "ids": [
+        "516709288",
+        "27363029",
+        "27415371",
+        "221036108",
+        "7247",
+        "20637420127"
+      ],
+      "value": "221036108",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "27363029",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 25,
+          "delivered": 26
+        },
+        {
+          "id": "27415371",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 32,
+          "delivered": 31
+        },
+        {
+          "id": "7247",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 19,
+          "delivered": 21
+        },
+        {
+          "id": "20637420127",
+          "field": "num_docks_available",
+          "change": "value changed",
+          "source": 23,
+          "delivered": 21
+        }
+      ],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 61.580657908508435,
+      "dimensions_first": {
+        "freshness": 0.08237237352331431,
+        "latency": null,
+        "consistency": 72.91666666666666,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 1213.9992539087932,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1141,
+        "output_tokens": 131,
+        "usd": 0.0017959999999999999
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Charonne - Robert et Sonia Delaunay. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 765.1492214202881
+    },
+    {
+      "question_seed": 10001044,
+      "question_key": "209057581",
+      "query": "Gabriel P\u00e9ri - Francisco Ferrer",
+      "simulated_time": 1790171882.4222486,
+      "served_as_of": 1790171866.148793,
+      "ids": [
+        "209057581",
+        "81212212",
+        "20690183551",
+        "463297497",
+        "13242682",
+        "391845823"
+      ],
+      "value": 2,
+      "confidence": 0.85,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 84.4684915681625,
+      "dimensions_first": {
+        "freshness": 0.2094581898787513,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 477.42224860191345,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1140,
+        "output_tokens": 123,
+        "usd": 0.001755
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Gabriel P\u00e9ri - Francisco Ferrer have no bikes available right now?",
+      "cache_age_seconds": 16.27345561981201
+    },
+    {
+      "question_seed": 10001045,
+      "question_key": "27415246",
+      "query": "Javel - Andr\u00e9 Citro\u00ebn",
+      "simulated_time": 1790179711.4937875,
+      "served_as_of": 1790179226.6833658,
+      "ids": [
+        "27415246",
+        "30641281",
+        "82550543",
+        "404947652",
+        "213683992",
+        "389788858"
+      ],
+      "value": "389788858",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "404947652",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 31,
+          "delivered": 32
+        }
+      ],
+      "plan_matches_question": false,
+      "agent_plan_agrees": false,
+      "airs_first": 79.17459499773086,
+      "dimensions_first": {
+        "freshness": 0.10245966857368438,
+        "latency": null,
+        "consistency": 93.75,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 975.9937875270844,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1135,
+        "output_tokens": 126,
+        "usd": 0.001765
+      },
+      "question_type": "bikes",
+      "question": "I'm at Javel - Andr\u00e9 Citro\u00ebn. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 484.810421705246
+    },
+    {
+      "question_seed": 10001046,
+      "question_key": "572566600",
+      "query": "Edouard Tremblay - Julian Grimaux",
+      "simulated_time": 1790175069.2140434,
+      "served_as_of": 1790174665.73582,
+      "ids": [
+        "572566600",
+        "1988517250",
+        "1765749389",
+        "653139897",
+        "653144717",
+        "1062256852"
+      ],
+      "value": "572566600",
+      "confidence": 1.0,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 84.44006539011986,
+      "dimensions_first": {
+        "freshness": 0.02681889757075163,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 3728.71404337883,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1152,
+        "output_tokens": 109,
+        "usd": 0.0016970000000000002
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Edouard Tremblay - Julian Grimaux. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 403.478223323822
+    },
+    {
+      "question_seed": 10001047,
+      "question_key": "84960402",
+      "query": "Gobelins - Port-Royal",
+      "simulated_time": 1790178593.7338357,
+      "served_as_of": 1790178249.025153,
+      "ids": [
+        "84960402",
+        "82334007",
+        "66491398",
+        "66505516",
+        "82429586",
+        "100783424"
+      ],
+      "value": 0,
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [
+        {
+          "id": "84960402",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 16,
+          "delivered": 15
+        },
+        {
+          "id": "66505516",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 4,
+          "delivered": 5
+        },
+        {
+          "id": "100783424",
+          "field": "num_bikes_available",
+          "change": "value changed",
+          "source": 59,
+          "delivered": 58
+        }
+      ],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 68.60869942770148,
+      "dimensions_first": {
+        "freshness": 0.029155364690923648,
+        "latency": null,
+        "consistency": 81.25,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 3429.9005023638406,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1127,
+        "output_tokens": 122,
+        "usd": 0.001737
+      },
+      "question_type": "empty",
+      "question": "How many of these stations near Gobelins - Port-Royal have no bikes available right now?",
+      "cache_age_seconds": 344.70868277549744
+    },
+    {
+      "question_seed": 10001048,
+      "question_key": "39296638",
+      "query": "Berri - Haussmann",
+      "simulated_time": 1790172150.2165837,
+      "served_as_of": 1790171866.148793,
+      "ids": [
+        "39296638",
+        "49474389",
+        "49403716",
+        "82379648",
+        "128986726",
+        "216039437"
+      ],
+      "value": "39296638",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": false,
+      "agent_plan_agrees": true,
+      "airs_first": 84.43591078972646,
+      "dimensions_first": {
+        "freshness": 0.00012542950985145677,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 797260.5499170622,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1128,
+        "output_tokens": 102,
+        "usd": 0.001638
+      },
+      "question_type": "bikes",
+      "question": "I'm at Berri - Haussmann. Which of these nearby stations has the most bikes available right now?",
+      "cache_age_seconds": 284.06779074668884
+    },
+    {
+      "question_seed": 10001049,
+      "question_key": "2515855808",
+      "query": "Madeleine Vionnet",
+      "simulated_time": 1790179327.1648505,
+      "served_as_of": 1790179226.6833658,
+      "ids": [
+        "2515855808",
+        "27296946",
+        "473204291",
+        "213699079",
+        "54000608",
+        "653094517"
+      ],
+      "value": "213699079",
+      "confidence": 0.95,
+      "abstained": false,
+      "parse_failed": false,
+      "unanswered_action": false,
+      "verifiable": true,
+      "correct": true,
+      "silent_failure": false,
+      "attribution": "correct",
+      "flipped": false,
+      "flipped_as_delivered": false,
+      "changed_fields": [],
+      "plan_matches_question": true,
+      "agent_plan_agrees": true,
+      "airs_first": 84.46031839789546,
+      "dimensions_first": {
+        "freshness": 0.15694525510266535,
+        "latency": null,
+        "consistency": 100.0,
+        "semantic": null
+      },
+      "gate": {
+        "verdict": "admit",
+        "shadowed": false,
+        "rules": [],
+        "record_age_seconds": 637.1648504734039,
+        "reason": "admitted"
+      },
+      "refetch": {
+        "attempted": false,
+        "initiated_by": null,
+        "asked_ids": null,
+        "why": null,
+        "n_records": 0,
+        "verdict_after": null,
+        "reason": null
+      },
+      "usage": {
+        "input_tokens": 1140,
+        "output_tokens": 137,
+        "usd": 0.001825
+      },
+      "question_type": "docks",
+      "question": "I need to return a bike near Madeleine Vionnet. Which of these nearby stations has the most free docks right now?",
+      "cache_age_seconds": 100.48148465156555
+    }
+  ]
+}

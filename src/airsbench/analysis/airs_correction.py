@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Any
 
 from ..airs import AIRSCalculator, freshness_score
-from ..runner.config import RunConfig
+from ..runner.config import NEVER_POOLED, RunConfig, run_arm
 from ..runner.execute import value_staleness_s
 
 # Below this the recorded score already matches the recomputed one and the run
@@ -72,20 +72,32 @@ def corrected_airs(
 def needs_correction(run: dict[str, Any]) -> bool:
     """True if what the run *recorded* disagrees with the recomputed value.
 
+    Never for an arm outside the corpus (`NEVER_POOLED`): the recomputation derives
+    freshness from the corpus's simulated pipelines, which the live case study's
+    real feed and the Analyst-driven arms do not have.
+
     Reads `airs_recorded` when present, so this answers the same question
     whether it is handed a raw artifact or one already passed through
     `load_corrected` — otherwise a corrected run would be compared against
     itself and always look clean.
     """
+    if run_arm(run) in NEVER_POOLED:
+        return False
     recorded = run.get("airs_recorded", run["airs"])
     return abs(recorded["freshness"] - true_freshness_score(run)) > TOLERANCE
 
 
 def load_corrected(results_dir: Path) -> list[dict[str, Any]]:
-    """Every run, with `airs` corrected and `airs_recorded` kept for audit."""
+    """Every CORPUS run, with `airs` corrected and `airs_recorded` kept for audit.
+
+    The double-count this corrects was the corpus runner's; arms outside the corpus
+    (`NEVER_POOLED`) never had it and are left out.
+    """
     runs = []
     for path in sorted(results_dir.glob("*.json")):
         run = json.loads(path.read_text())
+        if run_arm(run) in NEVER_POOLED:
+            continue
         run["airs_recorded"] = dict(run["airs"])
         run["airs"] = corrected_airs(run)
         runs.append(run)

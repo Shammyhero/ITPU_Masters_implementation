@@ -15,65 +15,37 @@ Adversarial audit: **`REVIEW.md`** (Phase 3 is design history). This file is the
 
 ---
 
-## 1. Immediate next step: A11, the live case study — the design to propose
+## 1. Immediate next step: the freeze week, then the thesis — every experiment is done
 
-**A1–A9 are done, and so is the refetch arm (23 Sep)** — `docs/refetch_findings.md`,
-Fig 4.9, 21 runs, $0.8541, all committed. In one line each:
+**Everything the plan scheduled before the freeze is built and run** (23 Sep): A1–A9, the
+refetch arm (Fig 4.9), A10's live sources, and the A11 live case study (Fig 4.11). All 12
+figures regenerate from the repository (`make figures`). In one line each:
 
-- **The agent never acts.** Offered a re-read, gpt-4o-mini asked 0 times in 1,800
-  questions, age hidden or shown, healthy or stale (≤ 0.66% per cell). H-R1a/b null;
-  **kill question 3 answered** (the loop is agentic; the agent declines the act).
-- **The act works when a gate takes it.** A gate re-read matches the healthy pipeline
-  (98.0% same correctness), prevents 43 of 57 stale silent failures and gains 35 correct
-  answers net; refusal forfeits 374. On the corpus, `python -m airsbench.gate.replay
-  --refetch` shows a staleness gate that re-reads keeps 100% coverage and gains answers
-  (`gate_findings.md` §7, which revises §4's "staleness is the wrong gate for retrieval").
-- **Exploratory:** the unused tool-offering prompt costs 2.9–4.3 pp accuracy.
+- **Refetch arm** (`refetch_findings.md`): offered a re-read, gpt-4o-mini asked 0 times in
+  1,800 questions — kill question 3 answered; a gate's re-read matches a healthy pipeline
+  and, on the corpus, turns a staleness gate from a trade into a gain (`gate_findings.md` §7).
+- **Live case study** (`live_case_study_findings.md`): on Vélib' (Paris), a 15-minute cache
+  doubles silent failure against a 5-minute one for both models, through exposure (11.0%
+  vs 5.7%); **AIRS as calibrated does not rank the failures** (AUC 0.557 [0.435, 0.675])
+  while the records' age does (0.690) — F-B1 on real data: a score's timescale must be the
+  source's. The recording is committed (`results/livecase/`).
 
-The history of how it was built — design, loop, runner, pilot, campaign, analysis — is
-in `docs/refetch_arm.md` and the plan's progress notes; the traps it hit are in B4.
+**Next, the freeze week (2–6 Nov, 14 h, all $0):** positioning against ISO/IEC 25012, data
+contracts and agent benchmarks (F-A1, 4 h) · a full-text read of the four load-bearing
+papers (F-A2, 8 h) · Zenodo DOI + `CITATION.cff` (F-E5, 2 h — needs the author's Zenodo
+account). **Then the thesis** (Part 2 of the plan, from 9 Nov), with the M1 presentation on
+Fri 16 Oct before it.
 
-**What is left before the freeze (Fri 6 Nov):** ~~A10 adapters~~ **done 23 Sep**, A11
-live case study (6 h, cut second), positioning + the four papers + DOI (14 h). Then the
-thesis (Part 2 of the plan).
+**Open for the author — none started, none needed for the thesis:**
+1. **The freshness target as a per-source parameter.** A11 shows the 1 s target floors on
+   minute-scale sources. `DEFAULT_FRESHNESS_TARGET_S` is already a declared parameter; the
+   product could take it per source (`sources.yaml`) and per probe run. Small, $0.
+2. **A native-function-calling refetch arm** — the refetch arm's most plausible limitation.
+   Outside the plan; cost known only after a dry-run.
+3. **F-C4** — Holm across the 8 interaction contrasts; it could change what
+   `interaction_findings.md` calls significant.
 
-**A10 is done (23 Sep):** `sqlite`, `duckdb` (`[duckdb]` extra) and `http` sources in
-`sources/tables.py`, read afresh on every question, `history: true` for a table of
-snapshots readable as of a past time, mixed pairs, only a table name (never SQL), no
-credential in a url. See the plan's A10 note.
-
-**Next: A11, the live case study — author's decisions of 23 Sep:** models **gpt-4o-mini +
-claude-haiku-4-5**, budget **≈ $0.25** (author's ceiling $0.40); questions **meaningful,
-real-world ones** chosen from the data; the source is for Claude to choose and verify.
-
-**The A11 design to propose before any code — record, then replay:**
-- **Source class: a GBFS bike-share feed.** GBFS is an open standard
-  (gbfs.org; MobilityData's `systems.csv` registry) that recommends an open data licence;
-  `station_status` reports per-station bikes and docks available with each station's own
-  `last_reported` clock, refreshed about every minute. **Pick one system and confirm its
-  licence and rate limits before building** — not done yet.
-- **Why record-then-replay, found running A10:** an http upstream has no history, so
-  pipeline lag reads as `corrupted_in_transit` rather than `answer_key_moved` (brief
-  correction 15). So, for a few hours: a *recorder* appends every version of the feed to a
-  SQLite history table (the upstream side, `history: true`), and a separate *pipeline*
-  refreshes a cache every K minutes (the delivered side — a real caching pipeline, its
-  design ours, brief correction 12). Both are real data at real velocity.
-- **Then the questions are asked over the recording**, at seeded moments in its window —
-  the paired design (invariant 2): both models see identical stations at identical
-  moments, and consistency and attribution are scored the corpus's way. The loop needs one
-  addition: a delivered source sampled *at* a moment (the demo already has `at=`).
-- **Questions a rider or operator actually asks**, all checkable plans: "which of these
-  stations has the most bikes available?" (max_by), "…the most free docks, to return a
-  bike?" (max_by docks), "how many of these stations are empty?" (count_where). Stations
-  drawn as neighbours, as a rider sees them.
-- **Cost:** ~100 questions per model ≈ $0.03 + $0.20; dry-run and caps first.
-
-**One optional follow-up the arm raises, outside the plan:** its most plausible
-limitation is that the re-read is a JSON action, not native function calling. A small
-arm offering the same re-read as a real tool call would test whether the null
-transfers. Not scheduled; author's call; cost known only after a dry-run.
-
-Budget: ~$3.72 OpenAI and ~$1.27 Anthropic remain; A11 is capped at ≈ $0.25 (≤ $0.40).
+Budget: ~$3.70 OpenAI and ~$1.10 Anthropic remain; no paid work is scheduled.
 
 | Stage | h | State |
 |---|---|---|
@@ -88,7 +60,7 @@ Budget: ~$3.72 OpenAI and ~$1.27 Anthropic remain; A11 is capped at ≈ $0.25 (�
 | A9 task switch, recommended policy, meter prior, report | 15 | **done 21 Sep** |
 | **Refetch arm** (Fig 4.9) | 28 | **done 23 Sep** — 21 runs, $0.8541; the agent never acts; `refetch_findings.md` |
 | A10 sqlite / duckdb / http (Postgres dropped) | 8 | **done 23 Sep** — `sources/tables.py`, 42 tests |
-| A11 live case study (Fig 4.11) | 6 | cut second |
+| A11 live case study (Fig 4.11) | 6 | **done 23 Sep** — Vélib' recorded 180 min, $0.19; `live_case_study_findings.md` |
 
 **Checkpoints:** ~~Fri 2 Oct Fig 4.10 exact~~ **met 16 Sep** · ~~Fri 9 Oct `/api/ask` on the
 free model~~ **met 23 Sep** (the real route in-process with `llama3.1:8b`, both admit and
@@ -97,6 +69,11 @@ gate-re-read paths; plan checkpoint table) · **Fri 16 Oct M1** · ~~Fri 23 Oct 
 19–30 Oct and are done, so A10 and A11 have room; cut order unchanged: A10 → A11.
 
 ## 2. Decisions made (do not re-litigate)
+
+**23 Sep, A11's results:** one commit with the results · the recording committed
+(`results/livecase/`, Licence Ouverte, with attribution) · the consistency reference
+corrected after the run by $0 re-grading, both gradings reported, the artifacts keeping
+their own labels.
 
 **23 Sep, A10:** DuckDB included (`[duckdb]` extra; the author: "if it's best") ·
 Postgres dropped (it needs a running server to test against) · a side may name its own
@@ -208,10 +185,10 @@ argument** for every live claim in Ch5. **Checkpoint Fri 27 Nov:** Ch 2–4 draf
 | F-E7 | **RESOLVED 16 Sep** | injector seed rule; 124 runs regenerate their realizations |
 | F-B5 | recorded, won't fix | NaN brands cap healthy consistency at 99.88 → Ch3 note |
 | F-A1 · F-A2 · F-E5 | 2–6 Nov | positioning · read the 4 load-bearing papers · Zenodo DOI |
-| F-B1 | limitation | AIRS constants underived |
+| F-B1 | limitation | AIRS constants underived — **now shown on real data** (A11: the 1 s freshness target floors minute-scale ages; AIRS AUC 0.557 vs the records' age 0.690) |
 | F-C4 | polish | no multiple-comparison correction across 8 interaction contrasts |
 | Kill Q3 | **ANSWERED 23 Sep** | refetch arm: gpt-4o-mini declined the re-read in 1,800 of 1,800 questions, age shown or not (`refetch_findings.md`); `REVIEW.md` carries the defence answer |
-| Phase 1D | Nov | external validity → A11 case study |
+| Phase 1D | **DONE 23 Sep** | external validity → the A11 case study (`live_case_study_findings.md`): the mechanism and the attribution transfer; AIRS's calibration does not |
 | CR2/BM refs | before Ch3 | verify the citations |
 
 ## 5. Cut list (decided — do not reopen)
@@ -283,7 +260,7 @@ than `unknown`. Always select runs with `run_arm(run)`, and never pool `live`.
 ## B3. Commands
 
 ```bash
-make test         # 914 tests, ~50 s
+make test         # 953 tests, ~65 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -377,6 +354,40 @@ corrupts `.next` · figures print recomputed vs published values.
   first bar's segments — build handles explicitly from every key present.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
+
+**23 Sep (A11, results):**
+- **Grade consistency against the publication a copy holds, not the moment it was taken.**
+  A recorder that polls slower than the feed usually holds the PREVIOUS publication at a
+  copy's moment; by wall clock, half the questions read consistency < 100 and four answers
+  `corrupted_in_transit`, though the caches copy the feed exactly.
+- **The Vélib' feed stamps one publication up to a second apart on different requests**
+  (served by more than one node). Match publications within 2 s.
+- **The recorder's target poll (20 s) was not its actual (median 41 s)** — each request
+  took ~20 s. It still saw 213 publications, but missed 20 of the 48 the caches copied. Poll
+  faster than the feed with margin, and log the achieved rate.
+- **A station's `last_reported` is not its data's age** — quiet stations report rarely
+  (median 33–38 min vs a cache 2.6 / 7.9 min old).
+- **Re-grade logged answers only after proving the machinery reproduces them**: under the
+  run's own reference, 200/200 must come back identical.
+- **The corpus's freshness correction applied itself to every run on disk**; non-corpus
+  arms (`NEVER_POOLED`) now pass it by. `test_airs_correction` walks every artifact — a new
+  arm's artifacts will meet it.
+- The first exposure numbers (6.3% / 12.2%) used the clock reference; the reported ones
+  (5.7% / 11.0%) use the corrected one. Quote only the latter.
+
+**23 Sep (A11, building):**
+- **The Vélib' feed answers 403 to Python's default User-Agent.** Send one.
+- **A history can need two clocks** — the event (`last_reported`) for freshness, the version
+  (`recorded_at`) for as-of. A10 gained `version_field`.
+- **A replayed record's read time must be the question's moment**, or every record is hours
+  old.
+- **The loop's gate never got the semantic two-state rule** (`Controller.evaluate` now takes
+  `semantic_unmeasured`): bare sources scored semantic 0 in the loop, API and console since
+  A6. The demo sources have reviewed manifests, which is why nothing caught it.
+- **AIRS freshness floors on minute-scale ages** (`100 × 1 s / age`): it ranks, but barely
+  moves the composite. Report record age beside AIRS.
+- An early probe claimed a one-hour clock offset in the feed; measured against UTC there is
+  none. Measure against the real clock before naming a fault in someone else's data.
 
 **23 Sep (A10):**
 - **An http upstream cannot be read as of a past time**, so a lagging cache's wrong answer

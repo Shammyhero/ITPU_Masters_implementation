@@ -28,6 +28,7 @@ from ..runner.config import (
     build_freshness_sweep,
     build_grid,
     build_interaction_arm,
+    build_livecase,
     build_refetch_arm,
     run_arm,
 )
@@ -58,6 +59,7 @@ ARMS = {
     # disk, counted in the spend line, and reported nowhere.
     "interaction": ("--interaction --n-queries 80", build_interaction_arm),
     "refetch": ("--refetch-arm", build_refetch_arm),
+    "livecase": ("-m airsbench.livecase.run", build_livecase),
 }
 
 # The cross-model arm is reported once per model, because RQ5 runs the same

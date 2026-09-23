@@ -40,6 +40,9 @@ python -m airsbench.runner.run --refetch-arm --dry-run                # exact to
 python -m airsbench.runner.run --refetch-arm --max-cost 2.00 [--offset N --limit M]
 python -m airsbench.analysis.refetch --figure docs/figures/fig4_9_refetch.png   # $0
 python -m airsbench.gate.replay --refetch          # the third verdict: refuse vs re-read, $0
+python -m airsbench.livecase.record --minutes 180   # A11: record a live GBFS feed + real caches, $0
+python -m airsbench.livecase.run --dry-run          # A11: questions over the recording (then --max-cost)
+python -m airsbench.analysis.livecase --figure docs/figures/fig4_11_livecase.png   # $0
 python -m airsbench.dataprep.check_sensitivity --n 400   # free, no API calls
 ```
 
@@ -51,7 +54,8 @@ spend exceeds it. **Never launch a paid run without a dry-run first.**
 
 Approximate costs: phase 1 (36 runs × 80q) $0.39 · phase 2 (108 runs) $1.17 ·
 freshness sweep $0.29 · Haiku cross-model arm $1.68 · refetch arm **$0.85 actual**
-(dry-run $0.96 expected, $1.85 worst case; `--max-cost` is checked against the worst case).
+(dry-run $0.96 expected, $1.85 worst case; `--max-cost` is checked against the worst case) ·
+live case study **$0.19 actual** (dry-run $0.24).
 
 The Analyst's hosted answers are capped per session and per day in the request
 path (`analyst/budget.py`, `~/.airs/spend.json`), and a hosted model with no
@@ -177,6 +181,8 @@ src/airsbench/analyst/   the Analyst: checkable plans, the verifier (4 labels), 
                          the router + two-step loop (loop.py, shared with the refetch arm)
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema
 src/airsbench/dataprep/  dataset prep (ESCI, BTS) + free sensitivity check
+src/airsbench/livecase/  A11: record a live GBFS feed (recorder + real caches), replay it, run the
+                         questions; the recording is committed in results/livecase/ (Licence Ouverte)
 demo/                    web console source (Next.js static export); `make web` builds it in
 infra_unused/            original Kafka/Airflow/Postgres stack — quarantined, no result depends on it
 docs/                    literature review, related-work positioning, RQs v2,

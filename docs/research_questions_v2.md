@@ -306,6 +306,17 @@ verdict on the corpus by the matched fault-free run (`gate/replay.py --refetch`)
 **Exploratory** (declared after replication 1, before 2–3): the unused tool-offering
 prompt costs −4.3 pp accuracy with age hidden, −2.9 pp with age shown, on healthy data.
 
+**H-L answered 23 Sep** (`live_case_study_findings.md`, Fig 4.11; Vélib' Métropole recorded
+live for 180 min, two real caching pipelines, gpt-4o-mini + claude-haiku-4-5, $0.19).
+**Null for AIRS as calibrated:** AUC 0.557 [0.435, 0.675] for ranking silent failures
+first; the records' age alone ranks them at 0.690 [0.547, 0.827]. AIRS's freshness curve
+(1 s target) floors on minute-scale ages and its composite is carried by consistency, which
+here measured gaps in the reference, not the pipeline — F-B1, AIRS's constants underived,
+on real data. **The mechanism transfers:** a 15-minute cache moved the answer on 11.0% of
+600 questions against 5.7% for a 5-minute one, and doubled silent failure for both models
+(paired, discordant 3/0 and 4/0). **The attribution transfers:** of 19 silent failures, 10
+were the pipeline's and 7 the models'.
+
 Declared constraints: classification is out of scope for the verifier (its label is a
 property of the flight, not computable from the record); the Analyst's plan-returning
 prompt is a different instrument from the corpus agent's, so live rates are not pooled

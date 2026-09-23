@@ -593,6 +593,33 @@ cap first. Report AIRS, the lag distribution, the attribution split, and whether
 ranked the risky moments above the safe ones — a null is reportable.
 `docs/live_case_study_findings.md` + **Fig 4.11**.
 
+> **Progress 23 Sep — A11 under way** (author's go-ahead; `docs/live_case_study.md`).
+> **Source: Vélib' Métropole**, GBFS, keyless, Etalab Licence Ouverte, 1,517 stations,
+> ~190 changing each minute. **Record, then replay:** a recorder appends each station's
+> changes every 20 s (the system of record, as observed); two real caching pipelines copy
+> the feed every 5 and 15 min (what an agent is served). Recording started 13:57 UTC for
+> 180 min. Questions are asked afterwards at seeded moments — the same stations at the
+> same moment for every cache and model (invariant 2) — so lag is attributed
+> `answer_key_moved`, as in the corpus. Three rider questions (most bikes; most free
+> docks; how many empty). Cells: {gpt-4o-mini, claude-haiku-4-5} × {5, 15 min} × 50,
+> dry-run ≈ $0.24. New seed block `livecase` (110 000–120 000), never pooled. **Found:** A10
+> needed `version_field`, `columns` and an id pushdown; and **the loop never applied the
+> semantic two-state rule** — every bare source scored semantic 0 in the loop since A6,
+> fixed. 949 tests.
+>
+> **Progress 23 Sep — A11 COMPLETE** (`live_case_study_findings.md`, **Fig 4.11**). Recorded
+> 180 min, 0 errors; 4 paid runs, **$0.1940**. **A slower cache doubles silent failure** for
+> both models (4 → 10%, 8 → 16%; paired, discordant 3/0 and 4/0), through exposure (5.7% →
+> 11.0% of 600 questions, no model). **H-L null for AIRS as calibrated** (AUC 0.557 [0.435,
+> 0.675]); the records' age ranks failures at 0.690 — F-B1 on real data. **Corrected after
+> the run, at $0:** the consistency reference graded by wall clock usually held the feed's
+> previous publication; re-graded by the publication each cache copied (matched within 2 s
+> — the feed stamps one publication a second apart on different requests), copies agree on
+> 100% of stations wherever the recorder saw them. The re-grading reproduces all 200 logged
+> decisions under the old reference. Also fixed: the corpus's freshness correction applied
+> itself to non-corpus arms (now corpus only). The recording is committed
+> (`results/livecase/`, Licence Ouverte). 953 tests.
+
 ## The refetch arm — two conditions, one loop · 28 h · ~$2.20
 
 Built on A6's loop. *Metadata did not make the agent cautious (the detectability null) —
@@ -778,7 +805,7 @@ short conclusion** — a complete document beats a deep one.
 | **Fri 16 Oct** | **M1 — the Analyst on the supervisor's screen** | Non-negotiable |
 | ~~Fri 23 Oct~~ | Refetch arm dry-run done — **met 23 Sep** | Cut A10 |
 | ~~Fri 30 Oct~~ | Refetch runs executed — **met 23 Sep** | **Hard cut the arm** |
-| **Fri 06 Nov** | **Implementation freeze** | Freeze regardless of state; cut A11 if not run |
+| **Fri 06 Nov** | **Implementation freeze** | Freeze regardless of state; ~~cut A11 if not run~~ A11 done 23 Sep |
 | Fri 27 Nov | Ch. 2, 3, 4 drafted | Shorten Ch. 5 |
 | **Fri 04 Dec** | **M2 — submission** | — |
 

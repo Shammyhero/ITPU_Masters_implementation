@@ -65,8 +65,10 @@ PAIR_KEYS = {
 # What one side may declare, by the side's own type (which defaults to the pair's).
 SIDE_KEYS = {
     "files": {"type", "path", "format", "id_field"},
-    "sqlite": {"type", "path", "table", "id_field", "timestamp_field", "history"},
-    "duckdb": {"type", "path", "table", "id_field", "timestamp_field", "history"},
+    "sqlite": {"type", "path", "table", "id_field", "timestamp_field", "history",
+               "version_field", "columns"},
+    "duckdb": {"type", "path", "table", "id_field", "timestamp_field", "history",
+               "version_field", "columns"},
     "http": {"type", "url", "records_path", "id_field", "timestamp_field", "headers_env",
              "timeout"},
 }
@@ -175,8 +177,15 @@ def _side(value: Any, pair_type: str, base: Path, label: str, name: str, id_fiel
         history = value.get("history", False)
         if not isinstance(history, bool):
             raise SourceError(f"{label}.history: true or false")
+        version = value.get("version_field")
+        if version is not None and (not isinstance(version, str) or not version):
+            raise SourceError(f"{label}.version_field: a column name")
+        columns = value.get("columns")
+        if columns is not None and (not isinstance(columns, list) or not columns):
+            raise SourceError(f"{label}.columns: a list of column names")
         return LIVE[kind](name, _resolve(value["path"], base), value["table"],
-                          id_field=side_id, timestamp_field=side_ts, history=history,
+                          columns=columns, id_field=side_id, timestamp_field=side_ts,
+                          history=history, version_field=version,
                           unique_ids=unique_ids and not history, clock=clock)
     except SourceError as exc:
         message = str(exc)

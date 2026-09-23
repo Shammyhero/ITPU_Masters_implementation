@@ -435,3 +435,80 @@ sources:
     _print_sample(sample_report(pair, 3, None, 1, "retrieval"))
     header = capsys.readouterr().out.splitlines()[0]
     assert "read at" in header and "simulated" not in header
+
+
+def test_a_history_orders_by_its_version_clock_and_ages_by_its_event_clock(tmp_path):
+    """A recorder stamps each copy when it took it (recorded_at); the station's own
+    report time (last_reported) is still what the values' age is measured from."""
+    path = tmp_path / "rec.db"
+    with sqlite3.connect(path) as connection:
+        connection.execute("CREATE TABLE upstream (station_id TEXT, recorded_at REAL, "
+                           "last_reported REAL, bikes INTEGER)")
+        connection.executemany("INSERT INTO upstream VALUES (?, ?, ?, ?)", [
+            ("s1", T0 + 20, T0 - 100, 3),   # seen at +20, reported long before
+            ("s1", T0 + 80, T0 + 70, 5),
+        ])
+    connection.close()
+    source = SqliteSource("rec", path, "upstream", id_field="station_id",
+                          timestamp_field="last_reported", history=True,
+                          version_field="recorded_at")
+    at_50 = source.fetch(["s1"], as_of=T0 + 50)[0]
+    assert at_50.payload == {"bikes": 3} and at_50.event_timestamp == T0 - 100
+    assert source.fetch(["s1"], as_of=T0 + 10) == []  # the recorder had not seen it yet
+    assert source.fetch(["s1"])[0].payload == {"bikes": 5}
+    with pytest.raises(SourceError, match="needs history: true"):
+        SqliteSource("rec", path, "upstream", id_field="station_id",
+                     version_field="recorded_at")
+
+
+@pytest.mark.parametrize("engine", sorted(ENGINES))
+def test_columns_reads_only_what_is_named(engine, tmp_path):
+    source, _ = table_source(engine, tmp_path, columns=["name", "bikes"])
+    record = source.fetch(["s2"])[0]
+    assert record.payload == {"name": "Market", "bikes": 9}   # docks never read
+    assert record.event_timestamp == T0                      # clock column still read
+
+
+def test_columns_are_names_never_sql(tmp_path):
+    path = sqlite_db(tmp_path / "cache.db", STATIONS)
+    with pytest.raises(SourceError, match="plain column names"):
+        SqliteSource("s", path, "station_status", id_field="station_id",
+                     columns=["bikes; drop"])
+
+
+@pytest.mark.parametrize("engine", sorted(ENGINES))
+def test_an_integer_id_column_matches_the_string_ids_a_sample_carries(engine, tmp_path):
+    rows = [dict(r, station_id=i) for i, r in enumerate(STATIONS, start=101)]
+    if engine == "sqlite":
+        path = tmp_path / "ints.db"
+        with sqlite3.connect(path) as connection:
+            connection.execute("CREATE TABLE station_status (station_id INTEGER, name TEXT, "
+                               "bikes INTEGER, docks INTEGER, last_reported REAL)")
+            connection.executemany("INSERT INTO station_status VALUES (?, ?, ?, ?, ?)",
+                                   [tuple(r.values()) for r in rows])
+        connection.close()
+    else:
+        duckdb = pytest.importorskip("duckdb")
+        path = tmp_path / "ints.duckdb"
+        connection = duckdb.connect(str(path))
+        connection.execute("CREATE TABLE station_status (station_id INTEGER, name VARCHAR, "
+                           "bikes INTEGER, docks INTEGER, last_reported DOUBLE)")
+        connection.executemany("INSERT INTO station_status VALUES (?, ?, ?, ?, ?)",
+                               [tuple(r.values()) for r in rows])
+        connection.close()
+    cls = SqliteSource if engine == "sqlite" else DuckdbSource
+    source = cls("s", path, "station_status", id_field="station_id",
+                 timestamp_field="last_reported")
+    fetched = source.fetch(["103", "101"])
+    assert [r.meta["record_id"] for r in fetched] == ["103", "101"]
+    assert [r.payload["bikes"] for r in fetched] == [0, 3]
+
+
+def test_asking_for_ids_reads_only_their_rows(tmp_path, monkeypatch):
+    source, _ = table_source("sqlite", tmp_path, SNAPSHOTS, history=True)
+    seen = []
+    real = source._rows
+    monkeypatch.setattr(source, "_rows", lambda ids=None: seen.append(len(real(ids))) or
+                        real(ids))
+    source.fetch(["s2"])
+    assert seen == [2]  # s2's two versions, not all four rows

@@ -355,3 +355,31 @@ def test_the_toggle_is_off_unless_asked_for():
     assert loop.strip_semantics is False and loop.stripper is None
     assert not any("stripped" in note
                    for note in loop.ask(question(), seed=100_001)["notes"])
+
+
+def test_a_source_without_a_reviewed_manifest_is_semantic_unmeasured_in_the_loop(tmp_path):
+    """The two-state rule (brief correction 2) holds in the loop, not only in `ask`:
+    until 23 Sep the loop's gate scored every bare source's semantic as 0 — lowering
+    AIRS, and able to make a semantic policy refuse — while `airs analyst` said
+    UNMEASURED. Found by the live case study's first test."""
+    import json as _json
+
+    from airsbench.sources.config import load_sources as _load
+
+    lines = [_json.dumps({"id": f"p{i}", "payload": {"price": 10 + i, "stock": 1}})
+             for i in range(3)]
+    (tmp_path / "d.jsonl").write_text("\n".join(lines) + "\n")
+    (tmp_path / "u.jsonl").write_text("\n".join(lines) + "\n")
+    (tmp_path / "sources.yaml").write_text(
+        "sources:\n  shop:\n    type: files\n    delivered: ./d.jsonl\n    upstream: ./u.jsonl\n")
+    pair = _load(tmp_path / "sources.yaml")["shop"]
+    loop = Loop(pair=pair, policy=Policy(name="needs-meaning",
+                                         min_dimension={"semantic": 50.0}),
+                answerer=NeverCalled(), mode="off")
+    tick = loop.ask(Question("Cheapest?", DEMO_PLAN, n=3), seed=1)
+    assert tick["airs"]["dimensions"]["semantic"]["score"] is None
+    assert "UNMEASURED" in tick["airs"]["dimensions"]["semantic"]["detail"]
+    # Unmeasured is still a violation for a policy that names the dimension — the
+    # gate's rule — but for the honest reason, not a fabricated zero.
+    assert tick["gate"]["verdict"] == "refuse"
+    assert tick["gate"]["violations"][0]["observed"] is None

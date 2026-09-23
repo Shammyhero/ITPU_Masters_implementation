@@ -79,7 +79,8 @@ Start here if you are reviewing the research rather than the code.
 [query fragility](docs/fragility_findings.md) ·
 [power under clustering](docs/power_findings.md) ·
 [verifier agreement](docs/verifier_agreement_findings.md) ·
-[the refetch arm](docs/refetch_findings.md)
+[the refetch arm](docs/refetch_findings.md) ·
+[the live-source case study](docs/live_case_study_findings.md)
 
 ---
 
@@ -216,6 +217,7 @@ python -m airsbench.gate.replay --task retrieval --sweep dimension
 python -m airsbench.gate.replay --task retrieval --attribution
 python -m airsbench.gate.replay --task retrieval --refetch     # refuse vs re-read
 python -m airsbench.analysis.refetch                          # the refetch arm, Fig 4.9
+python -m airsbench.analysis.livecase                         # the live case study, Fig 4.11
 ```
 
 Re-running the experiments themselves does cost money. Every paid command takes
@@ -291,8 +293,9 @@ Remaining work, week by week, is in [`docs/plan.md`](docs/plan.md). **The Analys
 ([`docs/analyst_brief.md`](docs/analyst_brief.md)) — live, gated question answering
 over your own declared data sources, where every answer is re-checked against the
 system of record and each wrong one is attributed to the pipeline or the model — is
-built, and so is the last experiment, the refetch arm
-([`docs/refetch_findings.md`](docs/refetch_findings.md)). What remains is a live-source
-case study and the thesis document.
+built, and so are the last experiment, the refetch arm
+([`docs/refetch_findings.md`](docs/refetch_findings.md)), and a live-source case study on
+a real public feed ([`docs/live_case_study_findings.md`](docs/live_case_study_findings.md)).
+What remains is the thesis document.
 
 License: [MIT](LICENSE)

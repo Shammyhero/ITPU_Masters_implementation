@@ -111,12 +111,20 @@ class LiveSource:
     """Rows read afresh on every call, with an optional history of versions."""
 
     def __init__(self, name: str, *, id_field: str = "id", timestamp_field: str | None = None,
-                 history: bool = False, unique_ids: bool = False,
-                 clock: Callable[[], float] = time.time) -> None:
+                 history: bool = False, version_field: str | None = None,
+                 unique_ids: bool = False, clock: Callable[[], float] = time.time) -> None:
+        if version_field is not None and not history:
+            raise SourceError(f"{name}: version_field: orders a history's versions — it "
+                              f"needs history: true")
         self.name = name
         self.id_field = id_field
         self.timestamp_field = timestamp_field
         self.history = history
+        # The VERSION clock — when each copy was taken — which "as of" orders by.
+        # Defaults to the event time; a recorder that stamps what it saw, when it saw
+        # it, keeps the two apart: last_reported (the event, for freshness) and
+        # recorded_at (the version, for as-of).
+        self.version_field = version_field
         self.unique_ids = unique_ids
         self._clock = clock
 
@@ -127,7 +135,9 @@ class LiveSource:
 
     # ---- what each backend supplies ---------------------------------------------
 
-    def _rows(self) -> list[dict[str, Any]]:
+    def _rows(self, ids: Sequence[str] | None = None) -> list[dict[str, Any]]:
+        """Raw rows. `ids` is a hint a backend MAY use to read less (SQL pushes it
+        down); everything after is filtered again in Python, so ignoring it is safe."""
         raise NotImplementedError
 
     def _where(self) -> str:
@@ -135,31 +145,51 @@ class LiveSource:
 
     # ---- the protocol -----------------------------------------------------------
 
-    def entries(self) -> list[dict[str, Any]]:
-        entries = rows_to_entries(self._rows(), name=self.name, where=self._where(),
+    def versioned(self, ids: Sequence[str] | None = None
+                  ) -> list[tuple[float | None, dict[str, Any]]]:
+        """Every row as (version time, entry). The version is None without history."""
+        rows = self._rows(ids)
+        versions: list[Any] = [None] * len(rows)
+        if self.version_field is not None:
+            missing = [i for i, row in enumerate(rows) if self.version_field not in row]
+            if missing:
+                raise SourceError(f"{self.name}: {self._where()} has no {self.version_field!r} "
+                                  f"column, which version_field: names")
+            versions = [row.pop(self.version_field) for row in rows]
+        entries = rows_to_entries(rows, name=self.name, where=self._where(),
                                   id_field=self.id_field, timestamp_field=self.timestamp_field)
-        if self.history:
-            undated = sum(entry.get("event_timestamp") is None for entry in entries)
-            if undated:
-                raise SourceError(
-                    f"{self.name}: a history table orders each id's versions by time, and "
-                    f"{undated} row(s) have none — declare timestamp_field: or fill it")
-        return entries
+        if not self.history:
+            return [(None, entry) for entry in entries]
+        if self.version_field is None:
+            versions = [entry.get("event_timestamp") for entry in entries]
+        undated = sum(v is None for v in versions)
+        if undated:
+            raise SourceError(
+                f"{self.name}: a history table orders each id's versions by time, and "
+                f"{undated} row(s) have none — declare timestamp_field: (or version_field:) "
+                f"or fill it")
+        return [(float(v), entry) for v, entry in zip(versions, entries)]
 
-    def current(self, as_of: float | None = None) -> dict[str, dict[str, Any]]:
+    def entries(self) -> list[dict[str, Any]]:
+        return [entry for _, entry in self.versioned()]
+
+    def current(self, as_of: float | None = None,
+                ids: Sequence[str] | None = None) -> dict[str, dict[str, Any]]:
         """Each id's record: its only row, or with history its latest (at `as_of`)."""
         state: dict[str, dict[str, Any]] = {}
-        for entry in self.entries():
+        stamps: dict[str, float] = {}
+        wanted = None if ids is None else {str(i) for i in ids}
+        for stamp, entry in self.versioned(ids):
+            if wanted is not None and str(entry.get("id")) not in wanted:
+                continue
             if entry.get("id") is None:
                 continue
             key = str(entry["id"])
             if self.history:
-                stamp = float(entry["event_timestamp"])
                 if as_of is not None and stamp > as_of:
                     continue
-                held = state.get(key)
-                if held is None or stamp >= float(held["event_timestamp"]):
-                    state[key] = entry
+                if key not in stamps or stamp >= stamps[key]:
+                    state[key], stamps[key] = entry, stamp
                 continue
             if key in state and self.unique_ids:
                 raise SourceError(
@@ -196,7 +226,7 @@ class LiveSource:
             raise SourceError(f"{self.name}: holds one version of each record and cannot be "
                               f"read as of a past time — declare history: true on a table "
                               f"that keeps its snapshots")
-        state = self.current(as_of)
+        state = self.current(as_of, ids=list(ids))
         now = self._clock()
         return [_record(state[str(i)], now) for i in ids if str(i) in state]
 
@@ -212,18 +242,43 @@ def _record(entry: dict[str, Any], now: float) -> Record:
 class _TableSource(LiveSource):
     engine = ""
 
-    def __init__(self, name: str, path: Path, table: str, **options: Any) -> None:
+    def __init__(self, name: str, path: Path, table: str, *,
+                 columns: Sequence[str] | None = None, **options: Any) -> None:
         super().__init__(name, **options)
         self.path = Path(path)
         if not IDENTIFIER.match(table or ""):
             raise SourceError(f"{name}: table: must be a plain table or view name (letters, "
                               f"digits, _), got {table!r}; put anything fancier in a view")
         self.table = table
+        # Read only these columns (names, never SQL). The id and clock columns are
+        # always read — without them there is no record.
+        if columns is not None:
+            wanted = list(dict.fromkeys(
+                [self.id_field, *(c for c in (self.timestamp_field, self.version_field) if c),
+                 *columns]))
+            bad = [c for c in wanted if not isinstance(c, str) or not IDENTIFIER.match(c)]
+            if bad:
+                raise SourceError(f"{name}: columns: plain column names only, got {bad}")
+            columns = wanted
+        self.columns = columns
         if not self.path.is_file():
             raise SourceError(f"{name}: {self.path} does not exist")
 
     def _where(self) -> str:
         return f"{self.path.name}:{self.table}"
+
+    def _select(self, ids: Sequence[str] | None) -> tuple[str, list[Any]]:
+        """The query: named columns (or all), and the ids asked for, compared as text
+        so an INTEGER id column matches the string ids a Sample carries."""
+        cols = "*" if self.columns is None else ", ".join(f'"{c}"' for c in self.columns)
+        sql, params = f'SELECT {cols} FROM "{self.table}"', []
+        if ids is not None:
+            if not ids:
+                return sql + " WHERE 0 = 1", []
+            params = [str(i) for i in ids]
+            sql += (f' WHERE CAST("{self.id_field}" AS VARCHAR) IN '
+                    f'({", ".join("?" * len(params))})')
+        return sql, params
 
 
 class SqliteSource(_TableSource):
@@ -231,12 +286,13 @@ class SqliteSource(_TableSource):
 
     engine = "sqlite"
 
-    def _rows(self) -> list[dict[str, Any]]:
+    def _rows(self, ids: Sequence[str] | None = None) -> list[dict[str, Any]]:
         uri = f"{self.path.resolve().as_uri()}?mode=ro"
+        sql, params = self._select(ids)
         try:
             # `with connect()` scopes a transaction, not the connection: close it.
             with closing(sqlite3.connect(uri, uri=True)) as connection:
-                cursor = connection.execute(f'SELECT * FROM "{self.table}"')
+                cursor = connection.execute(sql, params)
                 columns = [column[0] for column in cursor.description]
                 return [{c: plain(v) for c, v in zip(columns, row)} for row in cursor]
         except sqlite3.Error as exc:
@@ -248,7 +304,7 @@ class DuckdbSource(_TableSource):
 
     engine = "duckdb"
 
-    def _rows(self) -> list[dict[str, Any]]:
+    def _rows(self, ids: Sequence[str] | None = None) -> list[dict[str, Any]]:
         try:
             import duckdb
         except ImportError:
@@ -258,8 +314,9 @@ class DuckdbSource(_TableSource):
             connection = duckdb.connect(str(self.path), read_only=True)
         except duckdb.Error as exc:
             raise SourceError(f"{self.name}: cannot open {self.path.name} — {exc}") from None
+        sql, params = self._select(ids)
         try:
-            cursor = connection.execute(f'SELECT * FROM "{self.table}"')
+            cursor = connection.execute(sql, params)
             columns = [column[0] for column in cursor.description]
             return [{c: plain(v) for c, v in zip(columns, row)} for row in cursor.fetchall()]
         except duckdb.Error as exc:
@@ -318,7 +375,7 @@ class HttpSource(LiveSource):
             headers[header] = value
         return headers
 
-    def _rows(self) -> list[dict[str, Any]]:
+    def _rows(self, ids: Sequence[str] | None = None) -> list[dict[str, Any]]:
         request = urllib.request.Request(self.url, headers=self._headers(), method="GET")
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:

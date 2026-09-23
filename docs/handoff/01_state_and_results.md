@@ -1,10 +1,9 @@
 # Handoff 1 of 2 — Where the project stands
 
-**Refreshed:** 23 Sep 2026 · **Last pushed commits:** `14190ce` "Refetch arm: results"
-(23 Sep) — the campaign's 21 runs, the analysis, Fig 4.9, the findings and the third
-verdict on the corpus — then a docs commit recording the `/api/ask` local-model
-checkpoint; then **A10** — SQLite, DuckDB and HTTP sources. The refetch arm is
-**complete**; the agent never asked for a re-read. Earlier
+**Refreshed:** 23 Sep 2026 · **Last pushed commit:** "A11: the live case study" (23 Sep) —
+the Vélib' recording, 4 paid runs, Fig 4.11 and the findings. **Every experiment the plan
+scheduled is done.** Before it today: `0a5a3a8` (A10, SQLite/DuckDB/HTTP sources),
+`74eaec3` (docs), `14190ce` (the refetch arm's results). Earlier
 today: the new thesis title (`60cc800`, supervisor's advice, `docs/research_questions_v2.md`
 §1) and the arm's build (`5117e50`, `189a18f`, `f3c653d`).
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
@@ -33,21 +32,21 @@ product is an installable tool (`pip install .` after `make web`): `airs probe`,
 Analyst** — live, gated question answering over declared sources or pasted records,
 with every wrong answer attributed to the pipeline or the model — is **built**
 (A1–A9, `docs/analyst_brief.md`). **The last experiment, the refetch arm, is done**
-(23 Sep, `refetch_findings.md`), and **A10's live sources** (SQLite, DuckDB, HTTP). What
-remains: the A11 live case study (handoff 2 §1), positioning and the four papers, and the
-thesis document.
+(23 Sep, `refetch_findings.md`), **A10's live sources** (SQLite, DuckDB, HTTP) and **the A11
+live case study** on a real public feed (`live_case_study_findings.md`). What remains: the
+freeze week (positioning, the four papers, the DOI) and the thesis document.
 
 ## 2. Health right now
 
 | | |
 |---|---|
-| Tests | **914 passing**, lint clean (`make test`, `make lint`) |
+| Tests | **953 passing**, lint clean (`make test`, `make lint`) |
 | Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
 | Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
-| Figures | `make figures` builds all 11 (Fig 4.9 added 23 Sep), deterministic |
-| Runs on disk | 323 run artifacts in `results/runs/` (committed), 27 420 decisions — 302 corpus + 21 refetch arm (never pooled) |
-| Spend | **$6.00** in artifacts ($5.15 corpus + $0.85 refetch arm), + $0.0015 A5 live check + $0.0026 refetch pilot — OpenAI **~$3.72** left, Anthropic ~$1.27 left. No paid work is scheduled |
+| Figures | `make figures` builds all 12 (Figs 4.9 and 4.11 added 23 Sep), deterministic |
+| Runs on disk | 327 run artifacts in `results/runs/` (committed), 27 620 decisions — 302 corpus + 21 refetch + 4 live case study (never pooled); the case study's recording in `results/livecase/` |
+| Spend | **$6.20** in artifacts ($5.15 corpus + $0.85 refetch + $0.19 live case study), + $0.0015 A5 live check + $0.0026 refetch pilot — OpenAI **~$3.70** left, Anthropic **~$1.10** left. No paid work is scheduled |
 | CI | **None, deliberately.** `make ci` + `make dist-check` replace it |
 
 ## 3. Timeline and where we are
@@ -69,7 +68,7 @@ thesis document.
 | **A9** task switch · recommended policy priced on the corpus · meter prior · printable report | 12–23 Oct | **done 21 Sep** |
 | **Refetch arm** — the last experiment, Fig 4.9 | 19–30 Oct | **done 23 Sep** — 21 runs, $0.8541; the agent never acts; the third verdict priced on the corpus |
 | A10 adapters — sqlite, duckdb, http | 19–23 Oct | **done 23 Sep** — `sources/tables.py` |
-| A11 live case study (Fig 4.11) | 2–6 Nov | **next** — design to propose (handoff 2 §1); gpt-4o-mini + Haiku, ≈ $0.25 |
+| **A11 live case study** (Fig 4.11) | 2–6 Nov | **done 23 Sep** — Vélib' recorded 180 min; $0.19; AIRS's calibration does not transfer, its mechanism does |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |
@@ -99,7 +98,11 @@ fresh or stale (≤ 0.66% per cell) — the detectability null extends from meta
 action, and kill question 3 is answered; a gate's re-read matches the healthy pipeline
 (98.0% same correctness) and gains correct answers where refusal forfeits them;
 exploratory, the unused tool-offering prompt costs 2.9–4.3 pp accuracy
-(`refetch_findings.md`). Still to come: the live-source case study (Fig 4.11), optional.
+(`refetch_findings.md`). **The live case study (Fig 4.11) is done (23 Sep):** on Vélib'
+(Paris), a 15-minute cache doubles silent failure against a 5-minute one for both models,
+through exposure (11.0% vs 5.7%); the verifier attributes 10 of 19 silent failures to the
+pipeline; **H-L is null for AIRS as calibrated** (AUC 0.557) while the records' age ranks
+the failures (0.690) — F-B1 on real data (`live_case_study_findings.md`).
 
 ## 5. Other results that carry the thesis
 
@@ -130,13 +133,16 @@ exploratory, the unused tool-offering prompt costs 2.9–4.3 pp accuracy
 | **Sources (`sources/`, A1)** | protocol `name / describe / sample / fetch(as_of)`; **`demo`** — seeded ESCI slice (200 queries, 1,129 products, 11,341 updates, 0.21 MB) served through the runner's own functions, four built-in pairs; **`files`** (JSONL, CSV, Parquet via `[parquet]`); **A10:** **`sqlite`**, **`duckdb`** (`[duckdb]`), **`http`** — read afresh each question, `history: true` = readable as of, mixed-type pairs, a table name never SQL; **`inline`**; `sources.yaml` (PyYAML) refusing unknown keys, duplicate ids and inline credentials; `airs sources list/describe/sample`; `airs serve --sources` |
 | **Analyst (`analyst/`, A3)** | `plan.py` six checkable types (min_by ≡ `RetrievalAgent.ground_truth`); `verifier.py` truth / served / delivered executions, correctness first, **four labels** `answer_key_moved · both · corrupted_in_transit · agent_impairment`, changed fields as evidence, agent plan recorded (`plan_matches_question`, `agent_plan_agrees`) never graded; `answerers.py` `literal` + local Ollama (hosted refused until A5); `prompts.py` plan-returning, invariant 1; `session.py` one question → Tick; `airs analyst ask`. Nothing written to disk |
 | **Manifest (`sources/manifest*.py`, A2)** | `manifest.yaml`: entity, per-field role (id/measure/label/updated_at), unit, definition, relationship, checkable questions; reviewed = stamp + schema fingerprint. States reviewed / unreviewed / stale / absent / invalid → only *reviewed* measures semantic, by the probe's unchanged category rule; field coverage reported beside it. Renders onto bare (files) records only; the demo's bundled `data/demo_manifest.yaml` describes the context its pipeline already renders. `airs manifest propose [--model ollama/…] · review · show`; state in every Tick and in `airs sources` |
+| **Live case study (`livecase/`, A11)** | `record.py` (a GBFS feed into a SQLite history + real caching pipelines; `--archive`), `replay.py` (questions at seeded moments of the recording; the consistency reference matched by publication), `questions.py` (three rider questions), `run.py` (exact dry-run, caps); `analysis/livecase.py` (Fig 4.11, H-L, $0 re-grading of logged answers) |
 | Packaging | `make web` → `src/airsbench/web/`; `server/bake.py` bakes `samples.json`, `replay_corpus.json`, `sources/data/esci_slice.json.gz` (all drift-tested) |
 
 ## 7. Commits (newest first)
 
 | Commit | What |
 |---|---|
-| (23 Sep) | Docs: the `/api/ask` local-model checkpoint met, README commands, file guide |
+| (23 Sep) | A11: the live case study — recording, runs, Fig 4.11, findings |
+| `0a5a3a8` | A10: live sources — SQLite, DuckDB and HTTP |
+| `74eaec3` | Docs: the `/api/ask` local-model checkpoint met, README commands, file guide |
 | `14190ce` | Refetch arm: results — 21 runs, analysis, Fig 4.9, findings, the third verdict |
 | `f3c653d` | Refetch arm: the pilot ($0.0026; dry-run counted it exactly) |
 | `189a18f` | Refetch arm steps 2–3 — batch runner, artifacts, quarantine |

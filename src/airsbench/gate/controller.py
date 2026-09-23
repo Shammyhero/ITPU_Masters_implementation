@@ -105,8 +105,17 @@ class Controller:
         self,
         delivered: Sequence[dict[str, Any]],
         source: Sequence[dict[str, Any]] | None = None,
+        semantic_unmeasured: str | None = None,
     ) -> Verdict:
+        """`semantic_unmeasured` is the Analyst's two-state rule, exactly as
+        `probe.score` applies it (brief correction 2): with no reviewed manifest the
+        tool does not know what the fields mean, so semantic is UNMEASURED with that
+        reason — not scored 0 for missing context the source was never asked to carry.
+        Until 23 Sep the loop never passed it, so every files, inline, SQLite and HTTP
+        source scored semantic 0 in the loop while `airs analyst` said UNMEASURED."""
         measured = measure(list(delivered), list(source) if source else None)
+        if semantic_unmeasured is not None:
+            measured["semantic"] = {"score": None, "detail": semantic_unmeasured}
         airs, covered = composite(measured, self.weights)
         age = measured["freshness"].get("mean_age_seconds")
         violations = self._violations(measured, airs, age)

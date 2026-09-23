@@ -68,14 +68,17 @@ INTERACTION_SEED_RANGE = (80_000, 90_000)
 # `live`. → tests/test_live_quarantine.py
 REFETCH_SEED_RANGE = (90_000, 100_000)
 LIVE_SEED_RANGE = (100_000, 110_000)
+# The live-source case study (A11): a recorded real feed, the plan-returning prompt.
+LIVECASE_SEED_RANGE = (110_000, 120_000)
 
 # Arms that are a DIFFERENT INSTRUMENT from the corpus and must never be pooled
 # with it, whatever a loader was asked for — `include_other_arms=True` means other
 # research arms of the same instrument, never these. `live` is unpaired traffic
 # chosen by whoever holds the mouse; `refetch` runs the Analyst's plan-returning
-# prompt through the loop (brief correction 11). Both are attributed by seed block
-# and dropped by name. → tests/test_live_quarantine.py, tests/test_refetch_quarantine.py
-NEVER_POOLED = ("live", "refetch")
+# prompt through the loop (brief correction 11); `livecase` does too, over a recorded
+# real feed (A11). All are attributed by seed block and dropped by name.
+# → tests/test_live_quarantine.py, tests/test_refetch_quarantine.py
+NEVER_POOLED = ("live", "refetch", "livecase")
 
 SEED_BLOCKS = {
     "main": MAIN_SEED_RANGE,
@@ -85,6 +88,7 @@ SEED_BLOCKS = {
     "interaction": INTERACTION_SEED_RANGE,
     "refetch": REFETCH_SEED_RANGE,
     "live": LIVE_SEED_RANGE,
+    "livecase": LIVECASE_SEED_RANGE,
 }
 
 # ---- fault composition -----------------------------------------------------
@@ -567,3 +571,31 @@ def build_refetch_arm(
                     refetch_mode=mode,
                 ))
     return grid
+
+
+# ---- the live-source case study (docs/live_case_study.md) -------------------------
+
+LIVECASE_CACHES = (5, 15)                           # the pipelines' refresh intervals, min
+LIVECASE_MODELS = ("gpt-4o-mini", "claude-haiku-4-5")
+LIVECASE_DATASET = "velib_live"
+LIVECASE_N_QUERIES = 50
+
+
+def build_livecase(n_queries: int = LIVECASE_N_QUERIES,
+                   models: tuple[str, ...] = LIVECASE_MODELS,
+                   caches: tuple[int, ...] = LIVECASE_CACHES) -> list[RunConfig]:
+    """{model} x {cache interval}, the same questions in every cell.
+
+    Nothing is injected — the lag is the caching pipeline's own — so `fault_type` is
+    `none` and the treatment is named by `pipeline` (`velib-cache-<K>min`). Questions
+    are drawn by `sample_seed` (RunConfig's default, a function of task and
+    replication only), so every cell asks the same ones (invariant 2). The cheaper
+    model first: a campaign stopped early still leaves complete, comparable runs.
+    """
+    return [
+        RunConfig(pipeline=f"velib-cache-{minutes}min", fault_type="none", severity="none",
+                  task="retrieval", replication=1, dataset=LIVECASE_DATASET, model=model,
+                  n_queries=n_queries,
+                  seed=LIVECASE_SEED_RANGE[0] + 100 * model_idx + minutes)
+        for model_idx, model in enumerate(models) for minutes in caches
+    ]
