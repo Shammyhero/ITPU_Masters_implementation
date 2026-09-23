@@ -3,7 +3,8 @@
 **Refreshed:** 23 Sep 2026 · **Last pushed commits:** `14190ce` "Refetch arm: results"
 (23 Sep) — the campaign's 21 runs, the analysis, Fig 4.9, the findings and the third
 verdict on the corpus — then a docs commit recording the `/api/ask` local-model
-checkpoint. The refetch arm is **complete**; the agent never asked for a re-read. Earlier
+checkpoint; then **A10** — SQLite, DuckDB and HTTP sources. The refetch arm is
+**complete**; the agent never asked for a re-read. Earlier
 today: the new thesis title (`60cc800`, supervisor's advice, `docs/research_questions_v2.md`
 §1) and the arm's build (`5117e50`, `189a18f`, `f3c653d`).
 **Repo:** `~/Documents/Masters_thesis_implementation/agentic-infra-gap` · public at
@@ -32,15 +33,15 @@ product is an installable tool (`pip install .` after `make web`): `airs probe`,
 Analyst** — live, gated question answering over declared sources or pasted records,
 with every wrong answer attributed to the pipeline or the model — is **built**
 (A1–A9, `docs/analyst_brief.md`). **The last experiment, the refetch arm, is done**
-(23 Sep, `refetch_findings.md`). What remains: A10 adapters and the A11 live case study
-(both optional, both awaiting the author's decisions — handoff 2 §1), positioning and the
-four papers, and the thesis document.
+(23 Sep, `refetch_findings.md`), and **A10's live sources** (SQLite, DuckDB, HTTP). What
+remains: the A11 live case study (handoff 2 §1), positioning and the four papers, and the
+thesis document.
 
 ## 2. Health right now
 
 | | |
 |---|---|
-| Tests | **872 passing**, lint clean (`make test`, `make lint`) |
+| Tests | **914 passing**, lint clean (`make test`, `make lint`) |
 | Clean install | `make ci` — fresh venv from `pyproject.toml`, full suite |
 | Wheel | `make dist-check` — builds the wheel, installs it non-editable, runs the installed `airs` (probe, gate, sources) and `airs serve` (API + console). Needs `make web` first |
 | Pinned env | `requirements-lock.txt` (103 pkgs, Python 3.13 arm64; PyYAML already pinned), `make lock` |
@@ -67,7 +68,8 @@ four papers, and the thesis document.
 | **A8 console** — all four steps done 20–21 Sep (conversation, replay feed, paste + question builder, semantic toggle) | 5–16 Oct | **done 21 Sep** |
 | **A9** task switch · recommended policy priced on the corpus · meter prior · printable report | 12–23 Oct | **done 21 Sep** |
 | **Refetch arm** — the last experiment, Fig 4.9 | 19–30 Oct | **done 23 Sep** — 21 runs, $0.8541; the agent never acts; the third verdict priced on the corpus |
-| A10 adapters · A11 live case study (Fig 4.11) | 19 Oct–6 Nov | **awaiting the author's decisions** (handoff 2 §1) |
+| A10 adapters — sqlite, duckdb, http | 19–23 Oct | **done 23 Sep** — `sources/tables.py` |
+| A11 live case study (Fig 4.11) | 2–6 Nov | **next** — design to propose (handoff 2 §1); gpt-4o-mini + Haiku, ≈ $0.25 |
 | **M1 — internship ends, the Analyst running** | **Fri 16 Oct (hard)** | |
 | Implementation freeze | Fri 6 Nov | |
 | Thesis writing | 9 Nov – 4 Dec | |
@@ -123,9 +125,9 @@ exploratory, the unused tool-offering prompt costs 2.9–4.3 pp accuracy
 | `airs` command | `serve`, `probe`, `gate`, `sources`, `manifest`, `analyst` (`src/airsbench/cli.py`) |
 | Input contract | JSONL, `payload` required; timestamps epoch seconds or ISO-8601 **with zone**; ms refused; duplicate upstream ids refused; `opaque_map` accepted (consistency reverses stripped names) |
 | API (`server/`) | `/api/meta`, `/api/samples`, `/api/score`, `/api/gate`, `/api/replay` (180 baked runs); **A7:** `/api/sources`, `/api/sources/{id}/test`, `/api/models`, `/api/session`, `/api/ask` (SSE), `/api/session/{id}`; 422 `{error: {input, line, message}}` |
-| Security | 127.0.0.1; Host allowlist; CORS only with `--dev`; 64 MB cap; no outbound requests; files and sources only through CLI flags / `sources.yaml` |
+| Security | 127.0.0.1; Host allowlist; CORS only with `--dev`; 64 MB cap; outbound requests only to an `http` source's declared url and a configured model provider, never to an address a request names; files and sources only through CLI flags / `sources.yaml` |
 | Console (`demo/`) | **`/` the conversation, over declared sources or your own pasted records (question builder: six checkable types, fields read from the records; semantic toggle runs the real stripping injector)**; **`/replay/` seven real corpus decisions through the same renderer, no server needed**; **the conversation** (source/answerer/policy pickers, streamed gate → answer → verdict, trace, meter); `/check/` Mode A "Check my pipeline"; `/evidence/` the four-act argument; no scoring in TypeScript |
-| **Sources (`sources/`, A1)** | protocol `name / describe / sample / fetch(as_of)`; **`demo`** — seeded ESCI slice (200 queries, 1,129 products, 11,341 updates, 0.21 MB) served through the runner's own functions, four built-in pairs; **`files`** (JSONL, CSV, Parquet via `[parquet]`); **`inline`**; `sources.yaml` (PyYAML) refusing unknown keys, duplicate ids and inline credentials; `airs sources list/describe/sample`; `airs serve --sources` |
+| **Sources (`sources/`, A1)** | protocol `name / describe / sample / fetch(as_of)`; **`demo`** — seeded ESCI slice (200 queries, 1,129 products, 11,341 updates, 0.21 MB) served through the runner's own functions, four built-in pairs; **`files`** (JSONL, CSV, Parquet via `[parquet]`); **A10:** **`sqlite`**, **`duckdb`** (`[duckdb]`), **`http`** — read afresh each question, `history: true` = readable as of, mixed-type pairs, a table name never SQL; **`inline`**; `sources.yaml` (PyYAML) refusing unknown keys, duplicate ids and inline credentials; `airs sources list/describe/sample`; `airs serve --sources` |
 | **Analyst (`analyst/`, A3)** | `plan.py` six checkable types (min_by ≡ `RetrievalAgent.ground_truth`); `verifier.py` truth / served / delivered executions, correctness first, **four labels** `answer_key_moved · both · corrupted_in_transit · agent_impairment`, changed fields as evidence, agent plan recorded (`plan_matches_question`, `agent_plan_agrees`) never graded; `answerers.py` `literal` + local Ollama (hosted refused until A5); `prompts.py` plan-returning, invariant 1; `session.py` one question → Tick; `airs analyst ask`. Nothing written to disk |
 | **Manifest (`sources/manifest*.py`, A2)** | `manifest.yaml`: entity, per-field role (id/measure/label/updated_at), unit, definition, relationship, checkable questions; reviewed = stamp + schema fingerprint. States reviewed / unreviewed / stale / absent / invalid → only *reviewed* measures semantic, by the probe's unchanged category rule; field coverage reported beside it. Renders onto bare (files) records only; the demo's bundled `data/demo_manifest.yaml` describes the context its pipeline already renders. `airs manifest propose [--model ollama/…] · review · show`; state in every Tick and in `airs sources` |
 | Packaging | `make web` → `src/airsbench/web/`; `server/bake.py` bakes `samples.json`, `replay_corpus.json`, `sources/data/esci_slice.json.gz` (all drift-tested) |

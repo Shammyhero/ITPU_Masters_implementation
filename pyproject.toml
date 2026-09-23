@@ -22,6 +22,8 @@ dependencies = ["fastapi>=0.141", "uvicorn>=0.52", "pyyaml>=6.0"]
 [project.optional-dependencies]
 # Parquet in a `files` source. JSONL and CSV need nothing extra.
 parquet = ["pyarrow>=15"]
+# A `duckdb` source (A10). SQLite and HTTP sources need nothing extra.
+duckdb = ["duckdb>=1.0"]
 data = ["pandas>=2.0", "pyarrow>=15", "datasets>=2.19", "requests>=2.31"]
 # Serves only infra_unused/ (quarantined 2026-09-13). No experiment, analysis
 # or test imports these; results are simulated archetypes, see infra_unused/README.md.
@@ -39,6 +41,7 @@ analysis = [
 ]
 dev = ["pytest>=8", "ruff>=0.4", "httpx>=0.28"]
 ci = [
+    "duckdb>=1.0",
     "pytest>=8",
     "ruff>=0.4",
     "httpx>=0.28",

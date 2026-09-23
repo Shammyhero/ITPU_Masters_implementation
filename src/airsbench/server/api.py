@@ -36,7 +36,7 @@ from ..probe import (
     parse_records,
     score,
 )
-from ..sources import SourceError
+from ..sources import SourceError, reads_as_of
 from .schemas import (
     AskRequest,
     GateRequest,
@@ -216,7 +216,7 @@ def _source_summary(pair) -> dict[str, Any]:
         "kind": pair.kind,
         "description": pair.description,
         "upstream": upstream.name if upstream is not None else None,
-        "supports_as_of": bool(upstream is not None and upstream.describe().supports_as_of),
+        "supports_as_of": bool(upstream is not None and reads_as_of(upstream)),
         "verifiable": upstream is not None,
         "semantic": layer.to_dict(),
     }

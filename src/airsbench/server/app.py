@@ -11,8 +11,11 @@ built for one person on one machine, and for records that may be customer data:
   while the frontend is being worked on.
 - **A request-body cap**, so a mistaken multi-gigabyte paste fails at once with a
   message rather than exhausting memory.
-- **No outbound requests**, and no path parameter that reads a file: records
-  reach the server only in a request body or through `airs serve --records`.
+- **No outbound request a page can direct**, and no path parameter that reads a
+  file: records reach the server only in a request body, through `airs serve
+  --records`, or from sources declared in `sources.yaml`. The only outbound
+  requests are to an `http` source's declared url and to a configured model
+  provider — never to an address a request names.
 """
 
 from __future__ import annotations

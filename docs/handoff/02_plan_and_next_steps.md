@@ -15,7 +15,7 @@ Adversarial audit: **`REVIEW.md`** (Phase 3 is design history). This file is the
 
 ---
 
-## 1. Immediate next step: the author's decisions on A10 and A11
+## 1. Immediate next step: A11, the live case study — the design to propose
 
 **A1–A9 are done, and so is the refetch arm (23 Sep)** — `docs/refetch_findings.md`,
 Fig 4.9, 21 runs, $0.8541, all committed. In one line each:
@@ -33,37 +33,47 @@ Fig 4.9, 21 runs, $0.8541, all committed. In one line each:
 The history of how it was built — design, loop, runner, pilot, campaign, analysis — is
 in `docs/refetch_arm.md` and the plan's progress notes; the traps it hit are in B4.
 
-**What is left before the freeze (Fri 6 Nov):** A10 adapters (8 h, cut first), A11 live
-case study (6 h, ~$0.05, cut second), positioning + the four papers + DOI (14 h). Then
-the thesis (Part 2 of the plan). **Nothing below has been started** — each needs the
-author's decision, and A11 spends money.
+**What is left before the freeze (Fri 6 Nov):** ~~A10 adapters~~ **done 23 Sep**, A11
+live case study (6 h, cut second), positioning + the four papers + DOI (14 h). Then the
+thesis (Part 2 of the plan).
 
-**Proposal — do A10's file-database adapter first, as A11's vehicle.** A11 needs a real
-delivered side: a polling pipeline, set up for the study, that caches a live source with
-genuine lag (brief correction 12: the data and its velocity are real, the pipeline's
-design is ours). The natural store for that cache is SQLite, which is also half of A10.
-So: (1) A10-lite — `sqlite` (and `duckdb`, same shape) + `http` adapters, read-only,
-tested against local fixtures; Postgres only if wanted, since it needs a running server
-(the old stack in `infra_unused/` has one). (2) A11 — a small poller writing timestamped
-snapshots of one live source into SQLite; the Analyst reads the cache as *delivered* and
-the live API as *upstream*; 50–100 questions, dry-run and cap first.
+**A10 is done (23 Sep):** `sqlite`, `duckdb` (`[duckdb]` extra) and `http` sources in
+`sources/tables.py`, read afresh on every question, `history: true` for a table of
+snapshots readable as of a past time, mixed pairs, only a table name (never SQL), no
+credential in a url. See the plan's A10 note.
 
-**Decisions A11 needs from the author:**
-1. **Which live source.** Must be public, keyless or free-keyed, with terms that allow
-   polling and with values that change on a scale of seconds to minutes. Candidate
-   classes: exchange/crypto tickers, public transit real-time feeds, weather
-   observations. Any specific API must be checked for terms and rate limits before use —
-   none has been yet.
-2. **Which model.** gpt-4o-mini (~$0.05 for 100 questions, comparable with the arm) or
-   the free local `llama3.1:8b` ($0, not comparable).
-3. **Question type** — one of the six checkable plans, chosen to fit the source's fields.
+**Next: A11, the live case study — author's decisions of 23 Sep:** models **gpt-4o-mini +
+claude-haiku-4-5**, budget **≈ $0.25** (author's ceiling $0.40); questions **meaningful,
+real-world ones** chosen from the data; the source is for Claude to choose and verify.
+
+**The A11 design to propose before any code — record, then replay:**
+- **Source class: a GBFS bike-share feed.** GBFS is an open standard
+  (gbfs.org; MobilityData's `systems.csv` registry) that recommends an open data licence;
+  `station_status` reports per-station bikes and docks available with each station's own
+  `last_reported` clock, refreshed about every minute. **Pick one system and confirm its
+  licence and rate limits before building** — not done yet.
+- **Why record-then-replay, found running A10:** an http upstream has no history, so
+  pipeline lag reads as `corrupted_in_transit` rather than `answer_key_moved` (brief
+  correction 15). So, for a few hours: a *recorder* appends every version of the feed to a
+  SQLite history table (the upstream side, `history: true`), and a separate *pipeline*
+  refreshes a cache every K minutes (the delivered side — a real caching pipeline, its
+  design ours, brief correction 12). Both are real data at real velocity.
+- **Then the questions are asked over the recording**, at seeded moments in its window —
+  the paired design (invariant 2): both models see identical stations at identical
+  moments, and consistency and attribution are scored the corpus's way. The loop needs one
+  addition: a delivered source sampled *at* a moment (the demo already has `at=`).
+- **Questions a rider or operator actually asks**, all checkable plans: "which of these
+  stations has the most bikes available?" (max_by), "…the most free docks, to return a
+  bike?" (max_by docks), "how many of these stations are empty?" (count_where). Stations
+  drawn as neighbours, as a rider sees them.
+- **Cost:** ~100 questions per model ≈ $0.03 + $0.20; dry-run and caps first.
 
 **One optional follow-up the arm raises, outside the plan:** its most plausible
 limitation is that the re-read is a JSON action, not native function calling. A small
 arm offering the same re-read as a real tool call would test whether the null
 transfers. Not scheduled; author's call; cost known only after a dry-run.
 
-Budget: ~$3.72 OpenAI and ~$1.27 Anthropic remain.
+Budget: ~$3.72 OpenAI and ~$1.27 Anthropic remain; A11 is capped at ≈ $0.25 (≤ $0.40).
 
 | Stage | h | State |
 |---|---|---|
@@ -77,7 +87,7 @@ Budget: ~$3.72 OpenAI and ~$1.27 Anthropic remain.
 | A8 console | 18 | **done 21 Sep** — conversation, replay, paste, toggle |
 | A9 task switch, recommended policy, meter prior, report | 15 | **done 21 Sep** |
 | **Refetch arm** (Fig 4.9) | 28 | **done 23 Sep** — 21 runs, $0.8541; the agent never acts; `refetch_findings.md` |
-| A10 postgres/duckdb/http | 8 | cut first |
+| A10 sqlite / duckdb / http (Postgres dropped) | 8 | **done 23 Sep** — `sources/tables.py`, 42 tests |
 | A11 live case study (Fig 4.11) | 6 | cut second |
 
 **Checkpoints:** ~~Fri 2 Oct Fig 4.10 exact~~ **met 16 Sep** · ~~Fri 9 Oct `/api/ask` on the
@@ -87,6 +97,12 @@ gate-re-read paths; plan checkpoint table) · **Fri 16 Oct M1** · ~~Fri 23 Oct 
 19–30 Oct and are done, so A10 and A11 have room; cut order unchanged: A10 → A11.
 
 ## 2. Decisions made (do not re-litigate)
+
+**23 Sep, A10:** DuckDB included (`[duckdb]` extra; the author: "if it's best") ·
+Postgres dropped (it needs a running server to test against) · a side may name its own
+`type` · only a table name, never SQL · live sources read afresh on every question.
+**A11:** gpt-4o-mini + claude-haiku-4-5 at ≈ $0.25 · real-world questions chosen from
+the data · the source is Claude's to choose and verify.
 
 **23 Sep, the arm's results:** the 21 artifacts are committed **as is** — pretty-printed
 like the corpus, ~180k lines — because invariant 7 makes them the canonical dataset and
@@ -267,7 +283,7 @@ than `unknown`. Always select runs with `run_arm(run)`, and never pool `live`.
 ## B3. Commands
 
 ```bash
-make test         # 872 tests, ~45 s
+make test         # 914 tests, ~50 s
 make lint         # ruff src tests
 make ci           # clean venv from pyproject + lint + tests (~90 s)
 make web          # npm ci + next build → src/airsbench/web/ (refuses while next dev runs)
@@ -361,6 +377,21 @@ corrupts `.next` · figures print recomputed vs published values.
   first bar's segments — build handles explicitly from every key present.
 - The corpus tests skip without `data/ecommerce`; `make test` on a fresh clone will not
   run them. `make figures` does.
+
+**23 Sep (A10):**
+- **An http upstream cannot be read as of a past time**, so a lagging cache's wrong answer
+  is labelled `corrupted_in_transit`, not `answer_key_moved` — correct by brief correction
+  15, and stated in the Tick, but it is why A11 records the feed into a history table.
+- **`describe()` on a live source reads it** — for http, a GET of someone's API. The loop
+  asked it for `supports_as_of` up to four times per question; `reads_as_of()` now answers
+  from the declaration.
+- **`with sqlite3.connect()` scopes a transaction, not the connection** — close it
+  (`contextlib.closing`).
+- **`airs sources` / `airs analyst` take `--sources` BEFORE the subcommand.**
+- A live sample's moment is real time: `airs sources sample` said "simulated time
+  1790169717s" until the label split demo from live.
+- `api.py` imports `SourceError` twice (module and function); a replace-once edit guard
+  trips on it.
 
 **23 Sep (refetch arm, step 6):**
 - **An exposure check must drop unverifiable questions before counting flips.** The design's

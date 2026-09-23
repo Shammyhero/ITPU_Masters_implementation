@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from ..probe import ProbeError, score
-from .base import SourceError, SourcePair, to_probe_entry
+from .base import SourceError, SourcePair, reads_as_of, to_probe_entry
 from .manifest import semantic_layer
 
 
@@ -43,7 +43,7 @@ def sample_report(pair: SourcePair, n: int, key: str | None, seed: int | None,
     layer = semantic_layer(pair)
     sample = pair.delivered.sample(n, key=key, seed=seed)
     delivered = _entries(layer.apply(sample.records), sample.ids)
-    supports_as_of = pair.upstream is not None and pair.upstream.describe().supports_as_of
+    supports_as_of = pair.upstream is not None and reads_as_of(pair.upstream)
     served_as_of = sample.meta.get("served_as_of") if supports_as_of else None
     now = _upstream_entries(pair, sample, sample.as_of if supports_as_of else None)
     as_served = _upstream_entries(pair, sample, served_as_of) if supports_as_of else None
@@ -117,7 +117,7 @@ def main(argv: list[str] | None = None) -> int:
 def _list(pairs: dict[str, SourcePair]) -> int:
     print(f"  {'source':<18}{'kind':<7}{'upstream':<10}{'as of':<7}{'manifest':<12}description")
     for pair in pairs.values():
-        as_of = "yes" if pair.upstream is not None and pair.upstream.describe().supports_as_of \
+        as_of = "yes" if pair.upstream is not None and reads_as_of(pair.upstream) \
             else "no"
         print(f"  {pair.id:<18}{pair.kind:<7}{'yes' if pair.upstream else 'NONE':<10}"
               f"{as_of:<7}{semantic_layer(pair).state:<12}{pair.description}")
@@ -146,7 +146,14 @@ def _print_sample(report: dict[str, Any]) -> int:
     if meta.get("query"):
         header += f" · query {report['key']} “{meta['query']}”"
     if report["as_of"] is not None:
-        header += f" · simulated time {report['as_of']:.2f}s"
+        # The demo runs on simulated time; a live source samples at a real moment.
+        if report["kind"] == "demo":
+            header += f" · simulated time {report['as_of']:.2f}s"
+        else:
+            from datetime import datetime, timezone
+
+            moment = datetime.fromtimestamp(report["as_of"], tz=timezone.utc)
+            header += f" · read at {moment.isoformat(timespec='seconds')}"
     if "staleness_seconds" in meta:
         header += f" · delivered {meta['staleness_seconds']:g}s behind"
     print(header)

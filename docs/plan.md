@@ -566,6 +566,24 @@ file, a local HTTP fixture). The README states the protocol is four methods and 
 warehouses (Snowflake, BigQuery, Databricks) are not supported — nothing untested is
 claimed.
 
+> **Progress 23 Sep — A10 done** (author's go-ahead; DuckDB included on the author's
+> decision, as the `[duckdb]` extra). `sources/tables.py`: **`sqlite`** (a table, opened
+> `mode=ro`), **`duckdb`** (`read_only=True`) and **`http`** (GET a declared url, JSON, the
+> list at `records_path`; 10 s timeout, 16 MB cap, http(s) only, no credential in the url,
+> headers only from `headers_env`). Unlike files they are **read afresh on every question**,
+> because a poller keeps writing and a feed moves. **`history: true`** makes a table of
+> snapshots readable *as of* a past time (each id's latest row at or before it) — what A1's
+> consistency needs. A side may name its own `type`, so a pair can be *SQLite delivered, HTTP
+> upstream*. Only a table **name**, never SQL. `reads_as_of()` answers from the declaration,
+> so the loop no longer calls `describe()` — which, on an http upstream, was several GETs of
+> someone's API per question. Files now share the one row contract (`rows_to_entries`). The
+> server's "no outbound requests" line was already untrue since A5; it now says outbound
+> requests go only to declared urls and configured model providers. Postgres and warehouses
+> are not supported, and the README says so. 42 tests on real SQLite/DuckDB files and a local
+> HTTP server; 914 in all. **Found running it:** an http upstream has no history, so pipeline
+> lag reads as `corrupted_in_transit`, not `answer_key_moved` (brief correction 15, stated in
+> every Tick) — which shapes A11: its upstream must be a history table (handoff 2 §1).
+
 ### A11 · Live-source case study — Fig 4.11 · 6 h · ~$0.05 · cut second
 
 One real source with genuine update velocity that is not ESCI or BTS, behind a real

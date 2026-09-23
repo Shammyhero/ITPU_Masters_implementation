@@ -110,6 +110,17 @@ class SourcePair:
     manifest: str | None = None
 
 
+def reads_as_of(source: Source) -> bool:
+    """Whether a source can be read as of a past time — without reading it.
+
+    A live source answers from its declaration (`supports_as_of`); asking it to
+    `describe()` would read the whole table, or GET someone's API, just to learn a
+    flag. Sources without the attribute (demo, files) describe themselves cheaply.
+    """
+    flag = getattr(source, "supports_as_of", None)
+    return flag if isinstance(flag, bool) else source.describe().supports_as_of
+
+
 def type_name(value: Any) -> str:
     if value is None:
         return "null"

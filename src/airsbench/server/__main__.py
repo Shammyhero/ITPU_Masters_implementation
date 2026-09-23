@@ -10,7 +10,9 @@ starts and offered to the page. Data sources are declared with --sources (see
 `airsbench.sources.config`) and validated at startup too. The page never asks
 the server to read a path or open a connection, so no web page can use this
 server to reach files or systems on the machine. It binds to 127.0.0.1 unless
-told otherwise, makes no outbound request, and calls no model.
+told otherwise. Its only outbound requests go where the person running it
+pointed: an `http` source's DECLARED url (A10), and a model provider whose key is
+in the environment (A5) — never an address named in a request.
 
 Exit status: 0 after a clean stop, 2 if the records, the sources, the task or the
 port are unusable — reported before anything listens.

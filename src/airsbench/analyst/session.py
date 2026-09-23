@@ -27,7 +27,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from ..probe import score
-from ..sources import SourcePair, to_probe_entry
+from ..sources import SourcePair, reads_as_of, to_probe_entry
 from ..sources.manifest import semantic_layer
 from .answerers import Answerer
 from .plan import Plan
@@ -77,7 +77,7 @@ def ask(pair: SourcePair, question: Question, answerer: Answerer, *, seed: int |
     ids = [record_id for record_id in sample.ids if record_id is not None]
 
     upstream = pair.upstream
-    as_of = upstream is not None and upstream.describe().supports_as_of
+    as_of = upstream is not None and reads_as_of(upstream)
     served = None
     if upstream is not None:
         served = (upstream.fetch(ids, as_of=sample.meta.get("served_as_of", sample.as_of))

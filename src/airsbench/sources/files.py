@@ -38,11 +38,10 @@ from typing import Any, Callable, Iterable, Sequence
 
 from agentic_faults import Record
 
-from ..probe import ProbeError, normalise, parse_records, read_jsonl
+from ..probe import ProbeError, parse_records, read_jsonl
 from .base import Sample, SourceError, SourceSchema, schema_from_payloads
 
 FORMATS = {".jsonl": "jsonl", ".ndjson": "jsonl", ".csv": "csv", ".parquet": "parquet"}
-TELEMETRY = ("event_timestamp", "read_timestamp", "delivery_latency_ms")
 _INTEGER = re.compile(r"^[+-]?(0|[1-9]\d*)$")
 _DECIMAL = re.compile(r"^[+-]?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$")
 
@@ -182,23 +181,10 @@ class FilesSource(EntrySource):
 
     def _rows(self, path: Path, rows: Iterable[dict[str, Any]],
               first: int) -> list[dict[str, Any]]:
-        entries = []
-        for number, row in enumerate(rows, start=first):
-            if self.id_field not in row:
-                raise SourceError(f"{self.name}: {path.name} has no {self.id_field!r} column; "
-                                  f"declare id_field: with the column that identifies a record")
-            payload = {k: v for k, v in row.items() if k is not None}
-            entry: dict[str, Any] = {"id": payload.pop(self.id_field)}
-            for name in TELEMETRY:
-                value = payload.pop(name, None)
-                if value is not None:
-                    entry[name] = value
-            entry["payload"] = payload
-            try:
-                entries.append(normalise(entry, f"{path}:{number}"))
-            except ProbeError as exc:
-                raise SourceError(f"{self.name}: {exc}") from None
-        return entries
+        from .tables import rows_to_entries  # the row contract every table-like source shares
+
+        return rows_to_entries(rows, name=self.name, where=str(path), label=path.name,
+                               id_field=self.id_field, first=first)
 
 
 def _coerce(value: str | None) -> Any:

@@ -170,8 +170,9 @@ src/airsbench/agents/    LLM client, prompts, retrieval + classification agents
 src/airsbench/pipelines/ catalog time machine + record builders (loader.py)
 src/airsbench/gate/      admission control: Policy, Controller, offline policy replay
 src/airsbench/server/    `airs serve`: FastAPI API (the only FastAPI importer) + baked data
-src/airsbench/sources/   declared read-only data sources: demo (study slice), files, inline, sources.yaml,
-                         the semantic manifest (two-state rule) and `airs manifest`
+src/airsbench/sources/   declared read-only data sources: demo (study slice), files, inline, and live
+                         sqlite / duckdb / http (tables.py, read afresh; `history` = readable as of),
+                         sources.yaml, the semantic manifest (two-state rule) and `airs manifest`
 src/airsbench/analyst/   the Analyst: checkable plans, the verifier (4 labels), answerers, spend caps,
                          the router + two-step loop (loop.py, shared with the refetch arm)
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema

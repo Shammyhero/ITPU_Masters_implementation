@@ -17,6 +17,21 @@ connection because a request asked it to.
       stale-catalog:
         type: demo
         condition: {fault: freshness, severity: sweep_8s}
+      bikes:                                      # live sources (A10)
+        type: sqlite                              # also: duckdb, http
+        delivered: {path: ./cache.db, table: station_status, history: true}
+        upstream:                                 # a side may name its own type
+          type: http
+          url: https://example.org/station_status.json
+          records_path: data.stations
+        id_field: station_id
+        timestamp_field: last_reported            # the source's own clock
+
+A `sqlite` or `duckdb` side reads one table (a name, never SQL) opened read-only;
+`history: true` means the table keeps each id's snapshots, so it can be read as of
+a past time. An `http` side GETs a JSON document; `headers_env` maps a header to
+the environment variable holding its value. Every live side is read afresh on
+each question (`tables.py`).
 
 Credentials never belong in this file — it is easy to commit. A key that names
 one (password, token, dsn, api_key …) is refused with the environment variable
@@ -34,15 +49,29 @@ from typing import Any, Callable
 from .base import SourceError, SourcePair
 from .demo import BUILT_IN, LIVE_SEED, Condition, demo_pair
 from .files import FilesSource
+from .tables import DuckdbSource, HttpSource, SqliteSource, check_url
 
 SOURCE_ID = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 SECRET_WORDS = ("password", "passwd", "secret", "token", "api_key", "apikey", "dsn",
                 "credential")
+_DECLARED = {"type", "delivered", "upstream", "id_field", "description", "manifest"}
 PAIR_KEYS = {
-    "files": {"type", "delivered", "upstream", "id_field", "description", "manifest"},
+    "files": _DECLARED,
+    "sqlite": _DECLARED | {"timestamp_field"},
+    "duckdb": _DECLARED | {"timestamp_field"},
+    "http": _DECLARED | {"timestamp_field"},
     "demo": {"type", "condition", "description", "manifest"},
 }
-SIDE_KEYS = {"path", "format", "id_field"}
+# What one side may declare, by the side's own type (which defaults to the pair's).
+SIDE_KEYS = {
+    "files": {"type", "path", "format", "id_field"},
+    "sqlite": {"type", "path", "table", "id_field", "timestamp_field", "history"},
+    "duckdb": {"type", "path", "table", "id_field", "timestamp_field", "history"},
+    "http": {"type", "url", "records_path", "id_field", "timestamp_field", "headers_env",
+             "timeout"},
+}
+SIDE_TYPES = tuple(SIDE_KEYS)
+LIVE = {"sqlite": SqliteSource, "duckdb": DuckdbSource}
 CONDITION_KEYS = {"fault", "severity", "pipeline"}
 FILE_FORMATS = ("jsonl", "csv", "parquet")
 
@@ -81,36 +110,84 @@ def load_sources(path: Path | None = None, *, seed: int = LIVE_SEED,
         if not isinstance(spec, dict) or spec.get("type") not in PAIR_KEYS:
             raise SourceError(f"{label}: needs type: one of {sorted(PAIR_KEYS)}")
         _only(spec, PAIR_KEYS[spec["type"]], label)
-        build = _files_pair if spec["type"] == "files" else _demo_pair
+        build = _demo_pair if spec["type"] == "demo" else _declared_pair
         pairs[source_id] = build(source_id, spec, path.parent, label, seed, clock)
     return pairs
 
 
-def _files_pair(source_id: str, spec: dict[str, Any], base: Path, label: str,
-                seed: int, clock: Callable[[], float]) -> SourcePair:
+def _declared_pair(source_id: str, spec: dict[str, Any], base: Path, label: str,
+                   seed: int, clock: Callable[[], float]) -> SourcePair:
+    """A files, sqlite, duckdb or http pair; each side may name its own type."""
+    kind = spec["type"]
     id_field = spec.get("id_field", "id")
     if not isinstance(id_field, str) or not id_field:
         raise SourceError(f"{label}.id_field: must be a column or key name")
+    timestamp_field = spec.get("timestamp_field")
+    if timestamp_field is not None and (not isinstance(timestamp_field, str)
+                                        or not timestamp_field):
+        raise SourceError(f"{label}.timestamp_field: must be a column or key name")
     if spec.get("delivered") is None:
-        raise SourceError(f"{label}: a files source needs delivered: — the path your "
-                          f"pipeline writes")
-    delivered = _files_side(spec["delivered"], base, f"{label}.delivered",
-                            f"{source_id}/delivered", id_field, False, clock)
+        raise SourceError(f"{label}: needs delivered: — where your pipeline's output is read")
+    delivered = _side(spec["delivered"], kind, base, f"{label}.delivered",
+                      f"{source_id}/delivered", id_field, timestamp_field, False, clock)
     upstream = None
     if spec.get("upstream") is not None:
-        upstream = _files_side(spec["upstream"], base, f"{label}.upstream",
-                               f"{source_id}/upstream", id_field, True, clock)
-    return SourcePair(id=source_id, kind="files", delivered=delivered, upstream=upstream,
+        upstream = _side(spec["upstream"], kind, base, f"{label}.upstream",
+                         f"{source_id}/upstream", id_field, timestamp_field, True, clock)
+    return SourcePair(id=source_id, kind=kind, delivered=delivered, upstream=upstream,
                       description=_text(spec, label), manifest=_manifest(spec, base, label))
 
 
-def _files_side(value: Any, base: Path, label: str, name: str, id_field: str,
-                unique_ids: bool, clock: Callable[[], float]) -> FilesSource:
+def _side(value: Any, pair_type: str, base: Path, label: str, name: str, id_field: str,
+          timestamp_field: str | None, unique_ids: bool, clock: Callable[[], float]):
     if isinstance(value, str):
         value = {"path": value}
-    if not isinstance(value, dict) or not isinstance(value.get("path"), str):
+    if not isinstance(value, dict):
+        raise SourceError(f"{label}: give a path, or a mapping")
+    kind = value.get("type", pair_type)
+    if kind not in SIDE_TYPES:
+        raise SourceError(f"{label}.type: one of {list(SIDE_TYPES)}, got {kind!r}")
+    _only(value, SIDE_KEYS[kind], label)
+    side_id = value.get("id_field", id_field)
+    side_ts = value.get("timestamp_field", timestamp_field)
+    if kind == "files":
+        return _files_side(value, base, label, name, side_id, unique_ids, clock)
+    try:
+        if kind == "http":
+            timeout = value.get("timeout", 10)
+            if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) \
+                    or not 0 < timeout <= 60:
+                raise SourceError(f"{label}.timeout: seconds, between 0 and 60")
+            headers = value.get("headers_env") or {}
+            if not isinstance(headers, dict) or not all(
+                    isinstance(k, str) and isinstance(v, str) for k, v in headers.items()):
+                raise SourceError(f"{label}.headers_env: a mapping of header name to the "
+                                  f"environment variable that holds its value")
+            records_path = value.get("records_path", "")
+            if not isinstance(records_path, str):
+                raise SourceError(f"{label}.records_path: a dotted path such as data.stations")
+            return HttpSource(name, check_url(value.get("url"), label),
+                              records_path=records_path, headers_env=headers,
+                              timeout=float(timeout), id_field=side_id,
+                              timestamp_field=side_ts, unique_ids=unique_ids, clock=clock)
+        if not isinstance(value.get("path"), str) or not isinstance(value.get("table"), str):
+            raise SourceError(f"{label}: a {kind} side needs path: and table:")
+        history = value.get("history", False)
+        if not isinstance(history, bool):
+            raise SourceError(f"{label}.history: true or false")
+        return LIVE[kind](name, _resolve(value["path"], base), value["table"],
+                          id_field=side_id, timestamp_field=side_ts, history=history,
+                          unique_ids=unique_ids and not history, clock=clock)
+    except SourceError as exc:
+        message = str(exc)
+        raise SourceError(message if message.startswith(label) else f"{label}: {message}") \
+            from None
+
+
+def _files_side(value: dict[str, Any], base: Path, label: str, name: str, id_field: str,
+                unique_ids: bool, clock: Callable[[], float]) -> FilesSource:
+    if not isinstance(value.get("path"), str):
         raise SourceError(f"{label}: give a path, or a mapping with path:")
-    _only(value, SIDE_KEYS, label)
     fmt = value.get("format")
     if fmt is not None and fmt not in FILE_FORMATS:
         raise SourceError(f"{label}.format: one of {list(FILE_FORMATS)}, got {fmt!r}")

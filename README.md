@@ -123,10 +123,22 @@ airs gate --records delivered.jsonl --policy examples/gate/retrieval.json
 
 **`airs sources`** — the data sources the Analyst will answer from: a bundled demo
 slice of the study's own catalog, served exactly the way the benchmark served it
-(`demo-healthy`, `demo-stale`, `demo-drift`, `demo-stripped`), plus your own files
-declared in a `sources.yaml` (JSONL, CSV, and Parquet with `airs-bench[parquet]`).
-Sources are declared, never requested over HTTP, read-only, and credentials never
-go in the file.
+(`demo-healthy`, `demo-stale`, `demo-drift`, `demo-stripped`), plus your own sources
+declared in a `sources.yaml`:
+
+| type | reads | notes |
+|---|---|---|
+| `files` | JSONL, CSV, Parquet (`airs-bench[parquet]`) | a snapshot, read once |
+| `sqlite` | a table in a SQLite file | read afresh each question; `history: true` for a table of snapshots |
+| `duckdb` | a table in a DuckDB file (`airs-bench[duckdb]`) | as `sqlite` |
+| `http` | a JSON document from a declared URL | read afresh; headers only from environment variables |
+
+A pair can mix them — a SQLite cache delivered, a live HTTP feed upstream. A source
+is four methods (`name`, `describe`, `sample`, `fetch`, in `sources/base.py`), so an
+adapter is small; **Postgres and warehouses (Snowflake, BigQuery, Databricks) are not
+supported**, and nothing untested is claimed. Sources are declared, never requested
+over HTTP, read-only (SQLite `mode=ro`, DuckDB `read_only`), only a table name is
+accepted — never SQL — and credentials never go in the file or a URL.
 
 ```bash
 airs sources sample demo-stale --seed 7
@@ -232,7 +244,7 @@ src/airsbench/agents/    LLM client, prompts, retrieval + classification agents
 src/airsbench/pipelines/ catalog time machine + record builders (loader.py)
 src/airsbench/gate/      admission control: Policy, Controller, offline policy replay
 src/airsbench/server/    `airs serve`: the local API, and the data baked for it
-src/airsbench/sources/   declared, read-only data sources (demo slice, files, inline) and the manifest
+src/airsbench/sources/   declared, read-only data sources (demo slice, files, SQLite, DuckDB, HTTP, inline) and the manifest
 src/airsbench/analyst/   the Analyst: checkable question plans, the verifier, answerers
 src/airsbench/runner/    grid, staged execution, scoring, benchmark_runs schema
 src/airsbench/analysis/  one module per research question — all free to re-run
@@ -275,11 +287,12 @@ The AIRS scoring curves have been tested for sensitivity to their undocumented
 constants: the rankings largely survive, the magnitudes do not —
 [`docs/sensitivity_findings.md`](docs/sensitivity_findings.md).
 
-Remaining work, week by week, is in [`docs/plan.md`](docs/plan.md). Next is
-**the Analyst** ([`docs/analyst_brief.md`](docs/analyst_brief.md)): live,
-gated question answering over your own declared data sources, where every
-answer is re-checked against the system of record and each wrong one is
-attributed to the pipeline or the model — by mid-October, then the thesis
-document.
+Remaining work, week by week, is in [`docs/plan.md`](docs/plan.md). **The Analyst**
+([`docs/analyst_brief.md`](docs/analyst_brief.md)) — live, gated question answering
+over your own declared data sources, where every answer is re-checked against the
+system of record and each wrong one is attributed to the pipeline or the model — is
+built, and so is the last experiment, the refetch arm
+([`docs/refetch_findings.md`](docs/refetch_findings.md)). What remains is a live-source
+case study and the thesis document.
 
 License: [MIT](LICENSE)

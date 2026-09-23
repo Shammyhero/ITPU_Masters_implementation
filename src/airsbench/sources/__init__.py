@@ -9,6 +9,7 @@ never named in an HTTP request, and none of them writes.
     demo.py     the bundled ESCI slice, served exactly the way the study served it
     files.py    JSONL, CSV and Parquet files or directories
     inline.py   records given as text — the console's paste box
+    tables.py   live sources, read afresh each time: SQLite, DuckDB, HTTP JSON (A10)
     config.py   `sources.yaml`, and the demo pairs that are always available
 
 Only `base` is imported here; the adapters load what they need when used.
@@ -21,10 +22,11 @@ from .base import (
     SourceError,
     SourcePair,
     SourceSchema,
+    reads_as_of,
     to_probe_entry,
 )
 
 __all__ = [
     "FieldInfo", "Sample", "Source", "SourceError", "SourcePair", "SourceSchema",
-    "to_probe_entry",
+    "reads_as_of", "to_probe_entry",
 ]

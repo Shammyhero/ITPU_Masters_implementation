@@ -43,7 +43,7 @@ from agentic_faults import Record
 from ..gate.controller import Controller, Verdict
 from ..gate.policy import REPAIRABLE, Policy
 from ..probe import DEFAULT_WEIGHTS, load_weights
-from ..sources import SourcePair, to_probe_entry
+from ..sources import SourcePair, reads_as_of, to_probe_entry
 from ..sources.manifest import semantic_layer
 from .answerers import Answerer
 from .budget import SpendRefused
@@ -311,7 +311,7 @@ class Loop:
         upstream = self.pair.upstream
         if upstream is None:
             return None
-        if upstream.describe().supports_as_of:
+        if reads_as_of(upstream):
             return upstream.fetch(ids, as_of=sample.meta.get("served_as_of", sample.as_of))
         return upstream.fetch(ids)
 
@@ -344,7 +344,7 @@ class Loop:
         # key this question is graded against, i.e. the future. Found in the first
         # live run of the loop (18 Sep).
         fresh = (upstream.fetch(wanted, as_of=sample.as_of)
-                 if upstream.describe().supports_as_of else upstream.fetch(wanted))
+                 if reads_as_of(upstream) else upstream.fetch(wanted))
         by_id = {record.meta.get("record_id"): record for record in fresh}
         if getattr(self.pair.delivered, "emit_record_age", False):
             # A pipeline that shows each record's age shows it on a re-read too —
@@ -416,7 +416,7 @@ class Loop:
             # forfeited nothing and prevented nothing.
             return "abstained"
         truth = (upstream.fetch(ids, as_of=sample.as_of)
-                 if upstream.describe().supports_as_of else upstream.fetch(ids))
+                 if reads_as_of(upstream) else upstream.fetch(ids))
         result = verify(question.plan, answer, delivered=records,
                         served=self._served(sample, ids), truth=truth)
         if not result.verifiable:
@@ -429,7 +429,7 @@ class Loop:
               gate: dict[str, Any], refetch: dict[str, Any], *, answer, usage,
               started: float) -> dict[str, Any]:
         upstream = self.pair.upstream
-        as_of = upstream is not None and upstream.describe().supports_as_of
+        as_of = upstream is not None and reads_as_of(upstream)
         served = self._refreshed if self._refreshed is not None else self._served(sample, ids)
         t0 = self.clock()
         truth = None
